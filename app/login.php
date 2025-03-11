@@ -10,6 +10,36 @@ if (isset($_POST['user_name']) && isset($_POST['password'])) {
 	  return $data;
 	}
 
+	// Add new password validation function
+	function validate_password($password) {
+		// Minimum length check
+		if (strlen($password) < 8 || strlen($password) > 12) {
+			return "Password must be between 8 and 12 characters long";
+		}
+		
+		// Check for uppercase
+		if (!preg_match('/[A-Z]/', $password)) {
+			return "Password must contain at least one uppercase letter";
+		}
+		
+		// Check for lowercase
+		if (!preg_match('/[a-z]/', $password)) {
+			return "Password must contain at least one lowercase letter";
+		}
+		
+		// Check for numbers
+		if (!preg_match('/[0-9]/', $password)) {
+			return "Password must contain at least one number";
+		}
+		
+		// Check for special characters
+		if (!preg_match('/[!@#$%^&*(),.?":{}|<>]/', $password)) {
+			return "Password must contain at least one special character";
+		}
+		
+		return true;
+	}
+
 	$user_name = validate_input($_POST['user_name']);
 	$password = validate_input($_POST['password']);
 

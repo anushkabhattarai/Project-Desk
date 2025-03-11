@@ -1,4 +1,3 @@
---- USER
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     full_name VARCHAR(50) NOT NULL,

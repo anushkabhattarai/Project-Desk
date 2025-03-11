@@ -42,66 +42,111 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) ) {
 				<div class="dashboard">
 					<div class="dashboard-item">
 						<i class="fa fa-users"></i>
-						<span><?=$num_users?> Employee</span>
+						<div class="dashboard-info">
+							<h3><?=$num_users?></h3>
+							<span>Employees</span>
+						</div>
 					</div>
 					<div class="dashboard-item">
 						<i class="fa fa-tasks"></i>
-						<span><?=$num_task?> All Tasks</span>
+						<div class="dashboard-info">
+							<h3><?=$num_task?></h3>
+							<span>All Tasks</span>
+						</div>
 					</div>
 					<div class="dashboard-item">
 						<i class="fa fa-window-close-o"></i>
-						<span><?=$overdue_task?> Overdue</span>
+						<div class="dashboard-info">
+							<h3><?=$overdue_task?></h3>
+							<span>Overdue</span>
+						</div>
 					</div>
 					<div class="dashboard-item">
 						<i class="fa fa-clock-o"></i>
-						<span><?=$nodeadline_task?> No Deadline</span>
+						<div class="dashboard-info">
+							<h3><?=$nodeadline_task?></h3>
+							<span>No Deadline</span>
+						</div>
 					</div>
 					<div class="dashboard-item">
 						<i class="fa fa-exclamation-triangle"></i>
-						<span><?=$todaydue_task?> Due Today</span>
+						<div class="dashboard-info">
+							<h3><?=$todaydue_task?></h3>
+							<span>Due Today</span>
+						</div>
 					</div>
 					<div class="dashboard-item">
 						<i class="fa fa-bell"></i>
-						<span><?=$overdue_task?> Notifications</span>
+						<div class="dashboard-info">
+							<h3><?=$overdue_task?></h3>
+							<span>Notifications</span>
+						</div>
 					</div>
 					<div class="dashboard-item">
 						<i class="fa fa-square-o"></i>
-						<span><?=$pending?> Pending</span>
+						<div class="dashboard-info">
+							<h3><?=$pending?></h3>
+							<span>Pending</span>
+						</div>
 					</div>
 					<div class="dashboard-item">
 						<i class="fa fa-spinner"></i>
-						<span><?=$in_progress?> In progress</span>
+						<div class="dashboard-info">
+							<h3><?=$in_progress?></h3>
+							<span>In progress</span>
+						</div>
 					</div>
 					<div class="dashboard-item">
 						<i class="fa fa-check-square-o"></i>
-						<span><?=$completed?> Completed</span>
+						<div class="dashboard-info">
+							<h3><?=$completed?></h3>
+							<span>Completed</span>
+						</div>
 					</div>
 				</div>
 			<?php }else{ ?>
 				<div class="dashboard">
 					<div class="dashboard-item">
 						<i class="fa fa-tasks"></i>
-						<span><?=$num_my_task?> My Tasks</span>
+						<div class="dashboard-info">
+							<h3><?=$num_my_task?></h3>
+							<span>My Tasks</span>
+						</div>
 					</div>
 					<div class="dashboard-item">
 						<i class="fa fa-window-close-o"></i>
-						<span><?=$overdue_task?> Overdue</span>
+						<div class="dashboard-info">
+							<h3><?=$overdue_task?></h3>
+							<span>Overdue</span>
+						</div>
 					</div>
 					<div class="dashboard-item">
 						<i class="fa fa-clock-o"></i>
-						<span><?=$nodeadline_task?> No Deadline</span>
+						<div class="dashboard-info">
+							<h3><?=$nodeadline_task?></h3>
+							<span>No Deadline</span>
+						</div>
 					</div>
 					<div class="dashboard-item">
 						<i class="fa fa-square-o"></i>
-						<span><?=$pending?> Pending</span>
+						<div class="dashboard-info">
+							<h3><?=$pending?></h3>
+							<span>Pending</span>
+						</div>
 					</div>
 					<div class="dashboard-item">
 						<i class="fa fa-spinner"></i>
-						<span><?=$in_progress?> In progress</span>
+						<div class="dashboard-info">
+							<h3><?=$in_progress?></h3>
+							<span>In progress</span>
+						</div>
 					</div>
 					<div class="dashboard-item">
 						<i class="fa fa-check-square-o"></i>
-						<span><?=$completed?> Completed</span>
+						<div class="dashboard-info">
+							<h3><?=$completed?></h3>
+							<span>Completed</span>
+						</div>
 					</div>
 				</div>
 			<?php } ?>
