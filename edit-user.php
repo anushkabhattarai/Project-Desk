@@ -1,0 +1,127 @@
+<?php 
+session_start();
+if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "admin") {
+    include "DB_connection.php";
+    include "app/Model/User.php";
+    
+    if (!isset($_GET['id'])) {
+    	 header("Location: user.php");
+    	 exit();
+    }
+    $id = $_GET['id'];
+    $user = get_user_by_id($conn, $id);
+
+    if ($user == 0) {
+    	 header("Location: user.php");
+    	 exit();
+    }
+
+ ?>
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Edit User</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="css/style.css">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+	<input type="checkbox" id="checkbox">
+	<?php include "inc/header.php" ?>
+	<div class="body">
+		<?php include "inc/nav.php" ?>
+		<section class="section-1">
+			<div class="container-fluid px-4 py-3">
+				<!-- Header Area -->
+				<div class="mb-4">
+					<h4 class="mb-1">Edit User</h4>
+					<nav aria-label="breadcrumb">
+						<ol class="breadcrumb mb-0">
+							<li class="breadcrumb-item"><a href="#" class="text-decoration-none">Home</a></li>
+							<li class="breadcrumb-item"><a href="user.php" class="text-decoration-none">Users</a></li>
+							<li class="breadcrumb-item active">Edit User</li>
+						</ol>
+					</nav>
+				</div>
+
+				<!-- Alert Messages -->
+				<?php if (isset($_GET['error'])) { ?>
+					<div class="alert alert-danger alert-dismissible fade show" role="alert">
+						<?php echo stripcslashes($_GET['error']); ?>
+						<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+					</div>
+				<?php } ?>
+
+				<?php if (isset($_GET['success'])) { ?>
+					<div class="alert alert-success alert-dismissible fade show" role="alert">
+						<?php echo stripcslashes($_GET['success']); ?>
+						<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+					</div>
+				<?php } ?>
+
+				<!-- Edit User Form -->
+				<div class="card border-0 shadow-sm">
+					<div class="card-body p-4">
+						<form method="POST" action="app/update-user.php">
+							<div class="row">
+								<div class="col-md-6 mb-3">
+									<label for="full_name" class="form-label">Full Name</label>
+									<input type="text" 
+										   class="form-control" 
+										   id="full_name" 
+										   name="full_name" 
+										   value="<?=$user['full_name']?>"
+										   required>
+								</div>
+
+								<div class="col-md-6 mb-3">
+									<label for="user_name" class="form-label">Username</label>
+									<input type="text" 
+										   class="form-control" 
+										   id="user_name" 
+										   name="user_name" 
+										   value="<?=$user['username']?>"
+										   required>
+								</div>
+
+								<div class="col-md-6 mb-3">
+									<label for="password" class="form-label">Password</label>
+									<input type="password" 
+										   class="form-control" 
+										   id="password" 
+										   name="password" 
+										   value="**********">
+									<small class="text-muted">Leave blank to keep current password</small>
+								</div>
+
+								<input type="hidden" name="id" value="<?=$user['id']?>">
+
+								<div class="col-12">
+									<button type="submit" class="btn btn-primary" style="background-color: #1a237e; border-color: #1a237e;">
+										<i class="fa fa-save me-2"></i>Update User
+									</button>
+									<a href="user.php" class="btn btn-outline-secondary">
+										Cancel
+									</a>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</section>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+	<script type="text/javascript">
+		var active = document.querySelector("#navList li:nth-child(2)");
+		active.classList.add("active");
+	</script>
+</body>
+</html>
+<?php }else{ 
+   $em = "First login";
+   header("Location: login.php?error=$em");
+   exit();
+}
+ ?>
