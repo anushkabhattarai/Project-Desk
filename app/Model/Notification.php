@@ -32,3 +32,9 @@ function notification_make_read($conn, $recipient_id, $notification_id){
 	$stmt = $conn->prepare($sql);
 	$stmt->execute([$notification_id, $recipient_id]);
 }
+
+function mark_all_notifications_read($conn, $user_id) {
+	$sql = "UPDATE notifications SET is_read = 1 WHERE recipient = ?";
+	$stmt = $conn->prepare($sql);
+	$stmt->execute([$user_id]);
+}

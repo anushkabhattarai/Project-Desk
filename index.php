@@ -36,8 +36,12 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) ) {
 <body class="bg-white">
 	<input type="checkbox" id="checkbox">
 	<?php include "inc/header.php" ?>
-	<div class="body">
-		<?php include "inc/nav.php" ?>
+	
+	<!-- Include the navigation sidebar -->
+	<?php include "inc/nav.php" ?>
+	
+	<!-- Main content area with margin-left to account for sidebar width -->
+	<main style="margin-left: 250px; padding-top: 70px;">
 		<section class="section-1 bg-white">
 			<div class="container-fluid px-4 py-3">
 				<div class="mb-4">
@@ -282,12 +286,12 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) ) {
 				<?php } ?>
 			</div>
 		</section>
-	</div>
+	</main>
 
-<script type="text/javascript">
-	var active = document.querySelector("#navList li:nth-child(1)");
-	active.classList.add("active");
-</script>
+	<script type="text/javascript">
+		var active = document.querySelector("#navList li:nth-child(1)");
+		active.classList.add("active");
+	</script>
 </body>
 </html>
 <?php }else{ 

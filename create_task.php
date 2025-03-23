@@ -15,12 +15,14 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
 	<link rel="stylesheet" href="css/style.css">
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-white">
 	<input type="checkbox" id="checkbox">
 	<?php include "inc/header.php" ?>
-	<div class="body">
-		<?php include "inc/nav.php" ?>
-		<section class="section-1">
+	<?php include "inc/nav.php" ?>
+	
+	<!-- Main content area with margin-left to account for sidebar width -->
+	<main style="margin-left: 250px; padding-top: 70px;">
+		<section class="section-1 bg-white">
 			<div class="container-fluid px-4 py-3">
 				<!-- Header Area -->
 				<div class="mb-4">
@@ -110,7 +112,7 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
 				</div>
 			</div>
 		</section>
-	</div>
+	</main>
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 	<script type="text/javascript">
@@ -124,4 +126,4 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
    header("Location: login.php?error=$em");
    exit();
 }
- ?>
+?>

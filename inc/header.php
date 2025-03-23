@@ -1,83 +1,78 @@
-<header class="bg-white" style="border-bottom: 1px solid rgba(0,0,0,0.08);">
-	<div class="d-flex justify-content-between align-items-center px-4 py-3">
-		<!-- Left side with logo -->
-		<div class="d-flex align-items-center">
-			<h2 class="mb-0 fs-4">
-				Project<b class="text-primary">Desk</b>
-				<label for="checkbox" class="ms-2">
-					<i id="navbtn" class="fa fa-bars text-secondary" aria-hidden="true"></i>
-				</label>
-			</h2>
-		</div>
-		
-		<!-- Right side with notifications and profile -->
-		<div class="d-flex align-items-center gap-4">
-			<!-- Notification bell - adjusted position -->
-			<div class="position-relative me-2">
-				<span class="notification btn p-0" id="notificationBtn">
-					<img src="img/notification.png" 
-						 width="32" 
-						 height="32" 
-						 alt="Notifications"
-						 style="filter: opacity(0.6); margin-left: -8px;">
-					<span id="notificationNum" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-						<span class="visually-hidden">notifications</span>
-					</span>
-				</span>
+<header class="bg-white border-bottom sticky-top" style="height: 60px; z-index: 1030;">
+	<div class="container-fluid h-100">
+		<div class="row h-100 align-items-center">
+			<!-- Left side with logo -->
+			<div class="col-auto me-auto">
+				<div class="d-flex align-items-center">
+					<h2 class="mb-0 fw-bold fs-4">
+						<span class="text-dark">Project</span><span class="text-primary">Desk</span>
+					</h2>
+					<button type="button" class="btn btn-sm ms-3 p-1" id="navToggle">
+						<i class="fa fa-bars text-secondary" aria-hidden="true"></i>
+					</button>
+				</div>
 			</div>
-
-			<!-- Profile dropdown - fixed admin display -->
-			<div class="dropdown">
-				<button class="btn btn-link text-decoration-none dropdown-toggle p-0" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-					<div class="d-flex align-items-center gap-2">
-						<!-- Profile image -->
-						<img src="<?php echo $_SESSION['role'] == 'admin' ? 'img/admin.png' : 'img/user.png'; ?>" 
-							 class="rounded-circle"
-							 width="32" 
-							 height="32" 
-							 alt="Profile"
-							 style="object-fit: cover;">
-						<!-- Name and role - simplified -->
-						<div class="d-flex flex-column text-start">
-							<span class="text-dark fw-medium">
-								Admin
+			
+			<!-- Right side with notifications and profile -->
+			<div class="col-auto">
+				<div class="d-flex align-items-center">
+					<!-- Notification bell using image -->
+					<div class="dropdown me-3">
+						<button class="btn position-relative p-0" id="notificationBtn">
+							<img src="img/notification.png" width="24" height="24" alt="Notifications">
+							<span id="notificationNum" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger p-1" style="font-size: 0.6rem;">
+								<span class="visually-hidden">notifications</span>
 							</span>
-						</div>
-						<i class="fa fa-chevron-down text-secondary ms-2 small"></i>
+						</button>
 					</div>
-				</button>
-				<ul class="dropdown-menu dropdown-menu-end shadow-sm border-light mt-2" aria-labelledby="userDropdown">
-					<li><a class="dropdown-item py-2" href="profile.php">
-						<i class="fa fa-user me-2 text-secondary"></i> Edit Profile
-					</a></li>
-					<li><hr class="dropdown-divider"></li>
-					<li><a class="dropdown-item py-2 text-danger" href="logout.php">
-						<i class="fa fa-sign-out me-2"></i> Logout
-					</a></li>
-				</ul>
+
+					<!-- Profile dropdown -->
+					<div class="dropdown">
+						<button class="btn dropdown-toggle p-0 d-flex align-items-center" 
+								type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+							<img src="<?php echo $_SESSION['role'] == 'admin' ? 'img/admin.png' : 'img/user.png'; ?>" 
+								 class="rounded-circle" 
+								 width="32" 
+								 height="32" 
+								 alt="Profile">
+							<span class="d-none d-sm-inline-block ms-2 text-dark small">
+								<?php 
+									echo isset($_SESSION['full_name']) ? $_SESSION['full_name'] : $_SESSION['username']; 
+								?>
+							</span>
+						</button>
+						<ul class="dropdown-menu dropdown-menu-end mt-1" aria-labelledby="userDropdown">
+							<li><a class="dropdown-item" href="edit_profile.php">
+								<i class="fa fa-user me-2 text-primary"></i> Profile
+							</a></li>
+							<li><hr class="dropdown-divider"></li>
+							<li><a class="dropdown-item" href="logout.php">
+								<i class="fa fa-sign-out me-2 text-danger"></i> Logout
+							</a></li>
+						</ul>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
 </header>
 
 <!-- Notification panel -->
-<div class="notification-bar shadow-sm border bg-white rounded-3" id="notificationBar" style="display: none; position: absolute; right: 1rem; top: 4rem; width: 300px; z-index: 1000;">
-	<div class="p-3 border-bottom">
-		<h6 class="m-0">Notifications</h6>
+<div class="bg-white shadow-sm rounded border-0" id="notificationBar" 
+	 style="display: none; position: absolute; right: 1rem; top: 3.5rem; width: 300px; z-index: 1040;">
+	<div class="p-2 border-bottom d-flex justify-content-between align-items-center">
+		<span class="fw-medium">Notifications</span>
 	</div>
-	<div class="notification-list p-2">
-		<ul id="notifications" class="list-unstyled m-0"></ul>
+	<div style="max-height: 300px; overflow-y: auto;">
+		<ul id="notifications" class="list-group list-group-flush mb-0"></ul>
 	</div>
 </div>
 
-<!-- First load jQuery -->
+<!-- Load jQuery -->
 <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
-
-<!-- Then Bootstrap -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Load Bootstrap -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Then notification scripts -->
 <script type="text/javascript">
 	$(document).ready(function(){
 		// Load initial notifications
@@ -102,6 +97,11 @@
 			}
 		});
 		
+		// Toggle sidebar with the navigation button
+		$("#navToggle").click(function() {
+			$("body").toggleClass("sidebar-collapsed");
+		});
+		
 		// Function to load notifications
 		function loadNotifications() {
 			$.get("app/notification-count.php", function(count) {
@@ -115,6 +115,11 @@
 			
 			$.get("app/notification.php", function(data) {
 				$("#notifications").html(data);
+				
+				// If no notifications, show a message
+				if (!data.trim()) {
+					$("#notifications").html('<li class="list-group-item text-center py-3"><span class="text-secondary">No notifications</span></li>');
+				}
 			});
 		}
 		
@@ -123,41 +128,26 @@
 	});
 </script>
 
-<style>
-	.notification-list {
-		max-height: 300px;
-		overflow-y: auto;
-	}
-	
-	#notifications li {
-		padding: 10px;
-		border-bottom: 1px solid #eee;
-	}
-	
-	#notifications li:last-child {
-		border-bottom: none;
-	}
-	
-	#notifications li a {
-		color: #333;
-		text-decoration: none;
-		display: block;
-	}
-	
-	#notifications li mark {
-		background-color: #e3f2fd;
-		padding: 2px 5px;
-		border-radius: 3px;
-	}
-	
-	#notifications li small {
-		color: #666;
-		font-size: 0.8em;
-		display: block;
-		margin-top: 4px;
-	}
-	
-	#notificationNum:empty {
-		display: none;
-	}
-</style>
+<!-- Only necessary CSS for responsive behavior -->
+<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		// Initial check for screen size
+		checkScreenSize();
+		
+		// Listen for window resize
+		window.addEventListener('resize', checkScreenSize);
+		
+		function checkScreenSize() {
+			if (window.innerWidth < 992) {
+				document.body.classList.add('sidebar-collapsed');
+			} else {
+				document.body.classList.remove('sidebar-collapsed');
+			}
+		}
+		
+		// Add event listener for sidebar toggle button
+		document.getElementById('navToggle').addEventListener('click', function() {
+			document.body.classList.toggle('sidebar-collapsed');
+		});
+	});
+</script>

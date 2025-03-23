@@ -106,35 +106,7 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
 							</div>
 						</div>
 						
-						<!-- Additional Card for Stats (optional) -->
-						<div class="card rounded-4 mt-4">
-							<div class="card-body p-4">
-								<h5 class="card-title fw-bold mb-3">Task Statistics</h5>
-								<div class="row text-center">
-									<div class="col-4">
-										<div class="rounded-circle bg-primary-subtle p-3 d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
-											<i class="fa fa-tasks text-primary fa-lg"></i>
-										</div>
-										<h3 class="fw-bold mb-0">12</h3>
-										<p class="text-muted small">Total Tasks</p>
-									</div>
-									<div class="col-4">
-										<div class="rounded-circle bg-warning-subtle p-3 d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
-											<i class="fa fa-clock-o text-warning fa-lg"></i>
-										</div>
-										<h3 class="fw-bold mb-0">5</h3>
-										<p class="text-muted small">Pending</p>
-									</div>
-									<div class="col-4">
-										<div class="rounded-circle bg-success-subtle p-3 d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
-											<i class="fa fa-check-circle text-success fa-lg"></i>
-										</div>
-										<h3 class="fw-bold mb-0">7</h3>
-										<p class="text-muted small">Completed</p>
-									</div>
-								</div>
-							</div>
-						</div>
+						<!-- Task Statistics Card has been removed -->
 					</div>
 				</div>
 			</div>
