@@ -79,7 +79,21 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
 										   id="password" 
 										   name="password" 
 										   placeholder="Enter password"
+										   pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}"
+										   title="Must contain at least one number, one uppercase and lowercase letter, one special character, and at least 8 characters"
 										   required>
+									<small class="text-muted">
+										Password must contain at least 8 characters, including uppercase, lowercase, numbers and special characters
+									</small>
+								</div>
+
+								<div class="col-md-6 mb-3">
+									<label for="role" class="form-label">Role</label>
+									<select class="form-select" id="role" name="role" required>
+										<option value="">Select role</option>
+										<option value="employee">Employee</option>
+										<option value="admin">Admin</option>
+									</select>
 								</div>
 
 								<div class="col-12">
@@ -102,6 +116,18 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
 	<script type="text/javascript">
 		var active = document.querySelector("#navList li:nth-child(2)");
 		active.classList.add("active");
+	</script>
+	<script>
+	document.getElementById('password').addEventListener('input', function() {
+	    const password = this.value;
+	    const pattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}$/;
+	    
+	    if (pattern.test(password)) {
+	        this.setCustomValidity('');
+	    } else {
+	        this.setCustomValidity('Password must contain at least 8 characters, including uppercase, lowercase, numbers and special characters');
+	    }
+	});
 	</script>
 </body>
 </html>

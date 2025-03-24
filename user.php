@@ -4,7 +4,22 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
     include "DB_connection.php";
     include "app/Model/User.php";
 
+    if (!$conn) {
+        die("Connection failed: " . mysqli_connect_error());
+    }
+
     $users = get_all_users($conn);
+    /* Remove or comment out these debug lines
+    if ($users !== 0) {
+        echo "Total users found: " . count($users);
+    }
+    if ($users === 0) {
+        echo "Error fetching users: ";
+        if (mysqli_error($conn)) {
+            echo mysqli_error($conn);
+        }
+    }
+    */
   
  ?>
 <!DOCTYPE html>
@@ -14,13 +29,28 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 	<link rel="stylesheet" href="css/style.css">
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<style>
+		/* Match the nice styles from other pages */
+		.card {
+			border: none !important;
+			box-shadow: 0 5px 15px rgba(0,0,0,0.08) !important;
+			transition: all 0.3s ease !important;
+		}
+		
+		.card:hover {
+			box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+			transform: translateY(-2px);
+		}
+	</style>
 </head>
-<body>
+<body class="bg-white">
 	<input type="checkbox" id="checkbox">
 	<?php include "inc/header.php" ?>
-	<div class="body">
-		<?php include "inc/nav.php" ?>
-		<section class="section-1">
+	<?php include "inc/nav.php" ?>
+	
+	<!-- Main content area with margin-left to account for sidebar width -->
+	<main style="margin-left: 250px; padding-top: 70px;">
+		<section class="section-1 bg-white">
 			<div class="container-fluid px-4 py-3">
 				<!-- Header Area -->
 				<div class="d-flex justify-content-between align-items-center mb-4">
@@ -32,6 +62,9 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
 								<li class="breadcrumb-item active">Users</li>
 							</ol>
 						</nav>
+						<?php if ($users !== 0) { ?>
+							<small class="text-muted">Total users: <?php echo count($users); ?></small>
+						<?php } ?>
 					</div>
 					<div>
 						<a href="add-user.php" class="btn btn-primary" style="background-color: #1a237e; border-color: #1a237e;">
@@ -88,12 +121,17 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
 					</div>
 				<?php } else { ?>
 					<div class="text-center py-5">
-						<h3 class="text-muted">No users found</h3>
+						<div class="card border-0 shadow-sm">
+							<div class="card-body py-5">
+								<h3 class="text-muted">No users found</h3>
+								<p class="text-muted mb-0">Start by adding a new user</p>
+							</div>
+						</div>
 					</div>
 				<?php } ?>
 			</div>
 		</section>
-	</div>
+	</main>
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 	<script type="text/javascript">
@@ -107,4 +145,4 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
    header("Location: login.php?error=$em");
    exit();
 }
- ?>
+?>
