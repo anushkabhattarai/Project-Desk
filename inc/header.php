@@ -144,10 +144,5 @@
 				document.body.classList.remove('sidebar-collapsed');
 			}
 		}
-		
-		// Add event listener for sidebar toggle button
-		document.getElementById('navToggle').addEventListener('click', function() {
-			document.body.classList.toggle('sidebar-collapsed');
-		});
 	});
 </script>

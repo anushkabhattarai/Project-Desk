@@ -7,7 +7,7 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) ) {
     include "app/Model/User.php";
 
 	if ($_SESSION['role'] == "admin") {
-		  $todaydue_task = count_tasks_due_today($conn);
+		$todaydue_task = count_tasks_due_today($conn);
 	     $overdue_task = count_tasks_overdue($conn);
 	     $nodeadline_task = count_tasks_NoDeadline($conn);
 	     $num_task = count_tasks($conn);

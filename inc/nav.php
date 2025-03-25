@@ -1,14 +1,14 @@
-<nav class="bg-white shadow-sm border-end" style="width: 250px; min-height: 100vh; position: fixed; left: 0; top: 0; z-index: 999; padding-top: 70px; transition: all 0.3s ease;">
+<nav class="bg-white shadow-sm border-end" style="width: 250px; min-height: 100vh; position: fixed; left: 0; top: 0; z-index: 999; padding-top: 70px;">
     <!-- User Profile Section -->
     <div class="p-4 text-center border-bottom">
         <div class="position-relative d-inline-block mb-3">
             <img src="img/user.png" class="rounded-circle shadow-sm border border-2 border-light" width="80" height="80" alt="User Profile">
             <span class="position-absolute bottom-0 end-0 bg-<?php echo $_SESSION['role'] == 'admin' ? 'primary' : 'success'; ?> p-1 rounded-circle">
-                <span class="visually-hidden">Status indicator</span>
+                <span class="visually-hidden">User status</span>
             </span>
         </div>
-        <h6 class="mb-1 fw-semibold">@<?php echo $_SESSION['username']; ?></h6>
-        <small class="text-muted"><?php echo ucfirst($_SESSION['role']); ?></small>
+        <h6 class="mb-1 fw-semibold">@<?=$_SESSION['username']?></h6>
+        <span class="badge bg-light text-secondary rounded-pill"><?=ucfirst($_SESSION['role'])?></span>
     </div>
     
     <?php if($_SESSION['role'] == "employee") { ?>
@@ -29,6 +29,14 @@
                     </a>
                 </li>
                 
+                <!-- Notes Section -->
+                <li class="nav-item">
+                    <a href="notes.php" class="nav-link rounded-3 py-2 px-3 d-flex align-items-center">
+                        <i class="fa fa-sticky-note me-3 text-opacity-75" aria-hidden="true"></i>
+                        <span>Notes</span>
+                    </a>
+                </li>
+
                 <li class="nav-item mt-2">
                     <div class="text-uppercase text-muted small fw-semibold ms-3 mb-2">Account</div>
                 </li>
@@ -125,5 +133,42 @@
     }
     .nav-link.active i {
         color: white !important;
+    }
+
+    /* Note interface styles */
+    .note-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .note-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+        background-color: rgba(0, 123, 255, 0.02);
+    }
+
+    .note-actions {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .note-card:hover .note-actions {
+        opacity: 1;
+    }
+
+    /* Animation for new notes */
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .new-note {
+        animation: slideIn 0.3s ease forwards;
     }
 </style>
