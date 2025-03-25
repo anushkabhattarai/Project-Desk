@@ -21,6 +21,8 @@ $title = "Notes";
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- Quill Editor -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
     <style>
@@ -34,16 +36,6 @@ $title = "Notes";
         .note-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-
-        .dark-mode {
-            background-color: #1a1a1a !important;
-            color: #ffffff;
-        }
-
-        .dark-mode .note-card {
-            background: #2d2d2d;
-            border: 1px solid #404040;
         }
 
         .search-box {
@@ -68,6 +60,7 @@ $title = "Notes";
     </style>
 </head>
 <body class="bg-light">
+    <?php include "inc/header.php"; ?>
     <?php include "inc/nav.php" ?>
     
     <!-- Main content area -->
@@ -88,7 +81,7 @@ $title = "Notes";
                 <!-- Search and Actions -->
                 <div class="d-flex gap-3 align-items-center">
                     <div class="search-box">
-                        <input type="text" class="form-control" placeholder="Search notes..." id="searchNotes">
+                        <input type="text" class="form-control" placeholder="Search notes..." id="searchNotes" name="searchNotes">
                     </div>
                     <button class="btn btn-primary rounded-pill px-4" id="addNoteBtn">
                         <i class="fa fa-plus me-2"></i>New Note
@@ -98,21 +91,7 @@ $title = "Notes";
 
             <!-- Notes Grid -->
             <div class="row g-4" id="notesGrid">
-                <!-- Sample Note Card -->
-                <div class="col-md-4 col-lg-3">
-                    <div class="note-card p-3 h-100">
-                        <div class="d-flex justify-content-between mb-2">
-                            <h6 class="card-title mb-0">Sample Note</h6>
-                            <div class="note-actions">
-                                <button class="btn btn-link btn-sm p-0 text-muted"><i class="fa fa-thumbtack"></i></button>
-                                <button class="btn btn-link btn-sm p-0 text-muted"><i class="fa fa-edit"></i></button>
-                                <button class="btn btn-link btn-sm p-0 text-danger"><i class="fa fa-trash"></i></button>
-                            </div>
-                        </div>
-                        <p class="card-text small text-muted">This is a sample note content...</p>
-                        <small class="text-muted">Created: 2024-02-20</small>
-                    </div>
-                </div>
+                <!-- Notes will be dynamically added here -->
             </div>
         </div>
     </main>
@@ -126,22 +105,77 @@ $title = "Notes";
 
     <!-- Note Editor Modal -->
     <div class="modal fade" id="noteModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header border-0">
-                    <input type="text" class="form-control form-control-lg border-0" placeholder="Note Title">
+                    <input type="text" 
+                           class="form-control form-control-lg border-0" 
+                           id="noteTitle" 
+                           name="noteTitle" 
+                           placeholder="Note Title">
+                    <div class="ms-auto me-2">
+                        <select class="form-select" id="noteStatus" name="noteStatus">
+                            <option value="incomplete">Incomplete</option>
+                            <option value="pending">Pending</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="toolbar border-bottom pb-2 mb-2">
-                        <button class="btn btn-sm btn-light" data-format="bold"><i class="fa fa-bold"></i></button>
-                        <button class="btn btn-sm btn-light" data-format="italic"><i class="fa fa-italic"></i></button>
-                        <button class="btn btn-sm btn-light" data-format="underline"><i class="fa fa-underline"></i></button>
-                        <button class="btn btn-sm btn-light" data-format="list"><i class="fa fa-list"></i></button>
+                    <ul class="nav nav-tabs mb-3">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-bs-toggle="tab" href="#textEditor">Text</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#drawingPad">Drawing</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#handwriting">Handwriting</a>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="textEditor">
+                            <div id="quillEditor" style="height: 300px;"></div>
+                        </div>
+                        <div class="tab-pane fade" id="drawingPad">
+                            <canvas id="drawingCanvas" class="border" width="800" height="400"></canvas>
+                            <div class="btn-group mt-2">
+                                <button class="btn btn-outline-secondary" id="clearCanvas">Clear</button>
+                                <input type="color" 
+                                       class="form-control form-control-color" 
+                                       id="colorPicker" 
+                                       name="colorPicker" 
+                                       value="#000000">
+                                <input type="range" 
+                                       class="form-range" 
+                                       id="brushSize" 
+                                       name="brushSize" 
+                                       min="1" 
+                                       max="20" 
+                                       value="5">
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="handwriting">
+                            <canvas id="handwritingCanvas" class="border" width="800" height="400"></canvas>
+                            <div class="btn-group mt-2">
+                                <button class="btn btn-outline-secondary" id="clearHandwriting">Clear</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="editor p-3" contenteditable="true" style="min-height: 200px;"></div>
                 </div>
                 <div class="modal-footer">
+                    <div class="dropdown me-2">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            Export/Share
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" id="exportPDF">Export as PDF</a></li>
+                            <li><a class="dropdown-item" href="#" id="shareEmail">Share via Email</a></li>
+                            <li><a class="dropdown-item" href="#" id="shareTwitter">Share on Twitter</a></li>
+                        </ul>
+                    </div>
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary px-4" id="saveNote">Save Note</button>
                 </div>
@@ -151,23 +185,202 @@ $title = "Notes";
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- jQuery (if needed) -->
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Quill Editor -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <!-- html2pdf -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <script>
-        // Initialize Bootstrap components
-        const noteModal = new bootstrap.Modal(document.getElementById('noteModal'));
-        
-        // Show modal when clicking add buttons
-        document.getElementById('addNoteBtn').addEventListener('click', () => noteModal.show());
-        document.getElementById('floatingAddBtn').addEventListener('click', () => noteModal.show());
-        
-        // Dark mode toggle
-        const darkModeToggle = document.querySelector('#darkModeToggle');
-        if (darkModeToggle) {
-            darkModeToggle.addEventListener('change', () => {
-                document.body.classList.toggle('dark-mode');
+        // Store notes in localStorage to persist data
+        let notes = JSON.parse(localStorage.getItem('notes')) || [
+            {
+                id: 1,
+                title: 'Sample Note 1',
+                content: 'This is a sample note content...',
+                status: 'incomplete',
+                pinned: false,
+                created: '2024-02-20'
+            }
+        ];
+
+        // Initialize Quill editor
+        let quill = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Quill
+            quill = new Quill('#quillEditor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline'],
+                        [{ 'color': [] }, { 'background': [] }],
+                        [{ 'align': [] }],
+                        ['clean']
+                    ]
+                }
             });
+
+            // Initialize event listeners
+            document.getElementById('addNoteBtn').addEventListener('click', addNote);
+            document.getElementById('floatingAddBtn').addEventListener('click', addNote);
+            document.getElementById('saveNote').addEventListener('click', saveNote);
+            document.getElementById('searchNotes').addEventListener('input', searchNotes);
+
+            // Initial render
+            renderNotes();
+        });
+
+        // Render notes function
+        function renderNotes(notesToRender = notes) {
+            const notesGrid = document.getElementById('notesGrid');
+            notesGrid.innerHTML = '';
+
+            // Sort notes (pinned first)
+            const sortedNotes = [...notesToRender].sort((a, b) => {
+                if (a.pinned === b.pinned) return 0;
+                return a.pinned ? -1 : 1;
+            });
+
+            sortedNotes.forEach(note => {
+                const noteCard = `
+                    <div class="col-md-4 col-lg-3 mb-4">
+                        <div class="card border-${getStatusColor(note.status)} h-100">
+                            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                                <h6 class="card-title mb-0">${note.title}</h6>
+                                <span class="badge bg-${getStatusColor(note.status)}">${note.status}</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="card-text small mb-2">${note.content}</div>
+                                <small class="text-muted">Created: ${note.created}</small>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0 text-end">
+                                <button class="btn btn-outline-primary btn-sm rounded-pill px-3 py-1" 
+                                        onclick="editNote(${note.id})">
+                                    <i class="fa fa-pencil me-1"></i>Edit
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                notesGrid.innerHTML += noteCard;
+            });
+        }
+
+        // Add new note
+        function addNote() {
+            const modal = new bootstrap.Modal(document.getElementById('noteModal'));
+            document.getElementById('noteTitle').value = '';
+            document.getElementById('noteStatus').value = 'incomplete';
+            quill.setContents([]);
+            modal.show();
+        }
+
+        // Save note
+        function saveNote() {
+            const title = document.getElementById('noteTitle').value;
+            const status = document.getElementById('noteStatus').value;
+            const content = quill.root.innerHTML;
+
+            const newNote = {
+                id: Date.now(), // Use timestamp as ID
+                title: title || 'Untitled Note',
+                content: content,
+                status: status,
+                pinned: false,
+                created: new Date().toISOString().split('T')[0]
+            };
+
+            notes.push(newNote);
+            localStorage.setItem('notes', JSON.stringify(notes));
+            renderNotes();
+
+            // Hide modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('noteModal'));
+            modal.hide();
+        }
+
+        // Edit note
+        function editNote(noteId) {
+            const note = notes.find(n => n.id === noteId);
+            if (note) {
+                const modal = new bootstrap.Modal(document.getElementById('noteModal'));
+                
+                // Set the note data in the modal
+                document.getElementById('noteTitle').value = note.title;
+                document.getElementById('noteStatus').value = note.status;
+                quill.root.innerHTML = note.content;
+                
+                // Update save button to handle edit
+                const saveButton = document.getElementById('saveNote');
+                saveButton.onclick = () => updateNote(noteId);
+                
+                modal.show();
+            }
+        }
+
+        // Update existing note
+        function updateNote(noteId) {
+            const noteIndex = notes.findIndex(n => n.id === noteId);
+            if (noteIndex !== -1) {
+                const updatedNote = {
+                    ...notes[noteIndex],
+                    title: document.getElementById('noteTitle').value,
+                    content: quill.root.innerHTML,
+                    status: document.getElementById('noteStatus').value
+                };
+                
+                notes[noteIndex] = updatedNote;
+                localStorage.setItem('notes', JSON.stringify(notes));
+                renderNotes();
+                
+                // Hide modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('noteModal'));
+                modal.hide();
+                
+                // Reset save button to normal save function
+                document.getElementById('saveNote').onclick = saveNote;
+            }
+        }
+
+        // Delete note
+        function deleteNote(noteId) {
+            if (confirm('Are you sure you want to delete this note?')) {
+                notes = notes.filter(n => n.id !== noteId);
+                localStorage.setItem('notes', JSON.stringify(notes));
+                renderNotes();
+            }
+        }
+
+        // Toggle pin
+        function togglePin(noteId) {
+            const note = notes.find(n => n.id === noteId);
+            if (note) {
+                note.pinned = !note.pinned;
+                localStorage.setItem('notes', JSON.stringify(notes));
+                renderNotes();
+            }
+        }
+
+        // Search notes
+        function searchNotes(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredNotes = notes.filter(note => 
+                note.title.toLowerCase().includes(searchTerm) || 
+                note.content.toLowerCase().includes(searchTerm)
+            );
+            renderNotes(filteredNotes);
+        }
+
+        // Helper function for status colors
+        function getStatusColor(status) {
+            const colors = {
+                'incomplete': 'danger',
+                'pending': 'warning',
+                'completed': 'success'
+            };
+            return colors[status] || 'secondary';
         }
     </script>
 </body>
