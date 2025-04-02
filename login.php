@@ -4,7 +4,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Login | Task Management System</title>
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 	<link rel="stylesheet" href="css/style.css">
 </head>
 <body class="login-body">
@@ -38,16 +38,7 @@
 		  <div class="mb-3">
 		    <label for="password" class="form-label">Password</label>
 		    <input type="password" class="form-control" name="password" id="password" required>
-		    <div id="passwordHelp" class="form-text">
-		        Password must contain:
-		        <ul class="small mb-0">
-		            <li id="uppercase" class="text-danger">One uppercase letter (A-Z)</li>
-		            <li id="lowercase" class="text-danger">One lowercase letter (a-z)</li>
-		            <li id="number" class="text-danger">One number (0-9)</li>
-		            <li id="special" class="text-danger">One special character (@#$%&)</li>
-		            <li id="length" class="text-danger">Minimum 8 characters</li>
-		        </ul>
-		    </div>
+		    <!-- Password requirements removed -->
 		  </div>
 		  <div class="mb-3 d-flex justify-content-between align-items-center">
 		    <div class="form-check">
@@ -57,44 +48,22 @@
 		    <a href="forgot-password.php" class="text-primary text-decoration-none">Forgot Password?</a>
 		  </div>
 		  <button type="submit" class="btn btn-primary" id="submitBtn">Login</button>
+		  <div class="mt-3 text-center">
+		    <a href="signup.php" class="text-decoration-none">New member? Sign up</a>
+		  </div>
 		</form>
 
 
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
       <script>
-        document.getElementById('password').addEventListener('input', function() {
-            const password = this.value;
-            
-            // Check each requirement
-            const hasUpperCase = /[A-Z]/.test(password);
-            const hasLowerCase = /[a-z]/.test(password);
-            const hasNumber = /[0-9]/.test(password);
-            const hasSpecial = /[@#$%&]/.test(password);
-            const hasLength = password.length >= 8;
-
-            // Update visual indicators
-            document.getElementById('uppercase').className = hasUpperCase ? 'text-success' : 'text-danger';
-            document.getElementById('lowercase').className = hasLowerCase ? 'text-success' : 'text-danger';
-            document.getElementById('number').className = hasNumber ? 'text-success' : 'text-danger';
-            document.getElementById('special').className = hasSpecial ? 'text-success' : 'text-danger';
-            document.getElementById('length').className = hasLength ? 'text-success' : 'text-danger';
-
-            // Enable/disable submit button based on all requirements being met
-            const submitBtn = document.getElementById('submitBtn');
-            if (hasUpperCase && hasLowerCase && hasNumber && hasSpecial && hasLength) {
-                submitBtn.disabled = false;
-            } else {
-                submitBtn.disabled = true;
-            }
-        });
-
-        // Initially disable submit button
-        document.getElementById('submitBtn').disabled = true;
-
+        // Show/hide password functionality only
         document.getElementById('showPassword').addEventListener('change', function() {
             const passwordInput = document.getElementById('password');
             passwordInput.type = this.checked ? 'text' : 'password';
         });
+
+        // Remove password validation
+        document.getElementById('submitBtn').disabled = false;
     </script>
 
     <style>

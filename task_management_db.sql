@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 06, 2024 at 10:40 AM
+-- Generation Time: Mar 28, 2025 at 04:56 PM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.0.30
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -107,27 +107,28 @@ CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `full_name` varchar(50) NOT NULL,
   `username` varchar(50) NOT NULL,
+  `email` varchar(100) DEFAULT NULL,
   `password` varchar(255) NOT NULL,
   `role` enum('admin','employee') NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `profile_pic` VARCHAR(255) DEFAULT NULL
+  `profile_pic` varchar(255) DEFAULT NULL,
+  `reset_code` varchar(6) DEFAULT NULL,
+  `reset_code_expiry` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `full_name`, `username`, `password`, `role`, `created_at`, `profile_pic`) VALUES
-(1, 'Oliver', 'admin', '$2y$10$TnyR1Y43m1EIWpb0MiwE8Ocm6rj0F2KojE3PobVfQDo9HYlAHY/7O', 'admin', '2024-08-28 07:10:04', NULL),
-(2, 'Elias A.', 'elias', '$2y$10$8xpI.hVCVd/GKUzcYTxLUO7ICSqlxX5GstSv7WoOYfXuYOO/SZAZ2', 'employee', '2024-08-28 07:10:40', NULL),
-(7, 'John', 'john', '$2y$10$CiV/f.jO5vIsSi0Fp1Xe7ubWG9v8uKfC.VfzQr/sjb5/gypWNdlBW', 'employee', '2024-08-29 17:11:21', NULL),
-(8, 'Oliver', 'oliver', '$2y$10$E9Xx8UCsFcw44lfXxiq/5OJtloW381YJnu5lkn6q6uzIPdL5yH3PO', 'employee', '2024-08-29 17:11:34', NULL);
+INSERT INTO `users` (`id`, `full_name`, `username`, `email`, `password`, `role`, `created_at`, `profile_pic`) VALUES
+(1, 'anushka bhattarai', 'Admin', NULL, '$2y$10$3ACOwmhecbKPU8NE7Kl3mexsF96ly/xisCOtyeE4AG1pA.S.4v.4m', 'admin', '2024-08-28 07:10:04', NULL),
+(2, 'Elias A.', 'elias', NULL, '$2y$10$CiV/f.jO5vIsSi0Fp1Xe7ubWG9v8uKfC.VfzQr/sjb5/gypWNdlBW', 'employee', '2024-08-28 07:10:40', NULL),
+(7, 'John', 'john', NULL, '$2y$10$CiV/f.jO5vIsSi0Fp1Xe7ubWG9v8uKfC.VfzQr/sjb5/gypWNdlBW', 'employee', '2024-08-29 17:11:21', NULL),
+(8, 'Oliver', 'oliver', NULL, '$2y$10$E9Xx8UCsFcw44lfXxiq/5OJtloW381YJnu5lkn6q6uzIPdL5yH3PO', 'employee', '2024-08-29 17:11:34', NULL),
+(0, 'Amanda Pokhrel', 'Amanda', NULL, '$2y$10$cAOtmGXF1j1zfUm8wDkAMOQhs/lxtq179GvV17DDvvbIueizjYZC.', 'admin', '2025-03-26 14:43:04', NULL),
+(0, 'Darshan Shrestha', 'Darshan', 'anneushka017@gmail.com', '$2y$10$4yqw0WqvFcVR1t6i6anVkOOOvWIre.PFMekUxPpYyARcgmtQ/7F92', 'employee', '2025-03-26 14:43:26', NULL);
+COMMIT;
 
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `notifications`
---
-ALTER TABLE `notifications`
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
