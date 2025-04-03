@@ -23,6 +23,48 @@ SET time_zone = "+00:00";
 
 -- --------------------------------------------------------
 
+-- Drop existing tables if they exist
+DROP TABLE IF EXISTS notifications;
+DROP TABLE IF EXISTS tasks;
+DROP TABLE IF EXISTS users;
+
+-- Create users table
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    full_name VARCHAR(50) NOT NULL,
+    username VARCHAR(50) NOT NULL,
+    email VARCHAR(100),
+    password VARCHAR(255) NOT NULL,
+    role ENUM('admin', 'employee') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    profile_pic VARCHAR(255)
+);
+
+-- Create tasks table
+CREATE TABLE tasks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    description TEXT,
+    assigned_to INT,
+    due_date DATE,
+    status ENUM('pending', 'in_progress', 'completed') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (assigned_to) REFERENCES users(id)
+);
+
+-- Create notifications table
+CREATE TABLE notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    message TEXT NOT NULL,
+    recipient INT NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    date DATE DEFAULT CURRENT_TIMESTAMP,
+    is_read TINYINT(1) DEFAULT 0,
+    FOREIGN KEY (recipient) REFERENCES users(id)
+);
+
+-- --------------------------------------------------------
+
 --
 -- Table structure for table `notifications`
 --

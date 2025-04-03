@@ -1,13 +1,23 @@
 <?php 
 session_start();
-if (isset($_SESSION['role']) && isset($_SESSION['id'])) {
-    include "DB_connection.php";
-    include "app/Model/Task.php";
-    include "app/Model/User.php";
 
-    $tasks = get_all_tasks_by_id($conn, $_SESSION['id']);
+// Check if user is logged in
+if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
+    header("Location: login.php");
+    exit;
+}
 
- ?>
+include "DB_connection.php";
+include "app/Model/Task.php";
+include "app/Model/User.php";
+
+// Get tasks
+$tasks = get_all_tasks_by_id($conn, $_SESSION['id']);
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -245,9 +255,3 @@ if (isset($_SESSION['role']) && isset($_SESSION['id'])) {
 	</script>
 </body>
 </html>
-<?php }else{ 
-   $em = "First login";
-   header("Location: login.php?error=$em");
-   exit();
-}
-?>

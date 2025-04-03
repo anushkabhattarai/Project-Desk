@@ -5,7 +5,6 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
     include "app/Model/User.php";
 
     $users = get_all_users($conn);
-
  ?>
 <!DOCTYPE html>
 <html>
