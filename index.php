@@ -41,7 +41,7 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) ) {
 	<?php include "inc/nav.php" ?>
 	
 	<!-- Main content area with margin-left to account for sidebar width -->
-	<main style="margin-left: 250px; padding-top: 70px;">
+	<main style="margin-left: 250px; ">
 		<section class="section-1 bg-white">
 			<div class="container-fluid px-4 py-3">
 				<div class="mb-4">

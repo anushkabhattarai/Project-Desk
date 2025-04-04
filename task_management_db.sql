@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 28, 2025 at 04:56 PM
+-- Generation Time: Apr 04, 2025 at 10:33 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,48 +20,6 @@ SET time_zone = "+00:00";
 --
 -- Database: `task_management_db`
 --
-
--- --------------------------------------------------------
-
--- Drop existing tables if they exist
-DROP TABLE IF EXISTS notifications;
-DROP TABLE IF EXISTS tasks;
-DROP TABLE IF EXISTS users;
-
--- Create users table
-CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    full_name VARCHAR(50) NOT NULL,
-    username VARCHAR(50) NOT NULL,
-    email VARCHAR(100),
-    password VARCHAR(255) NOT NULL,
-    role ENUM('admin', 'employee') NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    profile_pic VARCHAR(255)
-);
-
--- Create tasks table
-CREATE TABLE tasks (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(100) NOT NULL,
-    description TEXT,
-    assigned_to INT,
-    due_date DATE,
-    status ENUM('pending', 'in_progress', 'completed') DEFAULT 'pending',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (assigned_to) REFERENCES users(id)
-);
-
--- Create notifications table
-CREATE TABLE notifications (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    message TEXT NOT NULL,
-    recipient INT NOT NULL,
-    type VARCHAR(50) NOT NULL,
-    date DATE DEFAULT CURRENT_TIMESTAMP,
-    is_read TINYINT(1) DEFAULT 0,
-    FOREIGN KEY (recipient) REFERENCES users(id)
-);
 
 -- --------------------------------------------------------
 
@@ -136,8 +94,8 @@ INSERT INTO `tasks` (`id`, `title`, `description`, `assigned_to`, `due_date`, `s
 (23, 'Conduct software testing', 'Run tests on the latest software release to identify bugs', 7, '2024-09-07', 'pending', '2024-09-06 08:04:39'),
 (24, 'Schedule team meeting', 'Organize a meeting to discuss project updates', 2, '2024-09-07', 'pending', '2024-09-06 08:04:57'),
 (25, 'Prepare budget for Q4', 'Create and review the budget for the upcoming quarter', 7, '2024-09-07', 'pending', '2024-09-06 08:05:21'),
-(26, 'Write blog post on industry trend', 'Draft and publish a blog post about current industry trend', 7, '2024-09-07', 'pending', '2024-09-06 08:10:50'),
-(27, 'Renew software license', 'Ensure all software licenses are renewed and up to date', 2, '2024-09-06', 'pending', '2024-09-06 08:11:28');
+(26, 'Write blog post on industry trend', 'Draft and publish a blog post about current industry trend', 100, '2024-09-07', 'pending', '2024-09-06 08:10:50'),
+(27, 'Renew software license', 'Ensure all software licenses are renewed and up to date', 100, '2024-09-06', 'pending', '2024-09-06 08:11:28');
 
 -- --------------------------------------------------------
 
@@ -153,9 +111,7 @@ CREATE TABLE `users` (
   `password` varchar(255) NOT NULL,
   `role` enum('admin','employee') NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `profile_pic` varchar(255) DEFAULT NULL,
-  `reset_code` varchar(6) DEFAULT NULL,
-  `reset_code_expiry` datetime DEFAULT NULL
+  `profile_pic` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -165,10 +121,78 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `full_name`, `username`, `email`, `password`, `role`, `created_at`, `profile_pic`) VALUES
 (1, 'anushka bhattarai', 'Admin', NULL, '$2y$10$3ACOwmhecbKPU8NE7Kl3mexsF96ly/xisCOtyeE4AG1pA.S.4v.4m', 'admin', '2024-08-28 07:10:04', NULL),
 (2, 'Elias A.', 'elias', NULL, '$2y$10$CiV/f.jO5vIsSi0Fp1Xe7ubWG9v8uKfC.VfzQr/sjb5/gypWNdlBW', 'employee', '2024-08-28 07:10:40', NULL),
-(7, 'John', 'john', NULL, '$2y$10$CiV/f.jO5vIsSi0Fp1Xe7ubWG9v8uKfC.VfzQr/sjb5/gypWNdlBW', 'employee', '2024-08-29 17:11:21', NULL),
-(8, 'Oliver', 'oliver', NULL, '$2y$10$E9Xx8UCsFcw44lfXxiq/5OJtloW381YJnu5lkn6q6uzIPdL5yH3PO', 'employee', '2024-08-29 17:11:34', NULL),
-(0, 'Amanda Pokhrel', 'Amanda', NULL, '$2y$10$cAOtmGXF1j1zfUm8wDkAMOQhs/lxtq179GvV17DDvvbIueizjYZC.', 'admin', '2025-03-26 14:43:04', NULL),
-(0, 'Darshan Shrestha', 'Darshan', 'anneushka017@gmail.com', '$2y$10$4yqw0WqvFcVR1t6i6anVkOOOvWIre.PFMekUxPpYyARcgmtQ/7F92', 'employee', '2025-03-26 14:43:26', NULL);
+(3, 'John', 'john', NULL, '$2y$10$CiV/f.jO5vIsSi0Fp1Xe7ubWG9v8uKfC.VfzQr/sjb5/gypWNdlBW', 'employee', '2024-08-29 17:11:21', NULL),
+(4, 'Oliver', 'oliver', NULL, '$2y$10$E9Xx8UCsFcw44lfXxiq/5OJtloW381YJnu5lkn6q6uzIPdL5yH3PO', 'employee', '2024-08-29 17:11:34', NULL),
+(5, 'Darshan Shrestha', 'Darshan', NULL, '$2y$10$bthiO1dWrtwxJyEq8PhsEO0URBnedLlinVfu9ukJudwuo2D6sLAUC', 'employee', '2025-04-04 08:28:05', NULL),
+(6, 'Slisha Devkota', 'Slisha', NULL, '$2y$10$kPZ/nKUYt4uHKG8.K9q6GOE7zzmLr5xK3rFnevj8QMm9U90bbb87G', 'employee', '2025-04-04 08:31:26', NULL),
+(7, 'Samprada Shrestha', 'Samprada', NULL, '$2y$10$8Kpuu57v/XjnehMKtqVClu9oiq0k3yITS0icmHwOi8O5JzOiYLolO', 'employee', '2025-04-04 08:32:24', NULL);
+
+--
+-- Table structure for table `notes`
+--
+
+CREATE TABLE `notes` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `title` varchar(100) NOT NULL,
+  `content` text DEFAULT NULL,
+  `user_id` int(11) NOT NULL,
+  `status` enum('not-started','pending','completed') DEFAULT 'not-started',
+  `pinned` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `notes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `notes`
+--
+
+INSERT INTO `notes` (`title`, `content`, `user_id`, `status`, `pinned`, `created_at`) VALUES
+('Welcome Note', 'Welcome to your personal notes! This is a sample note to help you get started.', 1, 'completed', 1, NOW()),
+('Project Ideas', 'List of potential project ideas:\n- Task management system\n- Personal blog\n- E-commerce platform', 2, 'pending', 0, NOW()),
+('Meeting Notes', 'Key points from team meeting:\n- Discussed project timeline\n- Assigned tasks\n- Set next meeting date', 7, 'not-started', 0, NOW());
+
+--
+-- Table structure for table `note_shares`
+--
+
+CREATE TABLE `note_shares` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `note_id` int(11) NOT NULL,
+  `shared_by` int(11) NOT NULL,
+  `shared_with` int(11) NOT NULL,
+  `can_edit` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_share` (`note_id`, `shared_with`),
+  KEY `shared_by` (`shared_by`),
+  KEY `shared_with` (`shared_with`),
+  CONSTRAINT `note_shares_ibfk_1` FOREIGN KEY (`note_id`) REFERENCES `notes` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `note_shares_ibfk_2` FOREIGN KEY (`shared_by`) REFERENCES `users` (`id`),
+  CONSTRAINT `note_shares_ibfk_3` FOREIGN KEY (`shared_with`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

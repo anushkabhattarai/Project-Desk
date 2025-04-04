@@ -7,772 +7,879 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
     exit;
 }
 
-// Include necessary files
-include "DB_connection.php";
-$title = "Edit Note";
+// Database connection
+$host = "localhost";
+$username = "root";
+$password = "";
+$database = "task_management_db";
 
-// Get note ID from URL
-$noteId = isset($_GET['id']) ? $_GET['id'] : null;
+$conn = new mysqli($host, $username, $password, $database);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+$user_id = $_SESSION['id']; // Changed from user_id to id to match your session
+$note_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$success_message = '';
+$error_message = '';
+
+// Fetch note data if editing existing note
 $note = null;
+if ($note_id > 0) {
+    $stmt = $conn->prepare("SELECT n.*, u.full_name as author_name 
+                           FROM notes n 
+                           JOIN users u ON n.user_id = u.id 
+                           WHERE n.id = ? AND (n.user_id = ? OR 
+                           EXISTS (SELECT 1 FROM note_shares WHERE note_id = n.id AND shared_with = ?))");
+    $stmt->bind_param("iii", $note_id, $user_id, $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $note = $result->fetch_assoc();
+    
+    if (!$note) {
+        header('Location: notes.php');
+        exit();
+    }
+}
 
-// Get note content from localStorage via JavaScript
+// Handle note save/update
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_note'])) {
+    $title = trim($_POST['title']);
+    $content = trim($_POST['content']);
+    $status = $_POST['status'];
+    $pinned = isset($_POST['pinned']) ? 1 : 0;
+    
+    if (empty($title)) {
+        $error_message = "Title is required";
+    } else {
+        if ($note_id > 0) {
+            // Update existing note
+            $stmt = $conn->prepare("UPDATE notes SET title = ?, content = ?, status = ?, pinned = ? WHERE id = ? AND user_id = ?");
+            $stmt->bind_param("sssiii", $title, $content, $status, $pinned, $note_id, $user_id);
+        } else {
+            // Create new note
+            $stmt = $conn->prepare("INSERT INTO notes (title, content, user_id, status, pinned) VALUES (?, ?, ?, ?, ?)");
+            $stmt->bind_param("ssisi", $title, $content, $user_id, $status, $pinned);
+        }
+        
+        if ($stmt->execute()) {
+            $success_message = "Note saved successfully!";
+            if (!$note_id) {
+                $note_id = $conn->insert_id;
+                header("Location: editnote.php?id=" . $note_id);
+                exit();
+            }
+        } else {
+            $error_message = "Error saving note";
+        }
+    }
+}
+
+// Handle note sharing
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['share_note'])) {
+    $share_with = (int)$_POST['share_with'];
+    $can_edit = isset($_POST['can_edit']) ? 1 : 0;
+    
+    // Check if share already exists
+    $stmt = $conn->prepare("SELECT id FROM note_shares WHERE note_id = ? AND shared_with = ?");
+    $stmt->bind_param("ii", $note_id, $share_with);
+    $stmt->execute();
+    $existing_share = $stmt->get_result()->fetch_assoc();
+    
+    if (!$existing_share) {
+        $stmt = $conn->prepare("INSERT INTO note_shares (note_id, shared_by, shared_with, can_edit) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("iiii", $note_id, $user_id, $share_with, $can_edit);
+        
+        if ($stmt->execute()) {
+            // Create notification
+            $note_title = $note['title'];
+            $message = "A note titled '$note_title' has been shared with you.";
+            $stmt = $conn->prepare("INSERT INTO notifications (message, recipient, type, date) VALUES (?, ?, 'Note Shared', CURRENT_DATE)");
+            $stmt->bind_param("si", $message, $share_with);
+            $stmt->execute();
+            $success_message = "Note shared successfully!";
+        } else {
+            $error_message = "Error sharing note";
+        }
+    } else {
+        $error_message = "Note is already shared with this user";
+    }
+}
+
+// Fetch users for sharing
+$stmt = $conn->prepare("SELECT id, full_name FROM users WHERE id != ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?=$title?></title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <!-- Quill Editor -->
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <title><?php echo $note_id ? 'Edit Note' : 'New Note'; ?></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <style>
-        :root[data-theme="light"] {
-            --bg-color: #ffffff;
-            --text-color: #1a1a1a;
-            --border-color: #e0e0e0;
-            --toolbar-bg: #f8f9fa;
-            --button-hover: #e9ecef;
-            --button-active: #dee2e6;
-            --breadcrumb-color: #666;
-            --link-color: #0066cc;
-        }
-
-        :root[data-theme="dark"] {
-            --bg-color: #1a1a1a;
-            --text-color: #ffffff;
-            --border-color: #333;
-            --toolbar-bg: #1a1a1a;
-            --button-hover: #333;
-            --button-active: #444;
-            --breadcrumb-color: #999;
-            --link-color: #66b3ff;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            transition: background-color 0.3s, color 0.3s;
+        :root {
+            --primary-color: #1a73e8;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --bg-light: #ffffff;
+            --text-dark: #202124;
+            --text-muted: #5f6368;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --transition: all 0.2s ease;
         }
         
-        .editor-container {
-            min-height: 100vh;
-            padding: 2rem;
-        }
-
-        .editor-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: 1rem 2rem;
-            background-color: var(--bg-color);
-            border-bottom: 1px solid var(--border-color);
-            z-index: 1000;
-        }
-
-        .editor-toolbar {
-            background-color: var(--toolbar-bg);
-            border: none;
-            padding: 0.75rem 0;
-            margin-top: 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .editor-toolbar button {
-            background: none;
-            border: none;
-            color: var(--text-color);
-            padding: 0.5rem 1rem;
-            margin-right: 0.5rem;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-
-        .editor-toolbar button:hover {
-            background-color: var(--button-hover);
-        }
-
-        .editor-toolbar button.active {
-            background-color: var(--button-active);
-        }
-
-        .editor-content {
-            margin-top: 0.5rem;
-            padding: 0 2rem;
-        }
-
-        .editor-content [contenteditable="true"] {
-            outline: none;
-            padding: 1rem 0;
-            color: var(--text-color) !important;
-        }
-
-        .action-buttons {
-            position: fixed;
-            top: 1rem;
-            right: 2rem;
-            display: flex;
-            gap: 1rem;
-        }
-
-        .action-button {
-            background-color: #333;
-            color: #fff;
-            border: none;
-            padding: 0.5rem 1.5rem;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .action-button:hover {
-            background-color: #444;
-            color: #fff;
-        }
-
-        .action-button.primary {
-            background-color: #7c3aed;
-        }
-
-        .action-button.primary:hover {
-            background-color: #6d28d9;
-        }
-
-        .breadcrumb {
+        body {
+            background-color: #fafafa;
+            color: var(--text-dark);
+            font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             margin: 0;
             padding: 0;
-            background: none;
-        }
-
-        .breadcrumb-item a {
-            color: var(--breadcrumb-color);
-            text-decoration: none;
-        }
-
-        .breadcrumb-item.active {
-            color: var(--text-color);
-        }
-
-        .breadcrumb-item + .breadcrumb-item::before {
-            color: #666;
-        }
-
-        #editor {
-            background-color: var(--bg-color);
-            color: var(--text-color) !important;
-            border: none;
-            font-size: 1.1rem;
-            line-height: 1.6;
-        }
-
-        .ql-toolbar {
-            border: none !important;
-            border-bottom: 1px solid #333 !important;
-        }
-
-        .ql-container {
-            border: none !important;
-        }
-
-        .ql-editor {
-            padding: 2rem 0;
-            color: var(--text-color) !important;
-        }
-
-        .ql-snow .ql-stroke {
-            stroke: var(--text-color);
-        }
-
-        .ql-snow .ql-fill {
-            fill: var(--text-color);
-        }
-
-        .ql-snow .ql-picker {
-            color: var(--text-color);
-        }
-
-        .ql-snow .ql-picker-options {
-            background-color: var(--bg-color);
-        }
-
-        .ql-snow .ql-tooltip {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            border-color: var(--border-color);
-        }
-
-        .ql-snow .ql-tooltip input[type=text] {
-            color: var(--text-color);
-            background-color: var(--bg-color);
-            border-color: var(--border-color);
-        }
-
-        .save-indicator {
-            position: fixed;
-            bottom: 6rem;
-            right: 2rem;
-            background-color: #333;
-            color: #fff;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            display: none;
-        }
-        
-        .save-indicator.show {
-            display: block;
-            animation: fadeOut 2s forwards;
-        }
-        
-        @keyframes fadeOut {
-            0% { opacity: 1; }
-            70% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-
-        .theme-toggle {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            border-color: var(--border-color);
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .theme-toggle:hover {
-            background-color: var(--button-hover);
-        }
-
-        .image-upload-btn {
-            position: relative;
+            height: 100vh;
             overflow: hidden;
         }
 
-        .image-upload-btn input[type=file] {
-            position: absolute;
-            top: 0;
-            right: 0;
-            min-width: 100%;
-            min-height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        /* Ensure proper text color in the editor content */
-        .ql-editor p, .ql-editor h1, .ql-editor h2, .ql-editor h3, 
-        .ql-editor h4, .ql-editor h5, .ql-editor h6, 
-        .ql-editor ol, .ql-editor ul, .ql-editor pre, 
-        .ql-editor blockquote {
-            color: var(--text-color) !important;
-        }
-
-        /* Update action buttons for better contrast in light mode */
-        [data-theme="light"] .action-button {
-            background-color: #f0f0f0;
-            color: #333;
-        }
-
-        [data-theme="light"] .action-button:hover {
-            background-color: #e0e0e0;
-            color: #1a1a1a;
-        }
-
-        [data-theme="light"] .action-button.primary {
-            background-color: #7c3aed;
-            color: #ffffff;
-        }
-
-        [data-theme="light"] .action-button.primary:hover {
-            background-color: #6d28d9;
-        }
-
-        /* Update title container styles */
-        .note-title-container {
-            margin-top: 4.5rem;  /* Reduced from 5rem */
-            margin-bottom: 0;    /* Removed bottom margin */
-            padding: 0 2rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .note-title-input {
+        .note-container {
             width: 100%;
-            background: transparent;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+
+        .top-bar {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            height: 56px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-button {
+            color: var(--text-dark);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            opacity: 0.8;
+            transition: var(--transition);
+        }
+
+        .back-button:hover {
+            opacity: 1;
+            color: var(--primary-color);
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .editor-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+            overflow: hidden;
+            background: white;
+        }
+
+        .note-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            background: white;
+        }
+
+        .note-header input {
+            font-size: 28px;
+            font-weight: 300;
             border: none;
-            font-size: 2rem;     /* Increased from 1.5rem */
-            font-weight: 600;    /* Made slightly bolder */
-            color: var(--text-color);
-            padding: 0.5rem 0;   /* Adjusted padding */
-            margin-bottom: 0.75rem;
-            transition: all 0.3s ease;
-        }
-
-        .note-title-input::placeholder {
-            color: var(--text-color);
-            opacity: 0.5;
-        }
-
-        .note-title-input:hover {
-            opacity: 0.9;
-        }
-
-        .note-title-input:focus {
+            padding: 0;
+            margin: 0;
+            width: 100%;
             outline: none;
+            transition: var(--transition);
+        }
+
+        .note-header input:focus {
+            font-weight: 400;
+        }
+
+        .note-header small {
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-top: 8px;
+            display: block;
+        }
+
+        .editor-toolbar {
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 4px;
+            background: white;
+            flex-wrap: wrap;
+        }
+
+        .editor-toolbar button {
+            padding: 8px;
+            background: none;
+            border: none;
+            border-radius: 6px;
+            color: var(--text-dark);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            transition: var(--transition);
+            opacity: 0.8;
+        }
+
+        .editor-toolbar button:hover {
+            background-color: rgba(0, 0, 0, 0.05);
             opacity: 1;
         }
 
-        /* Add save button styles */
-        .save-button {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            background-color: #7c3aed;
-            color: #ffffff;
+        .editor-toolbar button.active {
+            background-color: rgba(26, 115, 232, 0.1);
+            color: var(--primary-color);
+            opacity: 1;
+        }
+
+        .editor-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .comments-section {
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .comments-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+        }
+
+        .comments-header h5 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .badge {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--text-dark);
+            font-weight: 500;
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 12px;
+        }
+
+        .comments-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .comment-form {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-color);
+            background: white;
+        }
+
+        .comment-form textarea {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            width: 100%;
+            resize: none;
+            margin-bottom: 12px;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .comment-form textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+        }
+
+        .save-bar {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            background: white;
+        }
+
+        .btn {
+            font-size: 14px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
             border: none;
-            padding: 0.75rem 2rem;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-            z-index: 1000;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-
-        .save-button:hover {
-            background-color: #6d28d9;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-
-        .save-button i {
-            font-size: 1.1rem;
-        }
-
-        [data-theme="light"] .save-button {
-            background-color: #7c3aed;
-            color: #ffffff;
-        }
-
-        [data-theme="light"] .save-button:hover {
-            background-color: #6d28d9;
-        }
-
-        /* Add success notification styles */
-        .success-notification {
-            position: fixed;
-            top: 1rem;
-            right: 50%;
-            transform: translateX(50%);
-            background-color: #10B981;
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 20px;
-            display: none;
-            align-items: center;
-            gap: 0.5rem;
-            z-index: 1001;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            animation: slideDown 0.3s ease-out;
         }
 
-        .success-notification.show {
+        .btn-primary:hover {
+            background: #1557b0;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-outline-secondary {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-dark);
+        }
+
+        .btn-outline-secondary:hover {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .form-select {
+            padding: 8px 32px 8px 12px;
+            font-size: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: white;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .form-select:hover {
+            border-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .form-select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+        }
+
+        .form-check {
             display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
         }
 
-        @keyframes slideDown {
+        .form-check-input {
+            margin: 0;
+            cursor: pointer;
+        }
+
+        /* Modal Styles */
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            border: none;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 24px;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        /* Toast Notification */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1050;
+        }
+
+        .toast {
+            background: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow-md);
+            border: none;
+            margin-top: 8px;
+            opacity: 0;
+            transform: translateY(100%);
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast-header {
+            background: none;
+            border: none;
+            padding: 12px 16px 4px;
+        }
+
+        .toast-body {
+            padding: 8px 16px 12px;
+        }
+
+        /* Status colors */
+        .status-not-started { color: #ea4335; }
+        .status-pending { color: #fbbc04; }
+        .status-completed { color: #34a853; }
+
+        /* Animations */
+        @keyframes slideIn {
             from {
-                transform: translate(50%, -100%);
                 opacity: 0;
+                transform: translateY(20px);
             }
             to {
-                transform: translate(50%, 0);
                 opacity: 1;
+                transform: translateY(0);
             }
         }
 
-        [data-theme="light"] .success-notification {
-            background-color: #059669;
-            color: white;
+        .animate-slide-in {
+            animation: slideIn 0.3s ease forwards;
         }
     </style>
 </head>
 <body>
-    <div class="editor-container">
-        <!-- Editor Header -->
-        <div class="editor-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="notes.php">Notes</a></li>
-                        <li class="breadcrumb-item active" id="noteTitle">Loading...</li>
-                    </ol>
-                </nav>
-                
-                <div class="d-flex gap-3 align-items-center">
-                    <button class="theme-toggle" onclick="toggleTheme()">
-                        <i class="fa fa-moon-o me-2"></i>
-                        <span id="themeText">Dark Mode</span>
-                    </button>
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+
+    <div class="container-fluid note-container">
+        <div class="top-bar">
+            <a href="notes.php" class="back-button">
+                <i class="bi bi-arrow-left"></i>
+                Back to Notes
+            </a>
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#shareModal">
+                    <i class="bi bi-share-fill"></i>
+                    Share
+                </button>
+                <select class="form-select form-select-sm" id="status" name="status">
+                    <option value="not-started" <?php echo (isset($note) && $note['status'] == 'not-started') ? 'selected' : ''; ?>>Not Started</option>
+                    <option value="pending" <?php echo (isset($note) && $note['status'] == 'pending') ? 'selected' : ''; ?>>In Progress</option>
+                    <option value="completed" <?php echo (isset($note) && $note['status'] == 'completed') ? 'selected' : ''; ?>>Completed</option>
+                </select>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="pinned" name="pinned" <?php echo (isset($note) && $note['pinned']) ? 'checked' : ''; ?>>
+                    <label class="form-check-label" for="pinned">Pin note</label>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" class="flex-grow-1 d-flex flex-column">
+            <div class="main-content">
+                <div class="editor-section">
+                    <div class="note-header">
+                        <input type="text" id="title" name="title" placeholder="Title" required 
+                               value="<?php echo isset($note) ? htmlspecialchars($note['title']) : ''; ?>">
+                        <small>Last edited <?php echo isset($note) ? date('M d, Y', strtotime($note['updated_at'])) : 'Never'; ?></small>
+                        <div class="mt-2">
+                            <select class="form-select form-select-sm" id="status" name="status">
+                                <option value="not-started" <?php echo (isset($note) && $note['status'] == 'not-started') ? 'selected' : ''; ?>>Not Started</option>
+                                <option value="pending" <?php echo (isset($note) && $note['status'] == 'pending') ? 'selected' : ''; ?>>In Progress</option>
+                                <option value="completed" <?php echo (isset($note) && $note['status'] == 'completed') ? 'selected' : ''; ?>>Completed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="editor-toolbar">
+                        <button type="button" data-command="bold" title="Bold">
+                            <i class="bi bi-type-bold"></i>
+                        </button>
+                        <button type="button" data-command="italic" title="Italic">
+                            <i class="bi bi-type-italic"></i>
+                        </button>
+                        <button type="button" data-command="underline" title="Underline">
+                            <i class="bi bi-type-underline"></i>
+                        </button>
+                        <button type="button" data-command="strikeThrough" title="Strike through">
+                            <i class="bi bi-type-strikethrough"></i>
+                        </button>
+                        
+                        <div class="separator"></div>
+                        
+                        <button type="button" data-command="justifyLeft" title="Align left">
+                            <i class="bi bi-text-left"></i>
+                        </button>
+                        <button type="button" data-command="justifyCenter" title="Align center">
+                            <i class="bi bi-text-center"></i>
+                        </button>
+                        <button type="button" data-command="justifyRight" title="Align right">
+                            <i class="bi bi-text-right"></i>
+                        </button>
+                        
+                        <div class="separator"></div>
+                        
+                        <button type="button" data-command="insertUnorderedList" title="Bullet list">
+                            <i class="bi bi-list-ul"></i>
+                        </button>
+                        <button type="button" data-command="insertOrderedList" title="Numbered list">
+                            <i class="bi bi-list-ol"></i>
+                        </button>
+                        
+                        <div class="separator"></div>
+                        
+                        <button type="button" data-command="createLink" title="Insert link">
+                            <i class="bi bi-link-45deg"></i>
+                        </button>
+                        <button type="button" data-command="insertQuote" title="Quote">
+                            <i class="bi bi-quote"></i>
+                        </button>
+                        <button type="button" data-command="insertCode" title="Code">
+                            <i class="bi bi-code-slash"></i>
+                        </button>
+                        <button type="button" data-command="insertTable" title="Table">
+                            <i class="bi bi-table"></i>
+                        </button>
+                        
+                        <div class="separator"></div>
+                        
+                        <button type="button" data-command="undo" title="Undo">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+                        <button type="button" data-command="redo" title="Redo">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+
+                    <div class="editor-content" id="editor" contenteditable="true" 
+                         data-placeholder="Start writing your note..."><?php 
+                        echo isset($note) ? htmlspecialchars_decode($note['content']) : ''; 
+                    ?></div>
                     
-                    <div class="action-buttons">
-                        <button class="action-button" onclick="printNote()">
-                            <i class="fa fa-print"></i>
-                            Print
+                    <input type="hidden" id="content" name="content">
+
+                    <div class="save-bar">
+                        <button type="button" class="btn btn-outline-secondary" onclick="window.location.href='notes.php'">
+                            Cancel
                         </button>
-                        <button class="action-button" onclick="shareNote()">
-                            <i class="fa fa-share-alt"></i>
-                            Share
+                        <button type="submit" name="save_note" class="btn btn-primary">
+                            Save Note
                         </button>
-                        <button class="action-button primary" onclick="downloadNote()">
-                            <i class="fa fa-download"></i>
-                            Download
+                    </div>
+                </div>
+
+                <div class="comments-section">
+                    <div class="comments-header">
+                        <h5>Comments</h5>
+                        <span class="badge" id="comment-count">0</span>
+                    </div>
+                    
+                    <div class="comments-content" id="comments-container">
+                        <!-- Comments will be dynamically added here -->
+                    </div>
+
+                    <div class="comment-form">
+                        <textarea id="comment-text" rows="3" placeholder="Write a comment..."></textarea>
+                        <button type="button" class="btn btn-primary w-100" id="add-comment">
+                            Comment
                         </button>
                     </div>
                 </div>
             </div>
-        </div>
+        </form>
+    </div>
 
-        <!-- Note Title Input with smaller size -->
-        <div class="note-title-container">
-            <input type="text" 
-                   class="note-title-input" 
-                   id="noteTitleInput" 
-                   placeholder="Untitled note"
-                   autocomplete="off">
-        </div>
-
-        <!-- Editor Toolbar -->
-        <div class="editor-toolbar">
-            <div class="d-flex gap-2">
-                <div class="btn-group">
-                    <button onclick="formatText('bold')" class="format-btn" data-format="bold" title="Bold">
-                        <i class="fa fa-bold"></i>
-                    </button>
-                    <button onclick="formatText('italic')" class="format-btn" data-format="italic" title="Italic">
-                        <i class="fa fa-italic"></i>
-                    </button>
-                    <button onclick="formatText('underline')" class="format-btn" data-format="underline" title="Underline">
-                        <i class="fa fa-underline"></i>
-                    </button>
+    <!-- Share Modal -->
+    <div class="modal fade" id="shareModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-share-fill"></i>
+                        Share Note
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-
-                <div class="btn-group">
-                    <button onclick="formatText('header', 1)" class="format-btn" data-format="header" title="Heading 1">
-                        <i class="fa fa-header"></i>1
-                    </button>
-                    <button onclick="formatText('header', 2)" class="format-btn" data-format="header" title="Heading 2">
-                        <i class="fa fa-header"></i>2
-                    </button>
+                <div class="modal-body">
+                    <form method="POST" id="shareForm">
+                        <div class="mb-3">
+                            <label class="form-label">Share with</label>
+                            <select name="share_with" class="form-select" required>
+                                <option value="">Select user</option>
+                                <?php foreach ($users as $user): ?>
+                                    <option value="<?php echo $user['id']; ?>">
+                                        <?php echo htmlspecialchars($user['full_name']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="can_edit" name="can_edit">
+                                <label class="form-check-label" for="can_edit">Allow editing</label>
+                            </div>
+                        </div>
+                        <button type="submit" name="share_note" class="btn btn-primary w-100">
+                            Share Note
+                        </button>
+                    </form>
                 </div>
-
-                <div class="btn-group">
-                    <button onclick="formatList('bullet')" class="format-btn" data-format="list" title="Bullet List">
-                        <i class="fa fa-list-ul"></i>
-                    </button>
-                    <button onclick="formatList('ordered')" class="format-btn" data-format="list" title="Numbered List">
-                        <i class="fa fa-list-ol"></i>
-                    </button>
-                </div>
-
-                <button class="image-upload-btn" title="Insert Image">
-                    <i class="fa fa-image"></i>
-                    <input type="file" accept="image/*" onchange="insertImage(this)">
-                </button>
             </div>
-        </div>
-
-        <!-- Editor Content -->
-        <div class="editor-content">
-            <div id="editor"></div>
-        </div>
-
-        <!-- Add Save Button -->
-        <button class="save-button" onclick="saveNoteManually()">
-            <i class="fa fa-save"></i>
-            Save
-        </button>
-
-        <!-- Save Indicator -->
-        <div class="save-indicator" id="saveIndicator">Changes saved</div>
-
-        <!-- Add this right after the editor-container div opening -->
-        <div class="success-notification" id="successNotification">
-            <i class="fa fa-check-circle"></i>
-            Note saved successfully!
         </div>
     </div>
 
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Quill Editor -->
-    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Initialize variables
-        let currentNote = null;
-        const noteId = <?php echo $noteId ? $noteId : 'null' ?>;
-        
-        // Initialize Quill editor with image handling
-        var quill = new Quill('#editor', {
-            theme: 'snow',
-            modules: {
-                toolbar: false,
-                clipboard: {
-                    matchVisual: false
-                }
-            },
-            formats: ['bold', 'italic', 'underline', 'strike', 'header', 'list', 'link', 'image']
+        // Add confirmation before leaving
+        window.addEventListener('beforeunload', function(e) {
+            const editor = document.getElementById('editor');
+            const title = document.getElementById('title');
+            
+            // Check if there are unsaved changes
+            if (editor.getAttribute('data-original-content') !== editor.innerHTML ||
+                title.getAttribute('data-original-value') !== title.value) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
         });
 
-        // Theme toggle functionality
-        function toggleTheme() {
-            const html = document.documentElement;
-            const themeText = document.getElementById('themeText');
-            const themeIcon = document.querySelector('.theme-toggle i');
-            
-            if (html.getAttribute('data-theme') === 'dark') {
-                html.setAttribute('data-theme', 'light');
-                themeText.textContent = 'Light Mode';
-                themeIcon.className = 'fa fa-sun-o me-2';
-            } else {
-                html.setAttribute('data-theme', 'dark');
-                themeText.textContent = 'Dark Mode';
-                themeIcon.className = 'fa fa-moon-o me-2';
-            }
-        }
-
-        // Image insertion
-        function insertImage(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const range = quill.getSelection(true);
-                    quill.insertEmbed(range.index, 'image', e.target.result);
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        // Enhanced format text function
-        function formatText(format, value = null) {
-            const range = quill.getSelection();
-            if (range) {
-                if (value !== null) {
-                    quill.format(format, value);
-                } else {
-                    const currentFormat = quill.getFormat(range);
-                    quill.format(format, !currentFormat[format]);
-                }
-                updateToolbarState();
-            }
-        }
-
-        // Load note content when page loads
+        // Store original content for change detection
         document.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', savedTheme);
+            const editor = document.getElementById('editor');
+            const title = document.getElementById('title');
             
-            const themeText = document.getElementById('themeText');
-            const themeIcon = document.querySelector('.theme-toggle i');
-            
-            if (savedTheme === 'light') {
-                themeText.textContent = 'Light Mode';
-                themeIcon.className = 'fa fa-sun-o me-2';
-            }
-
-            if (noteId) {
-                loadNote(noteId);
-            } else {
-                createNewNote();
-            }
+            editor.setAttribute('data-original-content', editor.innerHTML);
+            title.setAttribute('data-original-value', title.value);
         });
 
-        // Load note content
-        function loadNote(id) {
-            const notes = JSON.parse(localStorage.getItem('notes')) || [];
-            currentNote = notes.find(note => note.id === id);
+        // Custom Editor Implementation
+        document.addEventListener('DOMContentLoaded', function() {
+            const editor = document.getElementById('editor');
+            const toolbar = document.querySelector('.editor-toolbar');
+            const contentInput = document.getElementById('content');
             
-            if (currentNote) {
-                // Set note title in breadcrumb and title input
-                document.getElementById('noteTitle').textContent = currentNote.title;
-                document.getElementById('noteTitleInput').value = currentNote.title;
-                
-                // Set editor content
-                quill.root.innerHTML = currentNote.content;
-            }
-        }
+            // Update hidden input with editor content when form is submitted
+            document.querySelector('form').addEventListener('submit', function() {
+                contentInput.value = editor.innerHTML;
+            });
 
-        // Auto-save functionality
-        let saveTimeout;
-        quill.on('text-change', function() {
-            if (!currentNote) return;
-            
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(saveNote, 1000);
-        });
+            // Handle toolbar buttons
+            toolbar.addEventListener('click', function(e) {
+                const button = e.target.closest('button');
+                if (!button) return;
 
-        // Save note
-        function saveNote() {
-            if (!currentNote) return;
+                e.preventDefault();
+                const command = button.dataset.command;
 
-            const notes = JSON.parse(localStorage.getItem('notes')) || [];
-            const noteIndex = notes.findIndex(note => note.id === currentNote.id);
-            
-            if (noteIndex !== -1) {
-                notes[noteIndex].content = quill.root.innerHTML;
-                localStorage.setItem('notes', JSON.stringify(notes));
-                
-                // Show success notification
-                const notification = document.getElementById('successNotification');
-                notification.classList.add('show');
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                }, 2000);
-            }
-        }
+                switch(command) {
+                    case 'createLink':
+                        const url = prompt('Enter the URL:');
+                        if (url) document.execCommand('createLink', false, url);
+                        break;
 
-        // Format text functions
-        function formatList(type) {
-            const currentList = quill.getFormat().list;
-            quill.format('list', currentList === type ? false : type);
-            updateToolbarState();
-        }
+                    case 'insertQuote':
+                        document.execCommand('formatBlock', false, 'blockquote');
+                        break;
 
-        // Update toolbar state based on current format
-        function updateToolbarState() {
-            const format = quill.getFormat();
-            document.querySelectorAll('.format-btn').forEach(btn => {
-                const formatType = btn.dataset.format;
-                if (format[formatType]) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
+                    case 'insertCode':
+                        const selection = window.getSelection();
+                        if (selection.toString().length > 0) {
+                            document.execCommand('insertHTML', false, 
+                                `<code>${selection.toString()}</code>`);
+                        } else {
+                            document.execCommand('insertHTML', false, 
+                                '<pre><code>Enter your code here</code></pre>');
+                        }
+                        break;
+
+                    case 'insertTable':
+                        const rows = prompt('Enter number of rows:', '3');
+                        const cols = prompt('Enter number of columns:', '3');
+                        if (rows && cols) {
+                            let table = '<table><tr>';
+                            for (let i = 0; i < cols; i++) {
+                                table += '<th>Header ' + (i + 1) + '</th>';
+                            }
+                            table += '</tr>';
+                            for (let i = 0; i < rows; i++) {
+                                table += '<tr>';
+                                for (let j = 0; j < cols; j++) {
+                                    table += '<td>Cell ' + (i + 1) + ',' + (j + 1) + '</td>';
+                                }
+                                table += '</tr>';
+                            }
+                            table += '</table>';
+                            document.execCommand('insertHTML', false, table);
+                        }
+                        break;
+
+                    default:
+                        document.execCommand(command, false, null);
                 }
+
+                // Update button states
+                updateButtonStates();
+            });
+
+            // Update toolbar button states based on current selection
+            function updateButtonStates() {
+                toolbar.querySelectorAll('button[data-command]').forEach(button => {
+                    const command = button.dataset.command;
+                    switch(command) {
+                        case 'insertQuote':
+                        case 'insertCode':
+                        case 'insertTable':
+                        case 'createLink':
+                            break;
+                        default:
+                            button.classList.toggle('active', 
+                                document.queryCommandState(command));
+                    }
+                });
+            }
+
+            // Update button states when selection changes
+            editor.addEventListener('keyup', updateButtonStates);
+            editor.addEventListener('mouseup', updateButtonStates);
+            editor.addEventListener('input', updateButtonStates);
+
+            // Handle paste to strip formatting
+            editor.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const text = (e.originalEvent || e).clipboardData.getData('text/plain');
+                document.execCommand('insertText', false, text);
+            });
+
+            // Initialize button states
+            updateButtonStates();
+        });
+
+        // Client-side comment handling
+        const comments = [];
+        
+        document.getElementById('add-comment').addEventListener('click', function(e) {
+            e.preventDefault();
+            const commentText = document.getElementById('comment-text').value.trim();
+            if (commentText) {
+                const comment = {
+                    text: commentText,
+                    author: '<?php echo $_SESSION['username'] ?? "User"; ?>',
+                    timestamp: new Date().toLocaleString()
+                };
+                comments.push(comment);
+                document.getElementById('comment-text').value = '';
+                displayComments();
+                updateCommentCount();
+            }
+        });
+
+        function displayComments() {
+            const container = document.getElementById('comments-container');
+            container.innerHTML = comments.map(comment => `
+                <div class="comment">
+                    <div class="comment-header">
+                        <span class="comment-author">${comment.author}</span>
+                        <span class="comment-time">${comment.timestamp}</span>
+                    </div>
+                    <div class="comment-text">${comment.text}</div>
+                </div>
+            `).join('');
+        }
+
+        function updateCommentCount() {
+            document.getElementById('comment-count').textContent = comments.length;
+        }
+
+        // Toast notification function
+        function showToast(title, message, type = 'success') {
+            const toastContainer = document.querySelector('.toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <div class="toast-header">
+                    <strong class="me-auto">${title}</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            `;
+            toastContainer.appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast, {
+                autohide: true,
+                delay: 3000
+            });
+            bsToast.show();
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
             });
         }
 
-        // Action button functions
-        function printNote() {
-            window.print();
-        }
+        // Handle form submission
+        document.querySelector('form').addEventListener('submit', function(e) {
+            // Get the editor content and save it to the hidden input
+            const editor = document.getElementById('editor');
+            const contentInput = document.getElementById('content');
+            contentInput.value = editor.innerHTML;
 
-        function shareNote() {
-            // Implement share functionality
-            alert('Share functionality coming soon!');
-        }
+            const title = document.getElementById('title').value;
+            
+            // Validate required fields
+            if (!title.trim()) {
+                e.preventDefault();
+                showToast('Error', 'Title is required');
+                return;
+            }
 
-        function downloadNote() {
-            const content = quill.root.innerHTML;
-            const blob = new Blob([content], { type: 'text/html' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${currentNote?.title || 'note'}.html`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-        }
-
-        // Selection change handler
-        quill.on('selection-change', function() {
-            updateToolbarState();
+            showToast('Success', 'Note saved successfully!');
         });
 
-        // Save theme preference
-        function saveThemePreference(theme) {
-            localStorage.setItem('theme', theme);
-        }
-
-        // Auto-save title changes
-        let titleSaveTimeout;
-        document.getElementById('noteTitleInput').addEventListener('input', function(e) {
-            if (!currentNote) return;
-            
-            clearTimeout(titleSaveTimeout);
-            titleSaveTimeout = setTimeout(() => {
-                saveNoteTitle(e.target.value);
-            }, 1000);
-        });
-
-        // Save note title
-        function saveNoteTitle(newTitle) {
-            if (!currentNote) return;
-
-            const notes = JSON.parse(localStorage.getItem('notes')) || [];
-            const noteIndex = notes.findIndex(note => note.id === currentNote.id);
-            
-            if (noteIndex !== -1) {
-                notes[noteIndex].title = newTitle;
-                localStorage.setItem('notes', JSON.stringify(notes));
-                
-                // Update breadcrumb
-                document.getElementById('noteTitle').textContent = newTitle;
-                
-                // Show success notification
-                const notification = document.getElementById('successNotification');
-                notification.classList.add('show');
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                }, 2000);
-            }
-        }
-
-        // Create new note if no ID provided
-        function createNewNote() {
-            const newNote = {
-                id: Date.now(),
-                title: 'Untitled note',
-                content: '',
-                created: new Date().toISOString().split('T')[0]
-            };
-            
-            const notes = JSON.parse(localStorage.getItem('notes')) || [];
-            notes.push(newNote);
-            localStorage.setItem('notes', JSON.stringify(notes));
-            
-            currentNote = newNote;
-            
-            // Set initial values
-            document.getElementById('noteTitle').textContent = newNote.title;
-            document.getElementById('noteTitleInput').value = newNote.title;
-            quill.root.innerHTML = '';
-        }
-
-        // Add manual save function
-        function saveNoteManually() {
-            if (!currentNote) return;
-
-            const notes = JSON.parse(localStorage.getItem('notes')) || [];
-            const noteIndex = notes.findIndex(note => note.id === currentNote.id);
-            
-            if (noteIndex !== -1) {
-                // Save both title and content
-                notes[noteIndex].title = document.getElementById('noteTitleInput').value;
-                notes[noteIndex].content = quill.root.innerHTML;
-                localStorage.setItem('notes', JSON.stringify(notes));
-                
-                // Update breadcrumb
-                document.getElementById('noteTitle').textContent = notes[noteIndex].title;
-                
-                // Show success notification
-                const notification = document.getElementById('successNotification');
-                notification.classList.add('show');
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                }, 2000);
-            }
-        }
-
-        // Add keyboard shortcut for save
-        document.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                e.preventDefault(); // Prevent browser save dialog
-                saveNoteManually();
-            }
+        // Handle share form submission
+        document.getElementById('shareForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const select = this.querySelector('select');
+            const userName = select.options[select.selectedIndex].text;
+            showToast('Shared', `Note shared with ${userName}`);
+            bootstrap.Modal.getInstance(document.getElementById('shareModal')).hide();
         });
     </script>
 </body>

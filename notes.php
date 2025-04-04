@@ -1,15 +1,92 @@
 <?php
 session_start();
 
+// Database connection
+$host = "localhost";
+$username = "root";
+$password = "";
+$database = "task_management_db";
+
+try {
+    $conn = new PDO("mysql:host=$host;dbname=$database", $username, $password);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch(PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
+}
+
 // Check if user is logged in
 if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
     header("Location: login.php");
     exit;
 }
 
-// Include necessary files
-include "DB_connection.php";
 $title = "Notes";
+
+// Handle AJAX requests for status updates
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'updateStatus') {
+    header('Content-Type: application/json');
+    $response = ['success' => false, 'message' => ''];
+    
+    if (isset($_POST['noteId']) && isset($_POST['status'])) {
+        $noteId = intval($_POST['noteId']);
+        $status = $_POST['status'];
+        
+        try {
+            // Check if user owns the note or has edit permission
+            $sql = "SELECT n.id 
+                    FROM notes n 
+                    LEFT JOIN note_shares ns ON n.id = ns.note_id AND ns.shared_with = :user_id
+                    WHERE n.id = :id 
+                    AND (n.user_id = :user_id OR ns.can_edit = 1)";
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(':id', $noteId);
+            $stmt->bindParam(':user_id', $_SESSION['id']);
+            $stmt->execute();
+            
+            if ($stmt->rowCount() > 0) {
+                // Update the status
+                $updateSql = "UPDATE notes SET status = :status WHERE id = :id";
+                $updateStmt = $conn->prepare($updateSql);
+                $updateStmt->bindParam(':status', $status);
+                $updateStmt->bindParam(':id', $noteId);
+                
+                if ($updateStmt->execute()) {
+                    $response['success'] = true;
+                    $response['message'] = 'Status updated successfully';
+                }
+            } else {
+                $response['message'] = 'You do not have permission to update this note';
+            }
+        } catch (PDOException $e) {
+            $response['message'] = 'Error updating status';
+            error_log("Status update error: " . $e->getMessage());
+        }
+    } else {
+        $response['message'] = 'Invalid request parameters';
+    }
+    
+    echo json_encode($response);
+    exit;
+}
+
+// Fetch notes for the current user (including shared notes)
+$sql = "SELECT n.*, u.full_name as owner_name,
+        CASE 
+            WHEN n.user_id = :user_id THEN 1 
+            WHEN ns.can_edit = 1 THEN 1
+            ELSE 0
+        END as can_edit
+        FROM notes n
+        LEFT JOIN note_shares ns ON n.id = ns.note_id AND ns.shared_with = :user_id
+        LEFT JOIN users u ON n.user_id = u.id
+        WHERE n.user_id = :user_id OR ns.shared_with = :user_id
+        ORDER BY n.pinned DESC, n.created_at DESC";
+
+$stmt = $conn->prepare($sql);
+$stmt->bindParam(':user_id', $_SESSION['id']);
+$stmt->execute();
+$notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -565,6 +642,61 @@ $title = "Notes";
         main {
             padding-top: 60px !important; /* Reduced from 70px */
         }
+
+        /* Add these hierarchical view styles to your existing <style> section */
+        .hierarchical-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hierarchy-section {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .hierarchy-header {
+            padding: 10px 16px;
+            background-color: #f8f9fa;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .hierarchy-items {
+            padding: 16px;
+            border-left: 1px dashed #e0e0e0;
+            margin-left: 16px;
+        }
+
+        .hierarchy-note {
+            transition: all 0.2s ease;
+            border-left: 3px solid #e0e0e0;
+        }
+
+        .hierarchy-note:hover {
+            transform: translateX(3px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+
+        /* Status-specific styles for hierarchy items */
+        .hierarchy-note[data-status="not-started"] {
+            border-left-color: #dc2626;
+        }
+
+        .hierarchy-note[data-status="pending"] {
+            border-left-color: #F59E0B;
+        }
+
+        .hierarchy-note[data-status="completed"] {
+            border-left-color: #10B981;
+        }
+
+        /* Dropdown menu active item style */
+        .dropdown-item.active {
+            background-color: #f8f9fa;
+            color: #333;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -591,6 +723,20 @@ $title = "Notes";
                     <div class="search-box">
                         <input type="text" class="form-control" placeholder="Search notes..." id="searchNotes" name="searchNotes">
                     </div>
+                    
+                    <!-- View selector -->
+                    <div class="btn-group" role="group" aria-label="View options">
+                        <button type="button" class="btn btn-outline-secondary view-btn" data-view="hierarchical">
+                            <i class="fa fa-sitemap"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary view-btn" data-view="list">
+                            <i class="fa fa-list"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary view-btn" data-view="cards">
+                            <i class="fa fa-th"></i>
+                        </button>
+                    </div>
+                    
                     <button class="btn btn-primary rounded-pill px-4" onclick="window.location.href='editnote.php'">
                         <i class="fa fa-plus me-2"></i>New Note
                     </button>
@@ -617,79 +763,201 @@ $title = "Notes";
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     <script>
-        // Store notes in localStorage to persist data
-        let notes = JSON.parse(localStorage.getItem('notes')) || [
-            {
-                id: 1,
-                title: 'Sample Note 1',
-                content: 'This is a sample note content...',
-                status: 'incomplete',
-                pinned: false,
-                created: '2024-02-20'
-            }
-        ];
+        let currentView = 'hierarchical';
+        // Initialize notes from PHP data
+        let notes = <?php echo json_encode($notes); ?>;
 
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize event listeners
             document.getElementById('searchNotes').addEventListener('input', searchNotes);
+            
+            // Add view selector listeners
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentView = this.dataset.view;
+                    renderNotes();
+                });
+            });
 
-            // Initial render
+            document.querySelector('.view-btn[data-view="hierarchical"]').classList.add('active');
             renderNotes();
         });
 
-        // Render notes function
+        // Update renderNotes function to handle database notes
         function renderNotes(notesToRender = notes) {
             const notesGrid = document.getElementById('notesGrid');
             notesGrid.innerHTML = '';
+            
+            if (currentView === 'list') {
+                notesGrid.className = 'list-group mb-4';
+            } else if (currentView === 'cards') {
+                notesGrid.className = 'row g-3';
+            } else {
+                notesGrid.className = 'hierarchical-container';
+            }
 
-            const sortedNotes = [...notesToRender].sort((a, b) => {
-                if (a.pinned === b.pinned) return 0;
-                return a.pinned ? -1 : 1;
-            });
-
-            sortedNotes.forEach(note => {
-                const date = new Date(note.created);
-                const formattedDate = date.toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric',
-                    year: 'numeric'
-                });
-                
-                const truncatedContent = note.content.replace(/<[^>]*>/g, '').slice(0, 150) + '...';
-                const status = note.status || 'not-started';
-                
-                const noteCard = `
-                    <div class="col-md-6 col-lg-4">
-                        <div class="note-card ${status}" data-note-id="${note.id}">
-                            <h3 class="username">${note.title}</h3>
-                            <div class="timestamp">
-                                <i class="fa fa-clock-o me-1"></i>${formattedDate}
-                            </div>
-                            <p class="note-content">${truncatedContent}</p>
-                            <div class="note-card-footer">
-                                <div class="status-select-wrapper">
-                                    <select class="status-select ${status}" 
-                                            onchange="updateNoteStatus(${note.id}, this.value)">
-                                        <option value="not-started" ${status === 'not-started' ? 'selected' : ''}>
-                                            Not Started
-                                        </option>
-                                        <option value="pending" ${status === 'pending' ? 'selected' : ''}>
-                                            Pending
-                                        </option>
-                                        <option value="completed" ${status === 'completed' ? 'selected' : ''}>
-                                            Completed
-                                        </option>
-                                    </select>
-                                </div>
-                                <a href="editnote.php?id=${note.id}" class="edit-btn">
-                                    Edit Note
-                                </a>
-                            </div>
-                        </div>
+            if (notesToRender.length === 0) {
+                notesGrid.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <i class="fa fa-sticky-note-o fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No notes found</h5>
+                        <p class="text-muted mb-3">Get started by creating your first note</p>
+                        <button class="btn btn-primary" onclick="window.location.href='editnote.php'">
+                            <i class="fa fa-plus me-2"></i>Create Note
+                        </button>
                     </div>
                 `;
-                notesGrid.innerHTML += noteCard;
-            });
+                return;
+            }
+
+            if (currentView === 'hierarchical') {
+                const statusGroups = {
+                    'not-started': { title: 'Not Started', notes: [], color: '#dc2626' },
+                    'pending': { title: 'In Progress', notes: [], color: '#F59E0B' },
+                    'completed': { title: 'Completed', notes: [], color: '#10B981' }
+                };
+
+                notesToRender.forEach(note => {
+                    const status = note.status || 'not-started';
+                    const targetGroup = statusGroups[status];
+                    if (targetGroup) {
+                        targetGroup.notes.push(note);
+                    }
+                });
+
+                Object.entries(statusGroups).forEach(([status, group]) => {
+                    if (group.notes.length > 0) {
+                        const hierarchySection = document.createElement('div');
+                        hierarchySection.className = 'hierarchy-section mb-4';
+                        hierarchySection.innerHTML = `
+                            <div class="hierarchy-header" style="border-left: 4px solid ${group.color}; padding-left: 12px;">
+                                <h5 class="mb-2 d-flex align-items-center">
+                                    <span class="me-2">${group.title}</span>
+                                    <span class="badge bg-secondary rounded-pill">${group.notes.length}</span>
+                                </h5>
+                            </div>
+                            <div class="hierarchy-items ps-4">
+                                ${group.notes.map(note => `
+                                    <div class="card mb-2 hierarchy-note" data-note-id="${note.id}">
+                                        <div class="card-body py-2 px-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h6 class="mb-0">${note.title}</h6>
+                                                <div class="d-flex gap-2">
+                                                    ${note.can_edit ? `
+                                                        <div class="status-select-wrapper">
+                                                            <select class="status-select ${note.status}" 
+                                                                    onchange="updateNoteStatus(${note.id}, this.value)">
+                                                                <option value="not-started" ${note.status === 'not-started' ? 'selected' : ''}>Not Started</option>
+                                                                <option value="pending" ${note.status === 'pending' ? 'selected' : ''}>In Progress</option>
+                                                                <option value="completed" ${note.status === 'completed' ? 'selected' : ''}>Completed</option>
+                                                            </select>
+                                                        </div>
+                                                    ` : `
+                                                        <span class="badge ${note.status}">${note.status === 'pending' ? 'In Progress' : note.status.charAt(0).toUpperCase() + note.status.slice(1)}</span>
+                                                    `}
+                                                    <a href="editnote.php?id=${note.id}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fa fa-edit"></i>
+                                                    </a>
+                                                    ${note.user_id == <?php echo $_SESSION['id']; ?> ? `
+                                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteNote(${note.id})">
+                                                            <i class="fa fa-trash"></i>
+                                                        </button>
+                                                    ` : ''}
+                                                </div>
+                                            </div>
+                                            <div class="small text-muted mt-1 mb-2">
+                                                <i class="fa fa-clock-o me-1"></i>${new Date(note.created_at).toLocaleDateString()}
+                                                ${note.owner_name ? `<span class="ms-2"><i class="fa fa-user me-1"></i>${note.owner_name}</span>` : ''}
+                                            </div>
+                                            <p class="card-text small text-muted">${note.content ? note.content.replace(/<[^>]*>/g, '').slice(0, 100) + '...' : ''}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                        notesGrid.appendChild(hierarchySection);
+                    }
+                });
+            } else {
+                // Existing views (list, cards)
+                notesToRender.forEach(note => {
+                    const date = new Date(note.created_at);
+                    const formattedDate = date.toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                    
+                    const truncatedContent = note.content.replace(/<[^>]*>/g, '').slice(0, 150) + '...';
+                    const status = note.status || 'not-started';
+                    
+                    let noteElement = '';
+                    
+                    if (currentView === 'list') {
+                        // List view
+                        noteElement = `
+                            <div class="list-group-item d-flex justify-content-between align-items-center ${status}" data-note-id="${note.id}">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">${note.title}</div>
+                                    <small class="text-muted"><i class="fa fa-clock-o me-1"></i>${formattedDate}</small>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <div class="status-select-wrapper me-2">
+                                        <select class="status-select ${status} form-select form-select-sm" 
+                                                onchange="updateNoteStatus(${note.id}, this.value)">
+                                            <option value="not-started" ${status === 'not-started' ? 'selected' : ''}>Not Started</option>
+                                            <option value="pending" ${status === 'pending' ? 'selected' : ''}>Pending</option>
+                                            <option value="completed" ${status === 'completed' ? 'selected' : ''}>Completed</option>
+                                        </select>
+                                    </div>
+                                    <a href="editnote.php?id=${note.id}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fa fa-edit"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteNote(${note.id})">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        notesGrid.innerHTML += noteElement;
+                    } else if (currentView === 'cards') {
+                        // Cards view - slightly different from list
+                        noteElement = `
+                            <div class="col-md-6 col-lg-3">
+                                <div class="note-card ${status}" data-note-id="${note.id}">
+                                    <h3 class="username">${note.title}</h3>
+                                    <div class="timestamp">
+                                        <i class="fa fa-clock-o me-1"></i>${formattedDate}
+                                    </div>
+                                    <p class="note-content">${truncatedContent}</p>
+                                    <div class="note-card-footer">
+                                        <div class="status-select-wrapper">
+                                            <select class="status-select ${status}" 
+                                                    onchange="updateNoteStatus(${note.id}, this.value)">
+                                                <option value="not-started" ${status === 'not-started' ? 'selected' : ''}>Not Started</option>
+                                                <option value="pending" ${status === 'pending' ? 'selected' : ''}>Pending</option>
+                                                <option value="completed" ${status === 'completed' ? 'selected' : ''}>Completed</option>
+                                            </select>
+                                        </div>
+                                        <div class="btn-group">
+                                            <a href="editnote.php?id=${note.id}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fa fa-edit"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteNote(${note.id})">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    notesGrid.innerHTML += noteElement;
+                });
+            }
         }
 
         // Delete note
@@ -698,6 +966,23 @@ $title = "Notes";
                 notes = notes.filter(n => n.id !== noteId);
                 localStorage.setItem('notes', JSON.stringify(notes));
                 renderNotes();
+                
+                // Show a temporary success message
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'alert alert-success alert-dismissible fade show';
+                messageDiv.innerHTML = `
+                    Note deleted successfully!
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                
+                // Insert at the top of the container
+                const container = document.querySelector('.container-fluid');
+                container.insertBefore(messageDiv, container.firstChild);
+                
+                // Remove the alert after 3 seconds
+                setTimeout(() => {
+                    messageDiv.remove();
+                }, 3000);
             }
         }
 
@@ -730,50 +1015,49 @@ $title = "Notes";
             return colors[status] || '#666666';
         }
 
-        // Update the status update function for immediate visual feedback
+        // Update note status function
         function updateNoteStatus(noteId, newStatus) {
-            const notes = JSON.parse(localStorage.getItem('notes')) || [];
-            const noteIndex = notes.findIndex(note => note.id === noteId);
-            
-            if (noteIndex !== -1) {
-                // Update the status in the notes array
-                notes[noteIndex].status = newStatus;
-                localStorage.setItem('notes', JSON.stringify(notes));
-
-                // Get the card element
-                const card = document.querySelector(`[data-note-id="${noteId}"]`);
-                if (card) {
-                    // Remove all status classes
-                    card.classList.remove('not-started', 'pending', 'completed');
-                    // Add new status class
-                    card.classList.add(newStatus);
-
-                    // Update select styling
-                    const select = card.querySelector('.status-select');
-                    if (select) {
-                        select.className = 'status-select ' + newStatus;
+            fetch('notes.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    action: 'updateStatus',
+                    noteId: noteId,
+                    status: newStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success notification
+                    const notification = document.createElement('div');
+                    notification.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3';
+                    notification.innerHTML = `
+                        Status updated successfully
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    document.body.appendChild(notification);
+                    
+                    // Remove notification after 3 seconds
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 3000);
+                    
+                    // Update UI
+                    const noteElement = document.querySelector(`[data-note-id="${noteId}"]`);
+                    if (noteElement) {
+                        noteElement.className = noteElement.className.replace(/not-started|pending|completed/g, newStatus);
                     }
-
-                    // Force status color update
-                    const statusConfig = {
-                        'not-started': {
-                            color: '#dc2626',
-                            text: 'Not Started'
-                        },
-                        'pending': {
-                            color: '#F59E0B',
-                            text: 'Pending'
-                        },
-                        'completed': {
-                            color: '#10B981',
-                            text: 'Completed'
-                        }
-                    };
-
-                    // Ensure immediate color change
-                    card.style.borderTopColor = statusConfig[newStatus].color;
+                } else {
+                    alert('Failed to update status: ' + data.message);
                 }
-            }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating the status');
+            });
         }
     </script>
 </body>
