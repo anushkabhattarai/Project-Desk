@@ -124,49 +124,48 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <style>
         :root {
-            --primary-color: #1a73e8;
-            --border-color: rgba(0, 0, 0, 0.1);
+            --primary-color: #6c5ce7;
+            --secondary-color: #a29bfe;
+            --border-color: #e0e0e0;
             --bg-light: #ffffff;
-            --text-dark: #202124;
-            --text-muted: #5f6368;
+            --text-dark: #2d3436;
+            --text-muted: #636e72;
             --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
             --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
             --transition: all 0.2s ease;
         }
         
         body {
-            background-color: #fafafa;
+            background-color: #f8f9fa;
             color: var(--text-dark);
-            font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             margin: 0;
             padding: 0;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
         }
 
         .note-container {
             width: 100%;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             padding: 0;
-            display: flex;
-            flex-direction: column;
             background: white;
+            box-shadow: none;
+            border-radius: 0;
         }
 
         .top-bar {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 12px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 101;
+            background: white;
+            padding: 1rem;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
-            gap: 16px;
-            height: 56px;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            gap: 1rem;
+            height: 64px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .back-button {
@@ -174,316 +173,356 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            opacity: 0.8;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            background: transparent;
             transition: var(--transition);
         }
 
         .back-button:hover {
-            opacity: 1;
+            background: #f1f3f4;
             color: var(--primary-color);
         }
 
-        .main-content {
+        .header-actions {
             display: flex;
-            flex: 1;
-            overflow: hidden;
-            background: #fff;
+            align-items: center;
+            gap: 0.75rem;
+            margin-left: auto;
+        }
+
+        .header-button {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: 1px solid var(--border-color);
+            background: white;
+            color: var(--text-dark);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .header-button:hover {
+            background: #f1f3f4;
+            border-color: var(--text-muted);
+        }
+
+        .header-button i {
+            font-size: 1rem;
+        }
+
+        .form-select {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.5rem 2rem 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            transition: var(--transition);
+            background-color: white;
+            cursor: pointer;
+            min-width: 140px;
+        }
+
+        .form-select:hover {
+            border-color: var(--text-muted);
+        }
+
+        .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.1);
+            outline: none;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            min-height: calc(100vh - 120px); /* Adjusted for header + toolbar */
         }
 
         .editor-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid var(--border-color);
-            overflow: hidden;
+            padding: 2rem;
             background: white;
         }
 
         .note-header {
-            padding: 24px;
-            border-bottom: 1px solid var(--border-color);
-            background: white;
+            margin-bottom: 2rem;
         }
 
-        .note-header input {
-            font-size: 28px;
-            font-weight: 300;
+        .note-header input[type="text"] {
+            font-size: 2rem;
+            font-weight: 600;
             border: none;
-            padding: 0;
-            margin: 0;
             width: 100%;
+            padding: 0.5rem 0;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+            background: transparent;
+        }
+
+        .note-header input[type="text"]:focus {
             outline: none;
-            transition: var(--transition);
+            border-bottom: 2px solid var(--primary-color);
         }
 
-        .note-header input:focus {
-            font-weight: 400;
-        }
-
-        .note-header small {
+        .note-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
             color: var(--text-muted);
-            font-size: 12px;
-            margin-top: 8px;
-            display: block;
+            font-size: 0.9rem;
         }
 
         .editor-toolbar {
-            padding: 8px 16px;
+            position: sticky;
+            top: 64px;
+            z-index: 100;
+            background: white;
+            padding: 0.5rem;
             border-bottom: 1px solid var(--border-color);
             display: flex;
-            gap: 4px;
-            background: white;
-            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
         }
 
-        .editor-toolbar button {
-            padding: 8px;
-            background: none;
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0 4px;
+        }
+
+        .toolbar-separator {
+            width: 1px;
+            height: 24px;
+            background: var(--border-color);
+            margin: 0 4px;
+        }
+
+        .toolbar-button {
+            width: 34px;
+            height: 34px;
+            border-radius: 4px;
             border: none;
-            border-radius: 6px;
+            background: transparent;
             color: var(--text-dark);
-            cursor: pointer;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             justify-content: center;
-            width: 36px;
-            height: 36px;
-            transition: var(--transition);
-            opacity: 0.8;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        .editor-toolbar button:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-            opacity: 1;
+        .toolbar-button:hover {
+            background: var(--secondary-color);
+            color: white;
         }
 
-        .editor-toolbar button.active {
-            background-color: rgba(26, 115, 232, 0.1);
-            color: var(--primary-color);
-            opacity: 1;
+        .toolbar-button.active {
+            background: var(--primary-color);
+            color: white;
         }
 
         .editor-content {
-            flex: 1;
-            padding: 24px;
-            overflow-y: auto;
-            font-size: 16px;
+            min-height: 500px;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
             line-height: 1.6;
+            color: var(--text-dark);
+        }
+
+        .editor-content:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
         }
 
         .comments-section {
-            width: 320px;
-            display: flex;
-            flex-direction: column;
-            background: white;
+            background: #f8f9fa;
             border-left: 1px solid var(--border-color);
+            padding: 1.5rem;
         }
 
         .comments-header {
-            padding: 16px 24px;
-            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 1.5rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: white;
         }
 
         .comments-header h5 {
+            font-size: 1.1rem;
+            font-weight: 600;
             margin: 0;
-            font-size: 16px;
-            font-weight: 500;
         }
 
         .badge {
-            background: rgba(0, 0, 0, 0.05);
-            color: var(--text-dark);
+            background: var(--primary-color);
+            color: white;
             font-weight: 500;
-            font-size: 12px;
-            padding: 4px 12px;
-            border-radius: 12px;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
         }
 
-        .comments-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 24px;
-        }
-
-        .comment-form {
-            padding: 16px 24px;
-            border-top: 1px solid var(--border-color);
+        .comment {
             background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .comment-author {
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        .comment-time {
+            color: var(--text-muted);
         }
 
         .comment-form textarea {
+            width: 100%;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 12px;
-            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
             resize: none;
-            margin-bottom: 12px;
-            font-size: 14px;
-            transition: var(--transition);
+            font-size: 0.9rem;
         }
 
         .comment-form textarea:focus {
-            border-color: var(--primary-color);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
-        }
-
-        .save-bar {
-            padding: 16px 24px;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            background: white;
-        }
-
-        .btn {
-            font-size: 14px;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 500;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
         }
 
         .btn-primary {
             background: var(--primary-color);
             border: none;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #1557b0;
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .btn-outline-secondary {
-            background: none;
-            border: 1px solid var(--border-color);
-            color: var(--text-dark);
-        }
-
-        .btn-outline-secondary:hover {
-            background: rgba(0, 0, 0, 0.05);
-            border-color: rgba(0, 0, 0, 0.2);
-        }
-
-        .form-select {
-            padding: 8px 32px 8px 12px;
-            font-size: 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            background-color: white;
-            cursor: pointer;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
             transition: var(--transition);
         }
 
-        .form-select:hover {
-            border-color: rgba(0, 0, 0, 0.2);
+        .btn-primary:hover {
+            background: #5f51e5;
+            transform: translateY(-1px);
         }
 
-        .form-select:focus {
+        .btn-outline-secondary {
+            border: 1px solid var(--border-color);
+            color: var(--text-dark);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .btn-outline-secondary:hover {
+            background: #f8f9fa;
             border-color: var(--primary-color);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
-        }
-
-        .form-check {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-
-        .form-check-input {
-            margin: 0;
-            cursor: pointer;
-        }
-
-        /* Modal Styles */
-        .modal-backdrop {
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
+            color: var(--primary-color);
         }
 
         .modal-content {
+            border-radius: 16px;
             border: none;
-            border-radius: 12px;
-            box-shadow: var(--shadow-md);
         }
 
         .modal-header {
             border-bottom: 1px solid var(--border-color);
-            padding: 16px 24px;
+            padding: 1.5rem;
         }
 
         .modal-body {
-            padding: 24px;
+            padding: 1.5rem;
         }
 
-        /* Toast Notification */
         .toast-container {
             position: fixed;
-            bottom: 24px;
-            right: 24px;
+            bottom: 2rem;
+            right: 2rem;
             z-index: 1050;
         }
 
         .toast {
             background: white;
-            border-radius: 8px;
-            box-shadow: var(--shadow-md);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             border: none;
-            margin-top: 8px;
-            opacity: 0;
-            transform: translateY(100%);
-            transition: all 0.3s ease;
+            margin-top: 0.5rem;
         }
 
-        .toast.show {
-            opacity: 1;
-            transform: translateY(0);
+        .save-bar {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 1rem 2rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            z-index: 100;
         }
 
-        .toast-header {
-            background: none;
-            border: none;
-            padding: 12px 16px 4px;
-        }
-
-        .toast-body {
-            padding: 8px 16px 12px;
-        }
-
-        /* Status colors */
-        .status-not-started { color: #ea4335; }
-        .status-pending { color: #fbbc04; }
-        .status-completed { color: #34a853; }
-
-        /* Animations */
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
             }
-            to {
-                opacity: 1;
-                transform: translateY(0);
+            
+            .comments-section {
+                border-left: none;
+                border-top: 1px solid var(--border-color);
             }
         }
 
-        .animate-slide-in {
-            animation: slideIn 0.3s ease forwards;
+        /* Update button active state styling */
+        .btn-light.active {
+            background-color: #e8f0fe !important;
+            color: #1a73e8 !important;
+            border-color: #e8f0fe !important;
+        }
+
+        .editor-content {
+            padding: 2rem;
+            min-height: 500px;
+            outline: none;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .editor-content:focus {
+            outline: none;
+        }
+
+        .editor-content img {
+            max-width: 100%;
+            height: auto;
+            margin: 1rem 0;
+        }
+
+        /* Placeholder styling */
+        .editor-content:empty:before {
+            content: attr(data-placeholder);
+            color: #6c757d;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -492,140 +531,111 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     <div class="toast-container"></div>
 
     <div class="container-fluid note-container">
-        <div class="top-bar">
-            <a href="notes.php" class="back-button">
-                <i class="bi bi-arrow-left"></i>
-                Back to Notes
-            </a>
-            <div class="d-flex align-items-center gap-3 ms-auto">
-                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#shareModal">
-                    <i class="bi bi-share-fill"></i>
-                    Share
-                </button>
-                <select class="form-select form-select-sm" id="status" name="status">
-                    <option value="not-started" <?php echo (isset($note) && $note['status'] == 'not-started') ? 'selected' : ''; ?>>Not Started</option>
-                    <option value="pending" <?php echo (isset($note) && $note['status'] == 'pending') ? 'selected' : ''; ?>>In Progress</option>
-                    <option value="completed" <?php echo (isset($note) && $note['status'] == 'completed') ? 'selected' : ''; ?>>Completed</option>
-                </select>
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="pinned" name="pinned" <?php echo (isset($note) && $note['pinned']) ? 'checked' : ''; ?>>
-                    <label class="form-check-label" for="pinned">Pin note</label>
-                </div>
-            </div>
-        </div>
-
-        <form method="POST" class="flex-grow-1 d-flex flex-column">
-            <div class="main-content">
-                <div class="editor-section">
-                    <div class="note-header">
-                        <input type="text" id="title" name="title" placeholder="Title" required 
-                               value="<?php echo isset($note) ? htmlspecialchars($note['title']) : ''; ?>">
-                        <small>Last edited <?php echo isset($note) ? date('M d, Y', strtotime($note['updated_at'])) : 'Never'; ?></small>
-                        <div class="mt-2">
-                            <select class="form-select form-select-sm" id="status" name="status">
-                                <option value="not-started" <?php echo (isset($note) && $note['status'] == 'not-started') ? 'selected' : ''; ?>>Not Started</option>
-                                <option value="pending" <?php echo (isset($note) && $note['status'] == 'pending') ? 'selected' : ''; ?>>In Progress</option>
-                                <option value="completed" <?php echo (isset($note) && $note['status'] == 'completed') ? 'selected' : ''; ?>>Completed</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="editor-toolbar">
-                        <button type="button" data-command="bold" title="Bold">
-                            <i class="bi bi-type-bold"></i>
-                        </button>
-                        <button type="button" data-command="italic" title="Italic">
-                            <i class="bi bi-type-italic"></i>
-                        </button>
-                        <button type="button" data-command="underline" title="Underline">
-                            <i class="bi bi-type-underline"></i>
-                        </button>
-                        <button type="button" data-command="strikeThrough" title="Strike through">
-                            <i class="bi bi-type-strikethrough"></i>
-                        </button>
-                        
-                        <div class="separator"></div>
-                        
-                        <button type="button" data-command="justifyLeft" title="Align left">
-                            <i class="bi bi-text-left"></i>
-                        </button>
-                        <button type="button" data-command="justifyCenter" title="Align center">
-                            <i class="bi bi-text-center"></i>
-                        </button>
-                        <button type="button" data-command="justifyRight" title="Align right">
-                            <i class="bi bi-text-right"></i>
-                        </button>
-                        
-                        <div class="separator"></div>
-                        
-                        <button type="button" data-command="insertUnorderedList" title="Bullet list">
-                            <i class="bi bi-list-ul"></i>
-                        </button>
-                        <button type="button" data-command="insertOrderedList" title="Numbered list">
-                            <i class="bi bi-list-ol"></i>
-                        </button>
-                        
-                        <div class="separator"></div>
-                        
-                        <button type="button" data-command="createLink" title="Insert link">
-                            <i class="bi bi-link-45deg"></i>
-                        </button>
-                        <button type="button" data-command="insertQuote" title="Quote">
-                            <i class="bi bi-quote"></i>
-                        </button>
-                        <button type="button" data-command="insertCode" title="Code">
-                            <i class="bi bi-code-slash"></i>
-                        </button>
-                        <button type="button" data-command="insertTable" title="Table">
-                            <i class="bi bi-table"></i>
-                        </button>
-                        
-                        <div class="separator"></div>
-                        
-                        <button type="button" data-command="undo" title="Undo">
+        <div class="bg-white border-bottom sticky-top">
+            <div class="px-3 py-2 border-bottom bg-light">
+                <div class="btn-toolbar" role="toolbar" aria-label="Text formatting toolbar">
+                    <div class="btn-group me-2" role="group">
+                        <button type="button" class="btn btn-light" data-command="undo" title="Undo">
                             <i class="bi bi-arrow-counterclockwise"></i>
                         </button>
-                        <button type="button" data-command="redo" title="Redo">
+                        <button type="button" class="btn btn-light" data-command="redo" title="Redo">
                             <i class="bi bi-arrow-clockwise"></i>
                         </button>
                     </div>
 
-                    <div class="editor-content" id="editor" contenteditable="true" 
-                         data-placeholder="Start writing your note..."><?php 
-                        echo isset($note) ? htmlspecialchars_decode($note['content']) : ''; 
-                    ?></div>
-                    
-                    <input type="hidden" id="content" name="content">
-
-                    <div class="save-bar">
-                        <button type="button" class="btn btn-outline-secondary" onclick="window.location.href='notes.php'">
-                            Cancel
+                    <div class="btn-group me-2" role="group">
+                        <button type="button" class="btn btn-light" data-command="bold" title="Bold">
+                            <i class="bi bi-type-bold"></i>
                         </button>
-                        <button type="submit" name="save_note" class="btn btn-primary">
-                            Save Note
+                        <button type="button" class="btn btn-light" data-command="italic" title="Italic">
+                            <i class="bi bi-type-italic"></i>
+                        </button>
+                        <button type="button" class="btn btn-light" data-command="underline" title="Underline">
+                            <i class="bi bi-type-underline"></i>
                         </button>
                     </div>
-                </div>
 
-                <div class="comments-section">
-                    <div class="comments-header">
-                        <h5>Comments</h5>
-                        <span class="badge" id="comment-count">0</span>
-                    </div>
-                    
-                    <div class="comments-content" id="comments-container">
-                        <!-- Comments will be dynamically added here -->
+                    <div class="btn-group me-2" role="group">
+                        <button type="button" class="btn btn-light" data-command="justifyLeft" title="Align left">
+                            <i class="bi bi-text-left"></i>
+                        </button>
+                        <button type="button" class="btn btn-light" data-command="justifyCenter" title="Align center">
+                            <i class="bi bi-text-center"></i>
+                        </button>
+                        <button type="button" class="btn btn-light" data-command="justifyRight" title="Align right">
+                            <i class="bi bi-text-right"></i>
+                        </button>
                     </div>
 
-                    <div class="comment-form">
-                        <textarea id="comment-text" rows="3" placeholder="Write a comment..."></textarea>
-                        <button type="button" class="btn btn-primary w-100" id="add-comment">
-                            Comment
+                    <div class="btn-group me-2" role="group">
+                        <button type="button" class="btn btn-light" data-command="insertUnorderedList" title="Bullet list">
+                            <i class="bi bi-list-ul"></i>
+                        </button>
+                        <button type="button" class="btn btn-light" data-command="insertOrderedList" title="Numbered list">
+                            <i class="bi bi-list-ol"></i>
+                        </button>
+                    </div>
+
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-light" data-command="insertImage" title="Add image">
+                            <i class="bi bi-image"></i>
                         </button>
                     </div>
                 </div>
             </div>
-        </form>
+
+            <div class="px-3 py-2 d-flex align-items-center">
+                <a href="notes.php" class="btn btn-light me-3">
+                    <i class="bi bi-arrow-left"></i>
+                    Back to Notes
+                </a>
+                <div class="d-flex align-items-center flex-grow-1">
+                    <input type="text" class="form-control form-control-lg border-0 shadow-none" 
+                           id="title" name="title" placeholder="Untitled document"
+                           value="<?php echo isset($note) ? htmlspecialchars($note['title']) : ''; ?>">
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <select class="form-select" id="status" name="status">
+                        <option value="not-started" <?php echo (isset($note) && $note['status'] == 'not-started') ? 'selected' : ''; ?>>Not Started</option>
+                        <option value="pending" <?php echo (isset($note) && $note['status'] == 'pending') ? 'selected' : ''; ?>>In Progress</option>
+                        <option value="completed" <?php echo (isset($note) && $note['status'] == 'completed') ? 'selected' : ''; ?>>Completed</option>
+                    </select>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#shareModal">
+                        <i class="bi bi-share-fill"></i>
+                        Share
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="editor-section">
+                <div class="editor-content" id="editor" contenteditable="true" 
+                     data-placeholder="Start writing your note..."><?php 
+                    echo isset($note) ? htmlspecialchars_decode($note['content']) : ''; 
+                ?></div>
+                
+                <input type="hidden" id="content" name="content">
+            </div>
+
+            <div class="comments-section">
+                <div class="comments-header">
+                    <h5>Comments</h5>
+                    <span class="badge" id="comment-count">0</span>
+                </div>
+                
+                <div class="comments-content" id="comments-container">
+                    <!-- Comments will be dynamically added here -->
+                </div>
+
+                <div class="comment-form">
+                    <textarea id="comment-text" rows="3" placeholder="Write a comment..."></textarea>
+                    <button type="button" class="btn btn-primary w-100" id="add-comment">
+                        Comment
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Share Modal -->
@@ -694,93 +704,73 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         // Custom Editor Implementation
         document.addEventListener('DOMContentLoaded', function() {
             const editor = document.getElementById('editor');
-            const toolbar = document.querySelector('.editor-toolbar');
             const contentInput = document.getElementById('content');
-            
-            // Update hidden input with editor content when form is submitted
+            const toolbar = document.querySelector('.btn-toolbar');
+
+            // Initialize editor content for form submission
             document.querySelector('form').addEventListener('submit', function() {
                 contentInput.value = editor.innerHTML;
             });
 
-            // Handle toolbar buttons
+            // Handle toolbar button clicks
             toolbar.addEventListener('click', function(e) {
-                const button = e.target.closest('button');
+                const button = e.target.closest('.btn');
                 if (!button) return;
 
                 e.preventDefault();
                 const command = button.dataset.command;
 
+                // Handle different commands
                 switch(command) {
-                    case 'createLink':
-                        const url = prompt('Enter the URL:');
-                        if (url) document.execCommand('createLink', false, url);
-                        break;
-
-                    case 'insertQuote':
-                        document.execCommand('formatBlock', false, 'blockquote');
-                        break;
-
-                    case 'insertCode':
-                        const selection = window.getSelection();
-                        if (selection.toString().length > 0) {
-                            document.execCommand('insertHTML', false, 
-                                `<code>${selection.toString()}</code>`);
-                        } else {
-                            document.execCommand('insertHTML', false, 
-                                '<pre><code>Enter your code here</code></pre>');
-                        }
-                        break;
-
-                    case 'insertTable':
-                        const rows = prompt('Enter number of rows:', '3');
-                        const cols = prompt('Enter number of columns:', '3');
-                        if (rows && cols) {
-                            let table = '<table><tr>';
-                            for (let i = 0; i < cols; i++) {
-                                table += '<th>Header ' + (i + 1) + '</th>';
+                    case 'insertImage':
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'image/*';
+                        input.onchange = function(e) {
+                            const file = e.target.files[0];
+                            if (file) {
+                                const reader = new FileReader();
+                                reader.onload = function(e) {
+                                    document.execCommand('insertImage', false, e.target.result);
+                                };
+                                reader.readAsDataURL(file);
                             }
-                            table += '</tr>';
-                            for (let i = 0; i < rows; i++) {
-                                table += '<tr>';
-                                for (let j = 0; j < cols; j++) {
-                                    table += '<td>Cell ' + (i + 1) + ',' + (j + 1) + '</td>';
-                                }
-                                table += '</tr>';
-                            }
-                            table += '</table>';
-                            document.execCommand('insertHTML', false, table);
-                        }
+                        };
+                        input.click();
                         break;
 
                     default:
                         document.execCommand(command, false, null);
+                        break;
                 }
 
                 // Update button states
-                updateButtonStates();
+                updateToolbarState();
             });
 
-            // Update toolbar button states based on current selection
-            function updateButtonStates() {
-                toolbar.querySelectorAll('button[data-command]').forEach(button => {
+            // Update toolbar state based on current selection
+            function updateToolbarState() {
+                toolbar.querySelectorAll('.btn[data-command]').forEach(button => {
                     const command = button.dataset.command;
-                    switch(command) {
-                        case 'insertQuote':
-                        case 'insertCode':
-                        case 'insertTable':
-                        case 'createLink':
-                            break;
-                        default:
-                            button.classList.toggle('active', 
-                                document.queryCommandState(command));
+                    
+                    // Skip certain commands that don't have states
+                    if (['insertImage', 'undo', 'redo'].includes(command)) {
+                        return;
+                    }
+
+                    // Check if the command is active
+                    if (document.queryCommandState(command)) {
+                        button.classList.add('active');
+                    } else {
+                        button.classList.remove('active');
                     }
                 });
             }
 
-            // Update button states when selection changes
-            editor.addEventListener('keyup', updateButtonStates);
-            editor.addEventListener('mouseup', updateButtonStates);
-            editor.addEventListener('input', updateButtonStates);
+            // Update toolbar state when selection changes
+            editor.addEventListener('keyup', updateToolbarState);
+            editor.addEventListener('mouseup', updateToolbarState);
+            editor.addEventListener('input', updateToolbarState);
 
             // Handle paste to strip formatting
             editor.addEventListener('paste', function(e) {
@@ -789,8 +779,101 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                 document.execCommand('insertText', false, text);
             });
 
-            // Initialize button states
-            updateButtonStates();
+            // Initialize toolbar state
+            updateToolbarState();
+
+            // Add undo/redo keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey || e.metaKey) {
+                    if (e.key === 'z' && !e.shiftKey) {
+                        e.preventDefault();
+                        document.execCommand('undo', false, null);
+                    } else if ((e.key === 'z' && e.shiftKey) || e.key === 'y') {
+                        e.preventDefault();
+                        document.execCommand('redo', false, null);
+                    }
+                }
+            });
+
+            // Make editor focused when clicking anywhere in the content area
+            editor.addEventListener('click', function(e) {
+                if (e.target === editor) {
+                    const range = document.createRange();
+                    const sel = window.getSelection();
+                    range.setStart(editor, 0);
+                    range.collapse(true);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
+            });
+
+            // Add visual feedback for active buttons
+            const buttons = toolbar.querySelectorAll('.btn-light');
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const command = this.dataset.command;
+                    if (!['undo', 'redo', 'insertImage'].includes(command)) {
+                        this.classList.toggle('active');
+                    }
+                });
+            });
+
+            // Handle keyboard shortcuts for common formatting
+            editor.addEventListener('keydown', function(e) {
+                if (e.ctrlKey || e.metaKey) {
+                    switch(e.key.toLowerCase()) {
+                        case 'b':
+                            e.preventDefault();
+                            document.execCommand('bold', false, null);
+                            updateToolbarState();
+                            break;
+                        case 'i':
+                            e.preventDefault();
+                            document.execCommand('italic', false, null);
+                            updateToolbarState();
+                            break;
+                        case 'u':
+                            e.preventDefault();
+                            document.execCommand('underline', false, null);
+                            updateToolbarState();
+                            break;
+                    }
+                }
+            });
+
+            // Save selection state before blur
+            let savedSelection = null;
+            editor.addEventListener('blur', function() {
+                savedSelection = saveSelection();
+            });
+
+            editor.addEventListener('focus', function() {
+                if (savedSelection) {
+                    restoreSelection(savedSelection);
+                    savedSelection = null;
+                }
+            });
+
+            // Helper functions for selection management
+            function saveSelection() {
+                if (window.getSelection) {
+                    const sel = window.getSelection();
+                    if (sel.getRangeAt && sel.rangeCount) {
+                        return sel.getRangeAt(0);
+                    }
+                }
+                return null;
+            }
+
+            function restoreSelection(range) {
+                if (range) {
+                    if (window.getSelection) {
+                        const sel = window.getSelection();
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
+                }
+            }
         });
 
         // Client-side comment handling
