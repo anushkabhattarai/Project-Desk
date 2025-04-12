@@ -1,0 +1,345 @@
+2025-04-12 15:41:31 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1744465291_67fa6d8b7bf7e",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1744465291_67fa6d8b7bf7e\"}"
+}
+
+2025-04-12 15:41:31 - Response:
+Status: 503
+Body: <html>
+<head><title>503 Service Temporarily Unavailable</title></head>
+<body>
+<center><h1>503 Service Temporarily Unavailable</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+
+Error: 
+
+2025-04-12 15:42:51 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1744465371_67fa6ddb520f3",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1744465371_67fa6ddb520f3\"}"
+}
+
+2025-04-12 15:42:51 - Response:
+Status: 503
+Body: <html>
+<head><title>503 Service Temporarily Unavailable</title></head>
+<body>
+<center><h1>503 Service Temporarily Unavailable</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+
+Error: 
+
+2025-04-12 15:42:52 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1744465372_67fa6ddcf2a24",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1744465372_67fa6ddcf2a24\"}"
+}
+
+2025-04-12 15:42:53 - Response:
+Status: 503
+Body: <html>
+<head><title>503 Service Temporarily Unavailable</title></head>
+<body>
+<center><h1>503 Service Temporarily Unavailable</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+
+Error: 
+
+2025-04-12 15:42:55 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1744465375_67fa6ddfcdac1",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1744465375_67fa6ddfcdac1\"}"
+}
+
+2025-04-12 15:42:55 - Response:
+Status: 503
+Body: <html>
+<head><title>503 Service Temporarily Unavailable</title></head>
+<body>
+<center><h1>503 Service Temporarily Unavailable</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+
+Error: 
+
+2025-04-12 15:42:59 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1744465379_67fa6de3a9b37",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1744465379_67fa6de3a9b37\"}"
+}
+
+2025-04-12 15:42:59 - Response:
+Status: 503
+Body: <html>
+<head><title>503 Service Temporarily Unavailable</title></head>
+<body>
+<center><h1>503 Service Temporarily Unavailable</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+
+Error: 
+
+2025-04-12 15:46:23 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1744465583_67fa6eafed510",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1744465583_67fa6eafed510\"}"
+}
+
+2025-04-12 15:46:24 - Response:
+Status: 503
+Body: <html>
+<head><title>503 Service Temporarily Unavailable</title></head>
+<body>
+<center><h1>503 Service Temporarily Unavailable</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+
+Error: 
+
+2025-04-12 15:50:45 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1744465845_67fa6fb522b97",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1744465845_67fa6fb522b97\"}"
+}
+
+2025-04-12 15:50:45 - Response:
+Status: 503
+Body: <html>
+<head><title>503 Service Temporarily Unavailable</title></head>
+<body>
+<center><h1>503 Service Temporarily Unavailable</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+
+Error: 
+
+2025-04-12 16:14:20 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "50000",
+    "purchase_order_id": "ORDER_7_1744467260_67fa753c674ef",
+    "purchase_order_name": "Premium Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 50000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "2",
+            "name": "Premium Plan",
+            "total_price": 50000,
+            "quantity": 1,
+            "unit_price": 50000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"2\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1744467260_67fa753c674ef\",\"plan_name\":\"Premium Plan\",\"amount\":50000}"
+}
+
+2025-04-12 16:14:20 - Response:
+Status: 503
+Body: <html>
+<head><title>503 Service Temporarily Unavailable</title></head>
+<body>
+<center><h1>503 Service Temporarily Unavailable</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+
+Error: 
+

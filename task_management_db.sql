@@ -175,26 +175,29 @@ CREATE TABLE `note_shares` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Indexes for dumped tables
+-- Table structure for table `plans`
 --
 
---
--- Indexes for table `users`
---
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`);
+CREATE TABLE `plans` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) NOT NULL,
+  `description` text DEFAULT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `note_limit` int(11) DEFAULT NULL,
+  `private_note_limit` int(11) DEFAULT NULL,
+  `share_limit` int(11) DEFAULT NULL,
+  `is_unlimited` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- AUTO_INCREMENT for dumped tables
+-- Dumping data for table `plans`
 --
 
---
--- AUTO_INCREMENT for table `users`
---
-ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
-COMMIT;
+INSERT INTO `plans` (`name`, `description`, `price`, `note_limit`, `private_note_limit`, `share_limit`, `is_unlimited`, `created_at`) VALUES
+('Basic Plan', 'Basic plan with limited features', 200.00, 5, 5, 5, 0, NOW()),
+('Premium Plan', 'Premium plan with extended features', 500.00, 50, 50, 50, 0, NOW());
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+--
+-- Table structure for table `subscriptions`
