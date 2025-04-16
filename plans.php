@@ -54,14 +54,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_plan'])) {
     $selected_plan = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if ($selected_plan) {
-        // In a real application, you would process payment here
-        // For this demo, we'll just create a subscription
-        
-        // Set subscription dates (30 days from now)
+        // Calculate subscription dates (30 days from now)
         $start_date = date('Y-m-d');
         $end_date = date('Y-m-d', strtotime('+30 days'));
         
-        // Create subscription
+        // Create subscription record
         $stmt = $conn->prepare("INSERT INTO subscriptions (user_id, plan_id, start_date, end_date, status) 
                                VALUES (:user_id, :plan_id, :start_date, :end_date, 'active')");
         $stmt->bindParam(':user_id', $_SESSION['id']);
@@ -70,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_plan'])) {
         $stmt->bindParam(':end_date', $end_date);
         
         if ($stmt->execute()) {
-            // Redirect to notes page
+            // Redirect to notes page after successful subscription
             header("Location: notes.php");
             exit;
         } else {
@@ -206,6 +203,7 @@ $title = "Select a Plan";
         document.querySelectorAll('.payment-button').forEach(button => {
             button.addEventListener('click', async function() {
                 try {
+                    console.log('Payment button clicked');
                     // Check login status first
                     const isLoggedIn = await checkLoginStatus();
                     if (!isLoggedIn) {
@@ -314,7 +312,7 @@ $title = "Select a Plan";
                         }
                     }
                 } catch (error) {
-                    console.error('Error:', error);
+                    console.error('Payment error:', error);
                     
                     // Re-enable the button
                     this.disabled = false;
@@ -328,6 +326,26 @@ $title = "Select a Plan";
                     alert(errorMessage);
                 }
             });
+        });
+
+        // Handle payment callback
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const paymentStatus = urlParams.get('payment_status');
+            const error = urlParams.get('error');
+            
+            console.log('Payment callback received:', {
+                status: paymentStatus,
+                error: error
+            });
+            
+            if (paymentStatus === 'success') {
+                console.log('Payment successful, redirecting to notes.php');
+                window.location.href = 'notes.php';
+            } else if (paymentStatus === 'failed') {
+                console.log('Payment failed:', error);
+                alert('Payment failed. ' + (error || 'Please try again.'));
+            }
         });
     </script>
 </body>

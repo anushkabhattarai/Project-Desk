@@ -72,6 +72,14 @@
                     </a>
                 </li>
                 
+                <!-- Notes Section - Always visible but will redirect to plans if needed -->
+                <li class="nav-item">
+                    <a href="notes.php" class="nav-link rounded-3 py-2 px-3 d-flex align-items-center">
+                        <i class="fa fa-sticky-note me-3 text-opacity-75" aria-hidden="true"></i>
+                        <span>Notes</span>
+                    </a>
+                </li>
+                
                 <li class="nav-item mt-2">
                     <div class="text-uppercase text-muted small fw-semibold ms-3 mb-2">Tasks</div>
                 </li>

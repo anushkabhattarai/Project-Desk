@@ -1,107 +1,141 @@
 <?php
 session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Custom logging function
+function custom_log($message) {
+    $log_dir = __DIR__ . '/logs';
+    if (!file_exists($log_dir)) {
+        mkdir($log_dir, 0777, true);
+    }
+    $log_file = $log_dir . '/payment.log';
+    $timestamp = date('Y-m-d H:i:s');
+    $log_message = "[$timestamp] $message" . PHP_EOL;
+    file_put_contents($log_file, $log_message, FILE_APPEND);
+}
+
+// Log the start of payment processing
+custom_log("Payment processing started. Request data: " . print_r($_GET, true));
+custom_log("Session data: " . print_r($_SESSION, true));
 
 // Check if user is logged in
-if (!isset($_SESSION['id'])) {
+if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
+    custom_log("User not logged in during payment processing");
     header("Location: login.php");
     exit;
 }
 
-// Check if we have payment data in session
-if (!isset($_SESSION['payment_data'])) {
-    header("Location: plans.php");
-    exit;
+// Database connection
+$host = "localhost";
+$username = "root";
+$password = "";
+$database = "task_management_db";
+
+try {
+    $conn = new PDO("mysql:host=$host;dbname=$database", $username, $password);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    custom_log("Database connection successful");
+} catch(PDOException $e) {
+    custom_log("Database connection failed: " . $e->getMessage());
+    die("Connection failed: " . $e->getMessage());
 }
 
-// Get the pidx from Khalti's response
-$pidx = $_GET['pidx'] ?? null;
-$payment_data = $_SESSION['payment_data'];
-
-if (!$pidx || $pidx !== $payment_data['pidx']) {
-    header("Location: plans.php?error=invalid_payment");
-    exit;
-}
-
-// Initialize cURL for payment verification
-$ch = curl_init();
-curl_setopt_array($ch, [
-    CURLOPT_URL => 'https://dev.khalti.com/api/v2/epayment/lookup/' . $pidx,
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_HTTPHEADER => [
-        'Authorization: Key 5bf2afad915247d1a28055fb7aaee102',
-        'Content-Type: application/json'
-    ]
-]);
-
-// Execute request and get response
-$response = curl_exec($ch);
-$status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-$err = curl_error($ch);
-
-// Debug logging
-error_log('Khalti lookup response: ' . $response);
-error_log('Khalti lookup status: ' . $status_code);
-
-curl_close($ch);
-
-// Check for cURL errors
-if ($err) {
-    error_log('Curl error in lookup: ' . $err);
-    header("Location: plans.php?error=verification_failed&reason=connection_error");
-    exit;
-}
-
-// Parse response
-$response_data = json_decode($response, true);
-
-if ($status_code == 200 && isset($response_data['status']) && $response_data['status'] === 'Completed') {
-    // Verify the amount matches
-    if (isset($response_data['total_amount']) && $response_data['total_amount'] == $payment_data['amount']) {
-        // Payment verified successfully, create subscription
+// Verify payment status
+if (isset($_GET['status']) && $_GET['status'] === 'Completed') {
+    custom_log("Payment status is Completed");
+    
+    try {
+        // Start transaction
+        $conn->beginTransaction();
+        custom_log("Transaction started");
         
-        // Database connection
-        $host = "localhost";
-        $username = "root";
-        $password = "";
-        $database = "task_management_db";
-
-        try {
-            $conn = new PDO("mysql:host=$host;dbname=$database", $username, $password);
-            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            
-            // Set subscription dates (30 days from now)
-            $start_date = date('Y-m-d');
-            $end_date = date('Y-m-d', strtotime('+30 days'));
-            
-            // Create subscription
-            $stmt = $conn->prepare("INSERT INTO subscriptions (user_id, plan_id, start_date, end_date, status, transaction_id) 
-                                  VALUES (:user_id, :plan_id, :start_date, :end_date, 'active', :transaction_id)");
-            $stmt->bindParam(':user_id', $_SESSION['id']);
-            $stmt->bindParam(':plan_id', $payment_data['plan_id']);
-            $stmt->bindParam(':start_date', $start_date);
-            $stmt->bindParam(':end_date', $end_date);
-            $stmt->bindParam(':transaction_id', $pidx);
-            
-            if ($stmt->execute()) {
-                // Clear payment data from session
-                unset($_SESSION['payment_data']);
-                header("Location: notes.php?success=subscription_created");
-            } else {
-                header("Location: plans.php?error=subscription_failed");
-            }
-            
-        } catch(PDOException $e) {
-            error_log("Database error: " . $e->getMessage());
-            header("Location: plans.php?error=database_error");
+        // Get payment details
+        $pidx = $_GET['pidx'];
+        $transaction_id = $_GET['transaction_id'];
+        $amount = $_GET['amount'];
+        $purchase_order_id = $_GET['purchase_order_id'];
+        
+        custom_log("Payment details: " . print_r([
+            'pidx' => $pidx,
+            'transaction_id' => $transaction_id,
+            'amount' => $amount,
+            'purchase_order_id' => $purchase_order_id
+        ], true));
+        
+        // Extract plan ID from purchase order ID
+        preg_match('/ORDER_(\d+)_/', $purchase_order_id, $matches);
+        $plan_id = isset($matches[1]) ? $matches[1] : null;
+        
+        custom_log("Extracted plan ID: " . $plan_id);
+        
+        if (!$plan_id) {
+            throw new Exception("Invalid purchase order ID");
         }
-    } else {
-        error_log('Payment amount mismatch. Expected: ' . $payment_data['amount'] . ', Got: ' . ($response_data['total_amount'] ?? 'unknown'));
-        header("Location: plans.php?error=payment_amount_mismatch");
+        
+        // Verify if payment already exists
+        $stmt = $conn->prepare("SELECT id FROM subscriptions WHERE user_id = :user_id AND plan_id = :plan_id AND status = 'active'");
+        $stmt->bindParam(':user_id', $_SESSION['id']);
+        $stmt->bindParam(':plan_id', $plan_id);
+        $stmt->execute();
+        
+        if ($stmt->rowCount() > 0) {
+            throw new Exception("You already have an active subscription for this plan");
+        }
+        
+        // Calculate subscription dates
+        $start_date = date('Y-m-d');
+        $end_date = date('Y-m-d', strtotime('+30 days'));
+        
+        custom_log("Creating subscription with dates: start=$start_date, end=$end_date");
+        
+        // Create subscription
+        $stmt = $conn->prepare("INSERT INTO subscriptions (user_id, plan_id, start_date, end_date, status, transaction_id) 
+                               VALUES (:user_id, :plan_id, :start_date, :end_date, 'active', :transaction_id)");
+        $stmt->bindParam(':user_id', $_SESSION['id']);
+        $stmt->bindParam(':plan_id', $plan_id);
+        $stmt->bindParam(':start_date', $start_date);
+        $stmt->bindParam(':end_date', $end_date);
+        $stmt->bindParam(':transaction_id', $transaction_id);
+        
+        if (!$stmt->execute()) {
+            $error = $stmt->errorInfo();
+            custom_log("Subscription creation failed: " . print_r($error, true));
+            throw new Exception("Failed to create subscription: " . $error[2]);
+        }
+        
+        // Commit transaction
+        $conn->commit();
+        custom_log("Transaction committed successfully");
+        
+        custom_log("Subscription created successfully for user " . $_SESSION['id']);
+        
+        // Redirect to notes page with success status
+        header("Location: notes.php?payment_status=success");
+        exit;
+        
+    } catch (Exception $e) {
+        // Rollback transaction on error
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+            custom_log("Transaction rolled back due to error");
+        }
+        
+        custom_log("Error processing payment: " . $e->getMessage());
+        custom_log("Error trace: " . $e->getTraceAsString());
+        
+        // Show error on the page for debugging
+        echo "Error: " . $e->getMessage();
+        echo "<br>Please check the payment.log file in the logs directory for more details.";
+        exit;
     }
 } else {
-    error_log('Payment verification failed. Response: ' . print_r($response_data, true));
-    $error_reason = isset($response_data['detail']) ? '&reason=' . urlencode($response_data['detail']) : '';
-    header("Location: plans.php?error=payment_incomplete" . $error_reason);
+    custom_log("Payment status is not Completed. Status: " . ($_GET['status'] ?? 'not set'));
+    custom_log("Full GET data: " . print_r($_GET, true));
+    
+    // Show error on the page for debugging
+    echo "Payment status is not Completed. Status: " . ($_GET['status'] ?? 'not set');
+    echo "<br>Please check the payment.log file in the logs directory for more details.";
+    exit;
 }
-exit;
 ?> 

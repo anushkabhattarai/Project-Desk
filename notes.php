@@ -1,6 +1,12 @@
 <?php
 session_start();
 
+// Check if user is logged in
+if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
+    header("Location: login.php");
+    exit;
+}
+
 // Database connection
 $host = "localhost";
 $username = "root";
@@ -14,9 +20,15 @@ try {
     die("Connection failed: " . $e->getMessage());
 }
 
-// Check if user is logged in
-if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
-    header("Location: login.php");
+// Check if user has an active subscription
+$stmt = $conn->prepare("SELECT * FROM subscriptions WHERE user_id = :user_id AND status = 'active' AND end_date >= CURRENT_DATE");
+$stmt->bindParam(':user_id', $_SESSION['id']);
+$stmt->execute();
+$subscription = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// If user doesn't have an active subscription and is not an admin, redirect to plans
+if (!$subscription && $_SESSION['role'] !== 'admin') {
+    header("Location: plans.php");
     exit;
 }
 
