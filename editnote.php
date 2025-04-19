@@ -46,7 +46,7 @@ if ($note_id > 0) {
 // Handle note save/update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_note'])) {
     $title = trim($_POST['title']);
-    $content = trim($_POST['content']);
+    $content = $_POST['content']; // Get content directly from POST
     $status = $_POST['status'];
     $pinned = isset($_POST['pinned']) ? 1 : 0;
     
@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_note'])) {
                 exit();
             }
         } else {
-            $error_message = "Error saving note";
+            $error_message = "Error saving note: " . $conn->error;
         }
     }
 }
@@ -600,6 +600,10 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                         <option value="pending" <?php echo (isset($note) && $note['status'] == 'pending') ? 'selected' : ''; ?>>In Progress</option>
                         <option value="completed" <?php echo (isset($note) && $note['status'] == 'completed') ? 'selected' : ''; ?>>Completed</option>
                     </select>
+                    <button type="button" class="btn btn-primary" id="saveButton">
+                        <i class="bi bi-save"></i>
+                        Save
+                    </button>
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#shareModal">
                         <i class="bi bi-share-fill"></i>
                         Share
@@ -677,10 +681,24 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         </div>
     </div>
 
+    <form id="noteForm" method="POST" style="display: none;">
+        <input type="hidden" name="save_note" value="1">
+        <input type="hidden" name="title" id="formTitle">
+        <input type="hidden" name="content" id="formContent">
+        <input type="hidden" name="status" id="formStatus">
+        <input type="hidden" name="pinned" id="formPinned">
+    </form>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        let isSaving = false;  // Add flag to track save action
+
         // Add confirmation before leaving
         window.addEventListener('beforeunload', function(e) {
+            if (isSaving) {
+                return;  // Don't show warning if we're saving
+            }
+            
             const editor = document.getElementById('editor');
             const title = document.getElementById('title');
             
@@ -699,6 +717,26 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             
             editor.setAttribute('data-original-content', editor.innerHTML);
             title.setAttribute('data-original-value', title.value);
+
+            // Add save button click handler
+            document.getElementById('saveButton').addEventListener('click', function() {
+                isSaving = true;  // Set flag before saving
+                
+                // Get values from the editor and form
+                const title = document.getElementById('title').value;
+                const content = document.getElementById('editor').innerHTML;
+                const status = document.getElementById('status').value;
+                const pinned = document.getElementById('pinned')?.checked ? 1 : 0;
+                
+                // Set values in the hidden form
+                document.getElementById('formTitle').value = title;
+                document.getElementById('formContent').value = content;
+                document.getElementById('formStatus').value = status;
+                document.getElementById('formPinned').value = pinned;
+                
+                // Submit the form
+                document.getElementById('noteForm').submit();
+            });
         });
 
         // Custom Editor Implementation
@@ -936,25 +974,6 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                 toast.remove();
             });
         }
-
-        // Handle form submission
-        document.querySelector('form').addEventListener('submit', function(e) {
-            // Get the editor content and save it to the hidden input
-            const editor = document.getElementById('editor');
-            const contentInput = document.getElementById('content');
-            contentInput.value = editor.innerHTML;
-
-            const title = document.getElementById('title').value;
-            
-            // Validate required fields
-            if (!title.trim()) {
-                e.preventDefault();
-                showToast('Error', 'Title is required');
-                return;
-            }
-
-            showToast('Success', 'Note saved successfully!');
-        });
 
         // Handle share form submission
         document.getElementById('shareForm').addEventListener('submit', function(e) {
