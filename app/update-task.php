@@ -33,9 +33,57 @@ if (isset($_POST['id']) && isset($_POST['title']) && isset($_POST['description']
 	}else {
     
        include "Model/Task.php";
+       include "Model/Notification.php";
+       include "Model/User.php";
 
+       // Get existing task to check what changed
+       $current_task = get_task_by_id($conn, $id);
+       $previous_assigned_to = $current_task['assigned_to'];
+       
+       // Update the task
        $data = array($title, $description, $assigned_to, $due_date, $id);
        update_task($conn, $data);
+       
+       // If assigned to changed, notify both previous and new employee
+       if ($previous_assigned_to != $assigned_to) {
+           // If there was a previous assignee
+           if ($previous_assigned_to != null) {
+               $notif_data = array(
+                   "Task '$title' has been reassigned to another employee",
+                   $previous_assigned_to,
+                   'Task Reassigned'
+               );
+               insert_notification($conn, $notif_data);
+           }
+           
+           // Notify the new assignee
+           $notif_data = array(
+               "Task '$title' has been assigned to you. Please review and start working on it",
+               $assigned_to,
+               'Task Assigned'
+           );
+           insert_notification($conn, $notif_data);
+       } 
+       // If assigned to same person but other details changed
+       else if ($previous_assigned_to == $assigned_to && 
+               ($current_task['title'] != $title || 
+                $current_task['description'] != $description || 
+                $current_task['due_date'] != $due_date)) {
+           
+           $changes = array();
+           if ($current_task['title'] != $title) $changes[] = "title";
+           if ($current_task['description'] != $description) $changes[] = "description";
+           if ($current_task['due_date'] != $due_date) $changes[] = "due date";
+           
+           $changes_text = implode(", ", $changes);
+           
+           $notif_data = array(
+               "Task '$title' has been updated. Changes made to: $changes_text",
+               $assigned_to,
+               'Task Updated'
+           );
+           insert_notification($conn, $notif_data);
+       }
 
        $em = "Task updated successfully";
 	    header("Location: ../edit-task.php?success=$em&id=$id");

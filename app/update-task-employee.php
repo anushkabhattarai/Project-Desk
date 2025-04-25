@@ -22,9 +22,44 @@ if (isset($_POST['id']) && isset($_POST['status']) && $_SESSION['role'] == 'empl
 	}else {
     
        include "Model/Task.php";
+       include "Model/User.php";
+       include "Model/Notification.php";
 
-       $data = array($status, $id);
-       update_task_status($conn, $data);
+       // Get task details for notification
+       $task = get_task_by_id($conn, $id);
+       $employee = get_user_by_id($conn, $_SESSION['id']);
+       $employee_name = $employee['username'];
+       $task_title = $task['title'];
+       
+       // Get previous status to check if it changed
+       $previous_status = $task['status'];
+       
+       if ($previous_status != $status) {
+           // Update the task status
+           $data = array($status, $id);
+           update_task_status($conn, $data);
+           
+           // Get all admins to send notifications
+           $admins = get_all_admins($conn);
+           
+           if ($admins != 0) {
+               $status_label = str_replace('_', ' ', $status);
+               $status_label = ucwords($status_label);
+               
+               foreach ($admins as $admin) {
+                   $notif_data = array(
+                       "'$task_title' has been updated to '$status_label' by $employee_name",
+                       $admin['id'],
+                       'Task Status Update'
+                   );
+                   insert_notification($conn, $notif_data);
+               }
+           }
+       } else {
+           // Status not changed, just update
+           $data = array($status, $id);
+           update_task_status($conn, $data);
+       }
 
        $em = "Task updated successfully";
 	    header("Location: ../edit-task-employee.php?success=$em&id=$id");

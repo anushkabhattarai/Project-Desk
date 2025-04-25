@@ -36,6 +36,14 @@
                         <span>Notes</span>
                     </a>
                 </li>
+                
+                <!-- Support Section -->
+                <li class="nav-item">
+                    <a href="contact-support.php" class="nav-link rounded-3 py-2 px-3 d-flex align-items-center">
+                        <i class="fa fa-life-ring me-3 text-opacity-75" aria-hidden="true"></i>
+                        <span>Contact Support</span>
+                    </a>
+                </li>
 
                 <li class="nav-item mt-2">
                     <div class="text-uppercase text-muted small fw-semibold ms-3 mb-2">Account</div>
@@ -93,6 +101,16 @@
                     <a href="tasks.php" class="nav-link rounded-3 py-2 px-3 d-flex align-items-center">
                         <i class="fa fa-tasks me-3 text-opacity-75" aria-hidden="true"></i>
                         <span>All Tasks</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item mt-2">
+                    <div class="text-uppercase text-muted small fw-semibold ms-3 mb-2">Support</div>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-support.php" class="nav-link rounded-3 py-2 px-3 d-flex align-items-center">
+                        <i class="fa fa-life-ring me-3 text-opacity-75" aria-hidden="true"></i>
+                        <span>Support Tickets</span>
                     </a>
                 </li>
                 

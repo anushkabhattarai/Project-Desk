@@ -1,6 +1,9 @@
 <?php
 // Start session to track if user has seen the welcome page
 session_start();
+
+// Set the welcomed flag so user doesn't see welcome page again
+$_SESSION['welcomed'] = true;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -443,7 +446,7 @@ session_start();
             
             <div class="row mt-5">
                 <div class="col-12 text-center">
-                    <a href="set_welcomed.php" class="btn btn-primary btn-get-started">
+                    <a href="login.php" class="btn btn-primary btn-get-started">
                         Get Started Now <i class="bi bi-arrow-right ms-2"></i>
                     </a>
                 </div>

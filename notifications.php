@@ -143,6 +143,30 @@ if (isset($_SESSION['role']) && isset($_SESSION['id'])) {
 										$iconClass = 'fa-clock-o';
 										$iconBg = 'bg-warning-subtle';
 										$iconColor = 'text-warning';
+									} elseif (stripos($notification['type'], 'note') !== false) {
+										$iconClass = 'fa-sticky-note';
+										$iconBg = 'bg-info-subtle';
+										$iconColor = 'text-info';
+									} elseif (stripos($notification['type'], 'support') !== false || stripos($notification['type'], 'ticket') !== false) {
+										$iconClass = 'fa-life-ring';
+										$iconBg = 'bg-purple-subtle';
+										$iconColor = 'text-purple';
+									} elseif (stripos($notification['type'], 'deleted') !== false) {
+										$iconClass = 'fa-trash';
+										$iconBg = 'bg-danger-subtle';
+										$iconColor = 'text-danger';
+									} elseif (stripos($notification['type'], 'status') !== false) {
+										$iconClass = 'fa-refresh';
+										$iconBg = 'bg-warning-subtle';
+										$iconColor = 'text-warning';
+									} elseif (stripos($notification['type'], 'shared') !== false) {
+										$iconClass = 'fa-share-alt';
+										$iconBg = 'bg-info-subtle';
+										$iconColor = 'text-info';
+									} elseif (stripos($notification['type'], 'reply') !== false) {
+										$iconClass = 'fa-reply';
+										$iconBg = 'bg-secondary-subtle';
+										$iconColor = 'text-secondary';
 									}
 								?>
 								<div class="notification-item <?= $isUnread ?>">

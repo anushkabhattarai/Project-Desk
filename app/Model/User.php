@@ -14,6 +14,19 @@ function get_all_users($conn) {
 	}
 }
 
+function get_all_admins($conn) {
+	$sql = "SELECT * FROM users WHERE role = 'admin'";
+	$stmt = $conn->prepare($sql);
+	$stmt->execute();
+	
+	$admins = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	
+	if (count($admins) > 0) {
+		return $admins;
+	} else {
+		return 0;
+	}
+}
 
 function insert_user($conn, $data){
 	$sql = "INSERT INTO users (full_name, username, password, role) VALUES(?,?,?,?)";

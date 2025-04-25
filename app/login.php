@@ -39,13 +39,19 @@ if (isset($_POST['user_name']) && isset($_POST['password'])) {
 	       	   		if ($role == "admin") {
 	       	   			$_SESSION['role'] = $role;
 	       	   			$_SESSION['id'] = $id;
+	       	   			$_SESSION['user_id'] = $id;
 	       	   			$_SESSION['username'] = $usernameDb;
-                        header("Location: ../index.php");
+                        $_SESSION['welcomed'] = true;
+                        header("Location: ../tasks.php");
+                        exit();
 	       	   		}else if ($role == 'employee') {
 	       	   			$_SESSION['role'] = $role;
 	       	   			$_SESSION['id'] = $id;
+	       	   			$_SESSION['user_id'] = $id;
 	       	   			$_SESSION['username'] = $usernameDb;
-                        header("Location: ../index.php");
+                        $_SESSION['welcomed'] = true;
+                        header("Location: ../my_task.php");
+                        exit();
 	       	   		}else {
 	       	   		   $em = "Unknown error occurred ";
 							   header("Location: ../login.php?error=$em");
@@ -61,8 +67,11 @@ if (isset($_POST['user_name']) && isset($_POST['password'])) {
 			   header("Location: ../login.php?error=$em");
 			   exit();
        	   }
+       } else {
+          $em = "User not found";
+          header("Location: ../login.php?error=$em");
+          exit();
        }
-      
 
 	}
 }else {

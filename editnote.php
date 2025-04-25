@@ -67,8 +67,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_note'])) {
             $success_message = "Note saved successfully!";
             if (!$note_id) {
                 $note_id = $conn->insert_id;
+                
+                // If the note was just created, get the current user's name for notifications
+                $stmt = $conn->prepare("SELECT full_name FROM users WHERE id = ?");
+                $stmt->bind_param("i", $user_id);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $creator = $result->fetch_assoc();
+                $creator_name = $creator['full_name'];
+                
                 header("Location: editnote.php?id=" . $note_id);
                 exit();
+            } else {
+                // For existing notes, notify shared users about the update
+                $stmt = $conn->prepare("SELECT shared_with FROM note_shares WHERE note_id = ?");
+                $stmt->bind_param("i", $note_id);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                
+                while ($row = $result->fetch_assoc()) {
+                    $shared_user_id = $row['shared_with'];
+                    
+                    // Create notification for the update
+                    $message = "Note '$title' has been updated";
+                    $stmt2 = $conn->prepare("INSERT INTO notifications (message, recipient, type, date) VALUES (?, ?, 'Note Updated', CURRENT_DATE)");
+                    $stmt2->bind_param("si", $message, $shared_user_id);
+                    $stmt2->execute();
+                }
             }
         } else {
             $error_message = "Error saving note: " . $conn->error;

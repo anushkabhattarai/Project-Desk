@@ -201,3 +201,55 @@ INSERT INTO `plans` (`name`, `description`, `price`, `note_limit`, `private_note
 
 --
 -- Table structure for table `subscriptions`
+
+--
+-- Table structure for table `support_tickets`
+--
+
+CREATE TABLE `support_tickets` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `subject` varchar(255) NOT NULL,
+  `status` enum('open','resolved') NOT NULL DEFAULT 'open',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `support_tickets_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Table structure for table `support_replies`
+--
+
+CREATE TABLE `support_replies` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ticket_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `message` text NOT NULL,
+  `role` enum('user','admin') NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `ticket_id` (`ticket_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `support_replies_ibfk_1` FOREIGN KEY (`ticket_id`) REFERENCES `support_tickets` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `support_replies_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `support_tickets`
+--
+
+INSERT INTO `support_tickets` (`user_id`, `subject`, `status`, `created_at`) VALUES
+(7, 'Cannot access my tasks', 'open', NOW()),
+(2, 'Need help with task assignment', 'resolved', NOW() - INTERVAL 2 DAY);
+
+--
+-- Dumping data for table `support_replies`
+--
+
+INSERT INTO `support_replies` (`ticket_id`, `user_id`, `message`, `role`, `created_at`) VALUES
+(1, 7, 'I cannot access my tasks page. It shows an error when I try to load it.', 'user', NOW()),
+(2, 2, 'I am trying to assign a task to another user but the dropdown is empty.', 'user', NOW() - INTERVAL 2 DAY),
+(2, 1, 'Please try refreshing the page. The dropdown should populate with available users. Let me know if the issue persists.', 'admin', NOW() - INTERVAL 1 DAY),
+(2, 2, 'That worked! Thank you for the quick response.', 'user', NOW() - INTERVAL 1 DAY);
