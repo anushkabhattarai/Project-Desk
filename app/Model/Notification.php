@@ -38,3 +38,30 @@ function mark_all_notifications_read($conn, $user_id) {
 	$stmt = $conn->prepare($sql);
 	$stmt->execute([$user_id]);
 }
+
+function get_notification_date_formatted($date_str) {
+    if (empty($date_str) || $date_str == '0000-00-00') {
+        return date('Y-m-d'); // Return today's date as fallback
+    }
+    
+    // Try to parse the date
+    $timestamp = strtotime($date_str);
+    if ($timestamp === false) {
+        return date('Y-m-d');
+    }
+    
+    return date('Y-m-d', $timestamp);
+}
+
+function find_task_by_title($conn, $title, $user_id) {
+    $sql = "SELECT id FROM tasks WHERE title = ? AND assigned_to = ? LIMIT 1";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$title, $user_id]);
+    
+    if($stmt->rowCount() > 0) {
+        $task = $stmt->fetch();
+        return $task['id'];
+    }
+    
+    return null;
+}

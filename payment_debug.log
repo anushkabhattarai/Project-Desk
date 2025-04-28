@@ -602,3 +602,653 @@ Status: 200
 Body: {"pidx":"8QWndC4QXZg8xwg7kJRE4Q","payment_url":"https://test-pay.khalti.com/?pidx=8QWndC4QXZg8xwg7kJRE4Q","expires_at":"2025-04-17T16:07:59.593611+05:45","expires_in":1800}
 Error: 
 
+2025-04-26 15:07:23 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1745672843_680cda8b7a89f",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1745672843_680cda8b7a89f\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-26 15:07:23 - Response:
+Status: 200
+Body: {"pidx":"6C36UYcJbHtfemWFaLyhzY","payment_url":"https://test-pay.khalti.com/?pidx=6C36UYcJbHtfemWFaLyhzY","expires_at":"2025-04-26T19:22:20.941812+05:45","expires_in":1800}
+Error: 
+
+2025-04-26 15:10:36 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1745673036_680cdb4cf1711",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1745673036_680cdb4cf1711\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-26 15:10:37 - Response:
+Status: 200
+Body: {"pidx":"aENfBLa38PSEuzRhPJuWHQ","payment_url":"https://test-pay.khalti.com/?pidx=aENfBLa38PSEuzRhPJuWHQ","expires_at":"2025-04-26T19:25:34.456667+05:45","expires_in":1800}
+Error: 
+
+2025-04-26 15:15:39 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1745673339_680cdc7b1ddd7",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1745673339_680cdc7b1ddd7\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-26 15:15:39 - Response:
+Status: 200
+Body: {"pidx":"pmkkpBaQrZAX3rVQrMSFNg","payment_url":"https://test-pay.khalti.com/?pidx=pmkkpBaQrZAX3rVQrMSFNg","expires_at":"2025-04-26T19:30:36.557394+05:45","expires_in":1800}
+Error: 
+
+2025-04-26 15:30:38 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1745674238_680cdffe273f8",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1745674238_680cdffe273f8\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-26 15:30:38 - Response:
+Status: 200
+Body: {"pidx":"zMmvwWbKaYhoZAZbbdjeHT","payment_url":"https://test-pay.khalti.com/?pidx=zMmvwWbKaYhoZAZbbdjeHT","expires_at":"2025-04-26T19:45:35.563871+05:45","expires_in":1800}
+Error: 
+
+2025-04-26 15:38:01 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1745674681_680ce1b980a85",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1745674681_680ce1b980a85\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-26 15:38:01 - Response:
+Status: 200
+Body: {"pidx":"PUHVtWDvVX7WbdaiHCvdqS","payment_url":"https://test-pay.khalti.com/?pidx=PUHVtWDvVX7WbdaiHCvdqS","expires_at":"2025-04-26T19:52:58.945944+05:45","expires_in":1800}
+Error: 
+
+2025-04-26 15:40:57 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1745674857_680ce2696a43f",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1745674857_680ce2696a43f\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-26 15:40:57 - Response:
+Status: 200
+Body: {"pidx":"hzpZMmay3og86oaWyMU37N","payment_url":"https://test-pay.khalti.com/?pidx=hzpZMmay3og86oaWyMU37N","expires_at":"2025-04-26T19:55:54.879099+05:45","expires_in":1800}
+Error: 
+
+2025-04-26 15:49:46 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1745675386_680ce47a9a538",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1745675386_680ce47a9a538\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-26 15:49:46 - Response:
+Status: 200
+Body: {"pidx":"JAryysvgPUZQuBY3c7jMPR","payment_url":"https://test-pay.khalti.com/?pidx=JAryysvgPUZQuBY3c7jMPR","expires_at":"2025-04-26T20:04:44.042965+05:45","expires_in":1800}
+Error: 
+
+2025-04-26 17:23:14 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1745680994_680cfa629be50",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1745680994_680cfa629be50\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-26 17:23:15 - Response:
+Status: 200
+Body: {"pidx":"x8uAZWRLoxy7r498y4Ax3k","payment_url":"https://test-pay.khalti.com/?pidx=x8uAZWRLoxy7r498y4Ax3k","expires_at":"2025-04-26T21:38:15.018168+05:45","expires_in":1800}
+Error: 
+
+2025-04-26 17:24:06 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1745681046_680cfa96dc2f2",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1745681046_680cfa96dc2f2\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-26 17:24:07 - Response:
+Status: 200
+Body: {"pidx":"qkttG7vbFYFz4B3xv2avqK","payment_url":"https://test-pay.khalti.com/?pidx=qkttG7vbFYFz4B3xv2avqK","expires_at":"2025-04-26T21:39:07.112036+05:45","expires_in":1800}
+Error: 
+
+2025-04-26 17:28:24 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1745681304_680cfb983fdef",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1745681304_680cfb983fdef\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-26 17:28:24 - Response:
+Status: 200
+Body: {"pidx":"4mKcsKcCdgqyT7sCQZpoyM","payment_url":"https://test-pay.khalti.com/?pidx=4mKcsKcCdgqyT7sCQZpoyM","expires_at":"2025-04-26T21:43:24.476648+05:45","expires_in":1800}
+Error: 
+
+2025-04-26 17:37:46 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1745681866_680cfdca2cbe4",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1745681866_680cfdca2cbe4\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-26 17:37:46 - Response:
+Status: 200
+Body: {"pidx":"XwjLEYQuNxd2sahkqD8hLR","payment_url":"https://test-pay.khalti.com/?pidx=XwjLEYQuNxd2sahkqD8hLR","expires_at":"2025-04-26T21:52:46.421200+05:45","expires_in":1800}
+Error: 
+
+2025-04-26 17:47:16 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "50000",
+    "purchase_order_id": "ORDER_7_1745682436_680d00048d41d",
+    "purchase_order_name": "Premium Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 50000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "2",
+            "name": "Premium Plan",
+            "total_price": 50000,
+            "quantity": 1,
+            "unit_price": 50000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"2\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1745682436_680d00048d41d\",\"plan_name\":\"Premium Plan\",\"amount\":50000}"
+}
+
+2025-04-26 17:47:16 - Response:
+Status: 200
+Body: {"pidx":"kqKGc43etHqNCizQj6pZ3Y","payment_url":"https://test-pay.khalti.com/?pidx=kqKGc43etHqNCizQj6pZ3Y","expires_at":"2025-04-26T22:02:16.799220+05:45","expires_in":1800}
+Error: 
+
+2025-04-26 17:52:03 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1745682723_680d01237d5e7",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1745682723_680d01237d5e7\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-26 17:52:04 - Response:
+Status: 200
+Body: {"pidx":"ASyTZcpBGEvUHua35Fuq9P","payment_url":"https://test-pay.khalti.com/?pidx=ASyTZcpBGEvUHua35Fuq9P","expires_at":"2025-04-26T22:07:04.030561+05:45","expires_in":1800}
+Error: 
+
+2025-04-26 18:03:07 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1745683387_680d03bb4f50e",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1745683387_680d03bb4f50e\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-26 18:03:07 - Response:
+Status: 200
+Body: {"pidx":"rLZ42aQa2ehZo7oSGZqBH9","payment_url":"https://test-pay.khalti.com/?pidx=rLZ42aQa2ehZo7oSGZqBH9","expires_at":"2025-04-26T22:18:07.730301+05:45","expires_in":1800}
+Error: 
+
+2025-04-27 08:10:03 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1745734203_680dca3b240f3",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1745734203_680dca3b240f3\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-27 08:10:03 - Response:
+Status: 200
+Body: {"pidx":"pFsEh4ZpibSYZrpvRJkVSU","payment_url":"https://test-pay.khalti.com/?pidx=pFsEh4ZpibSYZrpvRJkVSU","expires_at":"2025-04-27T12:25:02.539744+05:45","expires_in":1800}
+Error: 
+
+[2025-04-27 08:11:10] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-27 08:11:10] FULL URL: /Project_Desk/process_payment.php?pidx=pFsEh4ZpibSYZrpvRJkVSU&transaction_id=xGRdJpStqT8krFMPwD4Fyh&tidx=xGRdJpStqT8krFMPwD4Fyh&txnId=xGRdJpStqT8krFMPwD4Fyh&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745734203_680dca3b240f3&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745734203_680dca3b240f3%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-27 08:11:10] GET PARAMS: Array
+(
+    [pidx] => pFsEh4ZpibSYZrpvRJkVSU
+    [transaction_id] => xGRdJpStqT8krFMPwD4Fyh
+    [tidx] => xGRdJpStqT8krFMPwD4Fyh
+    [txnId] => xGRdJpStqT8krFMPwD4Fyh
+    [amount] => 20000
+    [total_amount] => 20000
+    [mobile] => 98XXXXX003
+    [status] => Completed
+    [purchase_order_id] => ORDER_7_1745734203_680dca3b240f3
+    [purchase_order_name] => Basic Plan
+    [merchant_name] => Project Desk
+    [merchant_username] => Samprada
+    [merchant_extra] => {"plan_id":"1","user_id":"7","order_id":"ORDER_7_1745734203_680dca3b240f3","plan_name":"Basic Plan","amount":20000}
+)
+
+[2025-04-27 08:11:10] SESSION: Array
+(
+    [role] => employee
+    [id] => 7
+    [user_id] => 7
+    [username] => Samprada
+    [welcomed] => 1
+    [payment_data] => Array
+        (
+            [pidx] => pFsEh4ZpibSYZrpvRJkVSU
+            [plan_id] => 1
+            [amount] => 20000
+            [order_id] => ORDER_7_1745734203_680dca3b240f3
+            [expires_at] => 2025-04-27T12:25:02.539744+05:45
+            [expires_in] => 1800
+        )
+
+)
+
+[2025-04-27 08:11:10] PIDX received: pFsEh4ZpibSYZrpvRJkVSU
+[2025-04-27 08:11:10] Verifying payment with Khalti lookup API
+[2025-04-27 08:11:10] Khalti lookup response: {"pidx":"pFsEh4ZpibSYZrpvRJkVSU","total_amount":20000,"status":"Completed","transaction_id":"xGRdJpStqT8krFMPwD4Fyh","fee":600,"refunded":false}
+[2025-04-27 08:11:10] Khalti lookup status code: 200
+[2025-04-27 08:11:10] Payment lookup status: Completed
+[2025-04-27 08:11:10] Payment verification successful. Status: Completed
+[2025-04-27 08:11:10] Verified payment details: Transaction ID: xGRdJpStqT8krFMPwD4Fyh, Amount: 20000
+[2025-04-27 08:11:10] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745734203_680dca3b240f3
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-27 08:11:10] Got plan ID from merchant_extra: 1
+[2025-04-27 08:11:10] Database connection successful
+[2025-04-27 08:11:10] Creating subscription: User ID: 7, Plan ID: 1, Trans ID: xGRdJpStqT8krFMPwD4Fyh
+[2025-04-27 08:11:10] ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'transaction_id' in 'field list'
+2025-04-27 11:59:38 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_12_1745747978_680e000acb084",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Veeru",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"12\",\"order_id\":\"ORDER_12_1745747978_680e000acb084\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-27 11:59:39 - Response:
+Status: 200
+Body: {"pidx":"Gkv2zTxAChrhRiotVaqsmT","payment_url":"https://test-pay.khalti.com/?pidx=Gkv2zTxAChrhRiotVaqsmT","expires_at":"2025-04-27T16:14:37.517870+05:45","expires_in":1800}
+Error: 
+

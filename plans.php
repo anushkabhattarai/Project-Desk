@@ -1,6 +1,52 @@
 <?php
 session_start();
 
+// Process payment status from URL parameters
+$payment_status = isset($_GET['payment_status']) ? $_GET['payment_status'] : '';
+$payment_error = isset($_GET['error']) ? urldecode($_GET['error']) : '';
+$payment_message = '';
+
+// Handle different payment statuses
+if (!empty($payment_status)) {
+    switch ($payment_status) {
+        case 'success':
+            $payment_message = '<div class="alert alert-success">Payment successful! Your subscription has been activated.</div>';
+            break;
+        case 'failed':
+            $payment_message = '<div class="alert alert-danger">Payment failed: ' . htmlspecialchars($payment_error) . '</div>';
+            break;
+        case 'canceled':
+            $payment_message = '<div class="alert alert-warning">Payment was canceled. Please try again.</div>';
+            break;
+        case 'pending':
+            $payment_message = '<div class="alert alert-info">Payment is pending. Please contact support for assistance.</div>';
+            break;
+        case 'already_subscribed':
+            $payment_message = '<div class="alert alert-info">You already have an active subscription for this plan.</div>';
+            break;
+        case 'refunded':
+            $payment_message = '<div class="alert alert-warning">This transaction has been refunded.</div>';
+            break;
+        case 'expired':
+            $payment_message = '<div class="alert alert-warning">The payment link has expired. Please try again with a new payment.</div>';
+            break;
+        case 'partially_refunded':
+            $payment_message = '<div class="alert alert-warning">This transaction has been partially refunded. Please contact support.</div>';
+            break;
+        case 'initiated':
+            $payment_message = '<div class="alert alert-info">Your payment has been initiated but not yet completed. Please complete the payment process.</div>';
+            break;
+        case 'error':
+            $payment_message = '<div class="alert alert-danger">Payment verification error: ' . htmlspecialchars($payment_error) . '</div>';
+            break;
+        case 'unknown':
+            $payment_message = '<div class="alert alert-danger">Unknown payment status: ' . htmlspecialchars($payment_error) . '</div>';
+            break;
+        default:
+            $payment_message = '<div class="alert alert-info">Payment status: ' . htmlspecialchars($payment_status) . '</div>';
+    }
+}
+
 // Check if user is logged in
 if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
     header("Location: login.php");
@@ -113,6 +159,10 @@ $title = "Select a Plan";
                         <div class="alert alert-danger" role="alert">
                             <?php echo $error_message; ?>
                         </div>
+                    <?php endif; ?>
+                    
+                    <?php if (!empty($payment_message)): ?>
+                        <?php echo $payment_message; ?>
                     <?php endif; ?>
                     
                     <div class="row g-4">
@@ -328,23 +378,29 @@ $title = "Select a Plan";
             });
         });
 
-        // Handle payment callback
-        window.addEventListener('load', function() {
+        // Handle payment callback on page load - detect URL parameters
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if there are payment status parameters in the URL
             const urlParams = new URLSearchParams(window.location.search);
             const paymentStatus = urlParams.get('payment_status');
-            const error = urlParams.get('error');
-            
-            console.log('Payment callback received:', {
-                status: paymentStatus,
-                error: error
-            });
             
             if (paymentStatus === 'success') {
-                console.log('Payment successful, redirecting to notes.php');
-                window.location.href = 'notes.php';
-            } else if (paymentStatus === 'failed') {
-                console.log('Payment failed:', error);
-                alert('Payment failed. ' + (error || 'Please try again.'));
+                // Show success message and redirect to notes page
+                const successAlert = document.createElement('div');
+                successAlert.className = 'alert alert-success alert-dismissible fade show';
+                successAlert.innerHTML = `
+                    <strong>Payment Successful!</strong> Your subscription has been activated.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                
+                // Insert at the top of the content
+                const contentDiv = document.querySelector('.col-lg-10');
+                contentDiv.insertBefore(successAlert, contentDiv.firstChild);
+                
+                // Redirect to notes page after 3 seconds
+                setTimeout(() => {
+                    window.location.href = 'notes.php';
+                }, 3000);
             }
         });
     </script>
