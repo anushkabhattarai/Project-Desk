@@ -39,24 +39,56 @@ ini_set('display_errors', 1);
 
         .kanban-board {
             display: flex;
-            gap: 1.5rem;
+            gap: 2.5rem;
             height: 100%;
-            padding-bottom: 1rem;
+            padding: 2rem;
             overflow-x: auto;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
         }
         
         .kanban-column {
             background: white;
             border-radius: 16px;
-            min-width: 320px;
-            width: 320px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-            border: 1px solid rgba(0,0,0,0.05);
+            min-width: 340px;
+            width: 340px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            border: none;
+            margin: 0.5rem 0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .kanban-column:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+        .kanban-board::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .kanban-board::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .kanban-board::-webkit-scrollbar-thumb {
+            background: #cdcdcd;
+            border-radius: 4px;
+        }
+
+        .kanban-board::-webkit-scrollbar-thumb:hover {
+            background: #ababab;
         }
         
         .column-header {
             padding: 1.25rem;
             border-bottom: 1px solid rgba(0,0,0,0.05);
+            transition: background-color 0.2s ease;
+        }
+
+        .column-header:hover {
+            background-color: rgba(0,0,0,0.02);
         }
 
         .column-title {
@@ -64,6 +96,7 @@ ini_set('display_errors', 1);
             font-size: 1rem;
             letter-spacing: 0.5px;
             margin: 0;
+            color: var(--bs-gray-800);
         }
         
         .task-count {
@@ -76,6 +109,7 @@ ini_set('display_errors', 1);
             min-width: 28px;
             text-align: center;
             display: inline-block;
+            transition: all 0.2s ease;
         }
 
         .column-content {
@@ -87,16 +121,18 @@ ini_set('display_errors', 1);
         .kanban-card {
             background: white;
             border-radius: 12px;
-            padding: 1rem;
+            padding: 1.25rem;
             margin-bottom: 1rem;
             border: 1px solid rgba(0,0,0,0.05);
             box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
         }
 
         .kanban-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+            border-color: rgba(var(--bs-primary-rgb), 0.2);
         }
 
         .task-date {
@@ -108,6 +144,12 @@ ini_set('display_errors', 1);
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .kanban-card:hover .task-date {
+            background: rgba(var(--bs-primary-rgb), 0.1);
+            color: var(--bs-primary);
         }
         
         .task-title {
@@ -115,6 +157,11 @@ ini_set('display_errors', 1);
             margin: 0.75rem 0;
             color: var(--bs-gray-900);
             font-size: 1rem;
+            transition: color 0.2s ease;
+        }
+
+        .kanban-card:hover .task-title {
+            color: var(--bs-primary);
         }
         
         .task-description {
@@ -128,17 +175,35 @@ ini_set('display_errors', 1);
             padding: 0.5rem 1rem;
             border-radius: 8px;
             font-weight: 500;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .task-footer .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         /* Column-specific styles */
-        .column-pending .task-count { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
-        .column-progress .task-count { background: rgba(13, 202, 240, 0.1); color: #0dcaf0; }
-        .column-completed .task-count { background: rgba(25, 135, 84, 0.1); color: #198754; }
+        .column-pending .task-count { 
+            background: rgba(255, 193, 7, 0.1); 
+            color: #ffc107; 
+        }
+        .column-progress .task-count { 
+            background: rgba(13, 202, 240, 0.1); 
+            color: #0dcaf0; 
+        }
+        .column-completed .task-count { 
+            background: rgba(25, 135, 84, 0.1); 
+            color: #198754; 
+        }
 
         main {
             margin-left: 250px;
             background: #f8fafc;
+            transition: margin-left 0.3s ease;
         }
 
         .page-header {
@@ -146,10 +211,28 @@ ini_set('display_errors', 1);
             padding: 1.5rem;
             border-bottom: 1px solid rgba(0,0,0,0.05);
             margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
 
         .breadcrumb-item a {
             color: var(--bs-primary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .breadcrumb-item a:hover {
+            color: var(--bs-primary-dark);
+        }
+
+        .alert {
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .alert:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
     </style>
 </head>
@@ -159,7 +242,7 @@ ini_set('display_errors', 1);
     <?php include "inc/nav.php" ?>
     
     <main>
-        <div class="page-header">
+        <div class="page-header" style="border-bottom: none; shadow: none">
             <div class="container-fluid">
                 <div class="row align-items-center">
                     <div class="col">
@@ -312,70 +395,170 @@ ini_set('display_errors', 1);
 </html>
 
 <style>
-    .task-count {
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        min-width: 28px;
-        text-align: center;
-        display: inline-block;
+
+
+    .kanban-container {
+        height: calc(100vh - 100px);
+        padding: 1rem;
     }
 
-    /* Column-specific styles */
-    .column-pending .task-count { 
-        background: #fff5d6; 
-        color: #b17800; 
-    }
-    .column-progress .task-count { 
-        background: #e0f7fb; 
-        color: #0987a0; 
-    }
-    .column-completed .task-count { 
-        background: #e0f5e9; 
-        color: #0f5132; 
-    }
-
-    .task-footer {
+    .kanban-board {
         display: flex;
-        justify-content: flex-end;
-        padding-top: 0.75rem;
-        border-top: 1px solid rgba(0,0,0,0.05);
+        gap: 2.5rem;  /* Increased from 1.5rem */
+        height: 100%;
+        padding: 2rem;  /* Added padding around the board */
+        overflow-x: auto;
+    }
+    
+    .kanban-column {
+        background: white;
+        border-radius: 16px;
+        min-width: 340px;  /* Slightly increased from 320px */
+        width: 340px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        border: none;
+        margin: 0.5rem 0;  /* Added vertical margin */
+    }
+
+    /* Add smooth scrolling to the board */
+    .kanban-board {
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 2rem;
+    }
+
+    /* Enhance scrollbar appearance */
+    .kanban-board::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .kanban-board::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    .kanban-board::-webkit-scrollbar-thumb {
+        background: #cdcdcd;
+        border-radius: 4px;
+    }
+
+    .kanban-board::-webkit-scrollbar-thumb:hover {
+        background: #ababab;
     }
         
-    .task-footer .btn {
-        padding: 0.5rem 1.25rem;
+    .column-header {
+        padding: 1rem;
+        border-bottom: 2px solid;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: white;
+    }
+
+    .column-pending .column-header { border-bottom-color: #ffc107; }
+    .column-progress .column-header { border-bottom-color: #0dcaf0; }
+    .column-completed .column-header { border-bottom-color: #198754; }
+
+    .column-content {
+        padding: 1rem;
+        height: calc(100% - 60px);
+        overflow-y: auto;
+    }
+
+    .kanban-card {
+        background: white;
         border-radius: 8px;
-        font-weight: 500;
-        transition: all 0.2s;
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
-        color: #495057;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        border: 1px solid #edf2f7;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+
+    .task-date {
+        font-size: 0.75rem;
+        color: #64748b;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
+        background: #f8fafc;
+        border: 1px solid #edf2f7;
     }
 
-    .column-pending .task-footer .btn:hover {
-        background: #ffc107;
-        border-color: #ffc107;
-        color: #000;
+    .task-title {
+        font-weight: 600;
+        margin: 0.75rem 0;
+        color: #1e293b;
+        font-size: 0.95rem;
     }
 
-    .column-progress .task-footer .btn:hover {
-        background: #0dcaf0;
-        border-color: #0dcaf0;
-        color: #fff;
+    .task-description {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-bottom: 1rem;
+        line-height: 1.5;
     }
 
-    .column-completed .task-footer .btn:hover {
-        background: #198754;
-        border-color: #198754;
-        color: #fff;
+    /* Task count badges */
+    .task-count {
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.2rem 0.75rem;
+        border-radius: 20px;
     }
+
+    .column-pending .task-count { 
+        background: #fff8e1; 
+        color: #b17800; 
+    }
+    
+    .column-progress .task-count { 
+        background: #e1f8fb; 
+        color: #0987a0; 
+    }
+    
+    .column-completed .task-count { 
+        background: #e1f5ea; 
+        color: #0f5132; 
+    }
+
+    /* View button styles */
+    .task-footer .btn {
+        padding: 0.4rem 1rem;
+        font-size: 0.85rem;
+        border-radius: 6px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .column-pending .task-footer .btn {
+        color: #b17800;
+        background: #fff8e1;
+    }
+
+    .column-progress .task-footer .btn {
+        color: #0987a0;
+        background: #e1f8fb;
+    }
+
+    .column-completed .task-footer .btn {
+        color: #0f5132;
+        background: #e1f5ea;
+    }
+
+    .task-footer .btn:hover {
+        transform: translateY(-1px);
+    }
+
+    main {
+        margin-left: 250px;
+        background: white;
+    }
+
+    
 </style>
 
-// ... in the kanban card HTML, update the button ...
 <div class="task-footer">
     <a href="edit-task-employee.php?id=<?=$task['id']?>" class="btn">
         <i class="fa fa-eye"></i>

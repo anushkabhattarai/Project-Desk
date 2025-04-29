@@ -261,9 +261,9 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) ) {
 										</div>
 										<h3 class="mb-1"><?=$overdue_task?></h3>
 										<p class="text-center mb-0">Overdue</p>
+									</div>
 								</div>
 							</div>
-						</div>
 
 							<div class="col-md-4 col-lg-2">
 								<div class="card stat-card border-0 shadow-sm h-100 nodeadline-card">
@@ -273,9 +273,9 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) ) {
 										</div>
 										<h3 class="mb-1"><?=$nodeadline_task?></h3>
 										<p class="text-center mb-0">No Deadline</p>
+									</div>
 								</div>
 							</div>
-						</div>
 
 							<div class="col-md-4 col-lg-2">
 								<div class="card stat-card border-0 shadow-sm h-100 pending-card">
@@ -285,9 +285,9 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) ) {
 										</div>
 										<h3 class="mb-1"><?=$pending?></h3>
 										<p class="text-center mb-0">Pending</p>
+									</div>
 								</div>
 							</div>
-						</div>
 
 							<div class="col-md-4 col-lg-2">
 								<div class="card stat-card border-0 shadow-sm h-100 progress-card">
@@ -297,9 +297,9 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) ) {
 										</div>
 										<h3 class="mb-1"><?=$in_progress?></h3>
 										<p class="text-center mb-0">In Progress</p>
+									</div>
 								</div>
 							</div>
-						</div>
 
 							<div class="col-md-4 col-lg-2">
 								<div class="card stat-card border-0 shadow-sm h-100 completed-card">
@@ -314,328 +314,153 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) ) {
 							</div>
 						</div>
 
-                		<!-- Two column layout for task sections -->
-                		<div class="row task-columns g-4">
-                    		<!-- Column 1: Upcoming Task Reminders -->
-                    		<div class="col-lg-6">
-                        		<div class="card border-0 shadow-sm h-100 task-section-card">
-                            		<div class="card-header bg-transparent border-0 d-flex align-items-center">
-                                		<div class="section-icon upcoming-icon me-2">
-                                    		<i class="fa fa-calendar"></i>
-                                		</div>
-                                		<h5 class="mb-0">Upcoming Task Reminders</h5>
-                            		</div>
-                            		<div class="card-body pt-0">
-                                		<?php if ($upcoming_tasks != 0) { ?>
-                                    		<div class="table-responsive">
-                                        		<table class="table table-hover align-middle task-table mb-0">
-                                            		<thead>
-                                                		<tr>
-                                                    		<th>Title</th>
-                                                    		<th>Due Date</th>
-                                                    		<th>Status</th>
-                                                    		<th class="text-end">Actions</th>
-                                                		</tr>
-                                            		</thead>
-                                            		<tbody>
-                                                		<?php foreach ($upcoming_tasks as $task) { ?>
-                                                    		<tr>
-                                                        		<td class="fw-medium"><?=$task['title']?></td>
-                                                        		<td>
-                                                            		<?php 
-                                                                		$dueDate = strtotime($task['due_date']);
-                                                                		$today = strtotime(date('Y-m-d'));
-                                                                		$daysLeft = floor(($dueDate - $today) / (60 * 60 * 24));
-                                                                
-                                                                		if ($daysLeft == 0) {
-                                                                    		echo "<span class='badge bg-warning text-dark'>Today</span>";
-                                                                		} elseif ($daysLeft == 1) {
-                                                                    		echo "<span class='badge bg-warning text-dark'>Tomorrow</span>";
-                                                                		} else {
-                                                                    		echo "<span class='badge bg-info text-white'>In $daysLeft days</span>";
-                                                                		}
-                                                                		echo " " . date('M d, Y', $dueDate);
-                                                            		?>
-                                                        		</td>
-                                                        		<td>
-                                                            		<?php 
-                                                                		if ($task['status'] == 'pending') {
-                                                                    		echo '<span class="badge bg-secondary">Pending</span>';
-                                                                		} elseif ($task['status'] == 'in_progress') {
-                                                                    		echo '<span class="badge bg-info">In Progress</span>';
-                                                                		}
-                                                            		?>
-                                                        		</td>
-                                                        		<td class="text-end">
-                                                            		<a href="edit-task-employee.php?id=<?=$task['id']?>" class="btn btn-sm btn-primary btn-view">View</a>
-                                                        		</td>
-                                                    		</tr>
-                                                		<?php } ?>
-                                            		</tbody>
-                                        		</table>
-                                    		</div>
-                                		<?php } else { ?>
-                                    		<div class="alert alert-info mb-0">
-                                        		<i class="fa fa-info-circle me-2"></i> No upcoming tasks in the next 7 days.
-                                    		</div>
-                                		<?php } ?>
-                            		</div>
-                        		</div>
-                    		</div>
-                    
-                    		<!-- Column 2: Newly Assigned Tasks -->
-                    		<div class="col-lg-6">
-                        		<div class="card border-0 shadow-sm h-100 task-section-card">
-                            		<div class="card-header bg-transparent border-0 d-flex align-items-center">
-                                		<div class="section-icon new-task-icon me-2">
-                                    		<i class="fa fa-star"></i>
-                                		</div>
-                                		<h5 class="mb-0">Newly Assigned Tasks</h5>
-                            		</div>
-                            		<div class="card-body pt-0">
-                                		<?php if ($newly_assigned_tasks != 0) { ?>
-                                    		<div class="table-responsive">
-                                        		<table class="table table-hover align-middle task-table mb-0">
-                                            		<thead>
-                                                		<tr>
-                                                    		<th>Title</th>
-                                                    		<th>Assigned</th>
-                                                    		<th>Due Date</th>
-                                                    		<th class="text-end">Actions</th>
-                                                		</tr>
-                                            		</thead>
-                                            		<tbody>
-                                                		<?php foreach ($newly_assigned_tasks as $task) { ?>
-                                                    		<tr>
-                                                        		<td class="fw-medium">
-                                                            		<?=$task['title']?>
-                                                            		<span class="badge bg-success ms-2">New</span>
-                                                        		</td>
-                                                        		<td>
-                                                            		<?php 
-                                                                		$assignedDate = strtotime($task['created_at']);
-                                                                		$now = time();
-                                                                		$hoursAgo = round(($now - $assignedDate) / 3600);
-                                                                
-                                                                		if ($hoursAgo < 1) {
-                                                                    		echo "<span class='text-success'>Just now</span>";
-                                                                		} elseif ($hoursAgo < 24) {
-                                                                    		echo "<span class='text-success'>{$hoursAgo} hour" . ($hoursAgo > 1 ? "s" : "") . " ago</span>";
-                                                                		} else {
-                                                                    		echo "<span class='text-success'>" . floor($hoursAgo / 24) . " day" . (floor($hoursAgo / 24) > 1 ? "s" : "") . " ago</span>";
-                                                                		}
-                                                            		?>
-                                                        		</td>
-                                                        		<td>
-                                                            		<?php if($task['due_date'] == "") { ?>
-                                                                		<span class="badge bg-secondary">No Deadline</span>
-                                                            		<?php } else { 
-                                                                		$dueDate = strtotime($task['due_date']);
-                                                                		$today = strtotime(date('Y-m-d'));
-                                                                
-                                                                		if($dueDate < $today) {
-                                                                    		echo "<span class='badge bg-danger'>" . date('M d, Y', $dueDate) . "</span>";
-                                                                		} elseif($dueDate == $today) {
-                                                                    		echo "<span class='badge bg-warning text-dark'>Today</span>";
-                                                                		} else {
-                                                                    		echo date('M d, Y', $dueDate);
-                                                                		}
-                                                            		} ?>
-                                                        		</td>
-                                                        		<td class="text-end">
-                                                            		<a href="edit-task-employee.php?id=<?=$task['id']?>" class="btn btn-sm btn-primary btn-view">View</a>
-                                                        		</td>
-                                                    		</tr>
-                                                		<?php } ?>
-                                            		</tbody>
-                                        		</table>
+						<!-- Two column layout for task sections -->
+						<div class="row task-columns g-4">
+							<!-- Column 1: Upcoming Task Reminders -->
+							<div class="col-lg-6">
+								<div class="card border-0 shadow-sm h-100 task-section-card">
+									<div class="card-header bg-transparent border-0 d-flex align-items-center">
+										<div class="section-icon upcoming-icon me-2">
+											<i class="fa fa-calendar"></i>
 										</div>
-                                		<?php } else { ?>
-                                    		<div class="alert alert-info mb-0">
-                                        		<i class="fa fa-info-circle me-2"></i> No new tasks have been assigned recently.
+										<h5 class="mb-0">Upcoming Task Reminders</h5>
+									</div>
+									<div class="card-body pt-0">
+										<?php if ($upcoming_tasks != 0) { ?>
+											<div class="table-responsive">
+												<table class="table table-hover align-middle task-table mb-0">
+													<thead>
+														<tr>
+															<th>Title</th>
+															<th>Due Date</th>
+															<th>Status</th>
+															<th class="text-end">Actions</th>
+														</tr>
+													</thead>
+													<tbody>
+														<?php foreach ($upcoming_tasks as $task) { ?>
+															<tr>
+																<td class="fw-medium"><?=$task['title']?></td>
+																<td>
+																	<?php 
+																		$dueDate = strtotime($task['due_date']);
+																		$today = strtotime(date('Y-m-d'));
+																		$daysLeft = floor(($dueDate - $today) / (60 * 60 * 24));
+																	
+																		if ($daysLeft == 0) {
+																			echo "<span class='badge bg-warning text-dark'>Today</span>";
+																		} elseif ($daysLeft == 1) {
+																			echo "<span class='badge bg-warning text-dark'>Tomorrow</span>";
+																		} else {
+																			echo "<span class='badge bg-info text-white'>In $daysLeft days</span>";
+																		}
+																		echo " " . date('M d, Y', $dueDate);
+																	?>
+																</td>
+																<td>
+																	<?php 
+																		if ($task['status'] == 'pending') {
+																			echo '<span class="badge bg-secondary">Pending</span>';
+																		} elseif ($task['status'] == 'in_progress') {
+																			echo '<span class="badge bg-info">In Progress</span>';
+																		}
+																	?>
+																</td>
+																<td class="text-end">
+																	<a href="edit-task-employee.php?id=<?=$task['id']?>" class="btn btn-sm btn-primary btn-view">View</a>
+																</td>
+															</tr>
+														<?php } ?>
+													</tbody>
+												</table>
+											</div>
+										<?php } else { ?>
+											<div class="alert alert-info mb-0">
+												<i class="fa fa-info-circle me-2"></i> No upcoming tasks in the next 7 days.
+											</div>
+										<?php } ?>
+									</div>
+								</div>
+							</div>
+						
+							<!-- Column 2: Newly Assigned Tasks -->
+							<div class="col-lg-6">
+								<div class="card border-0 shadow-sm h-100 task-section-card">
+									<div class="card-header bg-transparent border-0 d-flex align-items-center">
+										<div class="section-icon new-task-icon me-2">
+											<i class="fa fa-star"></i>
 										</div>
-                                		<?php } ?>
+										<h5 class="mb-0">Newly Assigned Tasks</h5>
+									</div>
+									<div class="card-body pt-0">
+										<?php if ($newly_assigned_tasks != 0) { ?>
+											<div class="table-responsive">
+												<table class="table table-hover align-middle task-table mb-0">
+													<thead>
+														<tr>
+															<th>Title</th>
+															<th>Assigned</th>
+															<th>Due Date</th>
+															<th class="text-end">Actions</th>
+														</tr>
+													</thead>
+													<tbody>
+														<?php foreach ($newly_assigned_tasks as $task) { ?>
+															<tr>
+																<td class="fw-medium">
+																	<?=$task['title']?>
+																	<span class="badge bg-success ms-2">New</span>
+																</td>
+																<td>
+																	<?php 
+																		$assignedDate = strtotime($task['created_at']);
+																		$now = time();
+																		$hoursAgo = round(($now - $assignedDate) / 3600);
+																	
+																		if ($hoursAgo < 1) {
+																			echo "<span class='text-success'>Just now</span>";
+																		} elseif ($hoursAgo < 24) {
+																			echo "<span class='text-success'>{$hoursAgo} hour" . ($hoursAgo > 1 ? "s" : "") . " ago</span>";
+																		} else {
+																			echo "<span class='text-success'>" . floor($hoursAgo / 24) . " day" . (floor($hoursAgo / 24) > 1 ? "s" : "") . " ago</span>";
+																		}
+																	?>
+																</td>
+																<td>
+																	<?php if($task['due_date'] == "") { ?>
+																		<span class="badge bg-secondary">No Deadline</span>
+																	<?php } else { 
+																		$dueDate = strtotime($task['due_date']);
+																		$today = strtotime(date('Y-m-d'));
+																	
+																		if($dueDate < $today) {
+																			echo "<span class='badge bg-danger'>" . date('M d, Y', $dueDate) . "</span>";
+																		} elseif($dueDate == $today) {
+																			echo "<span class='badge bg-warning text-dark'>Today</span>";
+																		} else {
+																			echo date('M d, Y', $dueDate);
+																		}
+																	} ?>
+																</td>
+																<td class="text-end">
+																	<a href="edit-task-employee.php?id=<?=$task['id']?>" class="btn btn-sm btn-primary btn-view">View</a>
+																</td>
+															</tr>
+														<?php } ?>
+													</tbody>
+												</table>
+											</div>
+										<?php } else { ?>
+											<div class="alert alert-info mb-0">
+												<i class="fa fa-info-circle me-2"></i> No new tasks have been assigned recently.
+											</div>
+										<?php } ?>
 									</div>
 								</div>
 							</div>
 						</div>
 					</div>
 				<?php } ?>
-                
-                <!-- Keep the admin view content for Task Reminders Section intact -->
-                <?php if ($_SESSION['role'] == "admin") { ?>
-                <div class="mt-5">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4>Upcoming Task Reminders</h4>
-                    </div>
-                    
-                    <?php if ($upcoming_tasks != 0) { ?>
-                        <div class="card border-0 shadow-sm mb-4">
-                            <div class="card-header bg-light">
-                                <h5 class="mb-0">Tasks Due Soon</h5>
-                            </div>
-                            <div class="card-body p-0">
-                                <div class="table-responsive">
-                                    <table class="table table-hover align-middle mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>Title</th>
-                                                <th>Due Date</th>
-                                                <th>Status</th>
-                                                <?php if ($_SESSION['role'] == "admin") { ?>
-                                                    <th>Assigned To</th>
-                                                <?php } ?>
-                                                <th class="text-end">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($upcoming_tasks as $task) { ?>
-                                                <tr>
-                                                    <td class="fw-medium"><?=$task['title']?></td>
-                                                    <td>
-                                                        <?php 
-                                                            $dueDate = strtotime($task['due_date']);
-                                                            $today = strtotime(date('Y-m-d'));
-                                                            $daysLeft = floor(($dueDate - $today) / (60 * 60 * 24));
-                                                            
-                                                            if ($daysLeft == 0) {
-                                                                echo "<span class='badge bg-warning text-dark'>Today</span>";
-                                                            } elseif ($daysLeft == 1) {
-                                                                echo "<span class='badge bg-warning text-dark'>Tomorrow</span>";
-                                                            } else {
-                                                                echo "<span class='badge bg-info text-white'>In $daysLeft days</span>";
-                                                            }
-                                                            echo " " . date('M d, Y', $dueDate);
-                                                        ?>
-                                                    </td>
-                                                    <td>
-                                                        <?php 
-                                                            if ($task['status'] == 'pending') {
-                                                                echo '<span class="badge bg-secondary">Pending</span>';
-                                                            } elseif ($task['status'] == 'in_progress') {
-                                                                echo '<span class="badge bg-info">In Progress</span>';
-                                                            }
-                                                        ?>
-                                                    </td>
-                                                    <?php if ($_SESSION['role'] == "admin") { ?>
-                                                        <td><?=$task['full_name']?></td>
-                                                    <?php } ?>
-                                                    <td class="text-end">
-                                                        <?php if ($_SESSION['role'] == "admin") { ?>
-                                                            <a href="edit-task.php?id=<?=$task['id']?>" class="btn btn-sm btn-primary">View</a>
-                                                        <?php } else { ?>
-                                                            <a href="edit-task-employee.php?id=<?=$task['id']?>" class="btn btn-sm btn-primary">View</a>
-                                                        <?php } ?>
-                                                    </td>
-                                                </tr>
-                                            <?php } ?>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    <?php } else { ?>
-                        <div class="alert alert-info mb-4">
-                            No upcoming tasks in the next 7 days.
-                        </div>
-                    <?php } ?>
-
-                    <!-- Newly Assigned Tasks -->
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4>Newly Assigned Tasks</h4>
-                    </div>
-                    
-                    <?php if ($newly_assigned_tasks != 0) { ?>
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-header bg-light">
-                                <h5 class="mb-0">Tasks Assigned in Last 48 Hours</h5>
-                            </div>
-                            <div class="card-body p-0">
-                                <div class="table-responsive">
-                                    <table class="table table-hover align-middle mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>Title</th>
-                                                <th>Assigned</th>
-                                                <th>Due Date</th>
-                                                <th>Status</th>
-                                                <?php if ($_SESSION['role'] == "admin") { ?>
-                                                    <th>Assigned To</th>
-                                                <?php } ?>
-                                                <th class="text-end">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($newly_assigned_tasks as $task) { ?>
-                                                <tr>
-                                                    <td class="fw-medium">
-                                                        <?=$task['title']?>
-                                                        <span class="badge bg-success ms-2">New</span>
-                                                    </td>
-                                                    <td>
-                                                        <?php 
-                                                            $assignedDate = strtotime($task['created_at']);
-                                                            $now = time();
-                                                            $hoursAgo = round(($now - $assignedDate) / 3600);
-                                                            
-                                                            if ($hoursAgo < 1) {
-                                                                echo "<span class='text-success'>Just now</span>";
-                                                            } elseif ($hoursAgo < 24) {
-                                                                echo "<span class='text-success'>{$hoursAgo} hour" . ($hoursAgo > 1 ? "s" : "") . " ago</span>";
-                                                            } else {
-                                                                echo "<span class='text-success'>" . floor($hoursAgo / 24) . " day" . (floor($hoursAgo / 24) > 1 ? "s" : "") . " ago</span>";
-                                                            }
-                                                        ?>
-                                                    </td>
-                                                    <td>
-                                                        <?php if($task['due_date'] == "") { ?>
-                                                            <span class="badge bg-secondary">No Deadline</span>
-                                                        <?php } else { 
-                                                            $dueDate = strtotime($task['due_date']);
-                                                            $today = strtotime(date('Y-m-d'));
-                                                            
-                                                            if($dueDate < $today) {
-                                                                echo "<span class='badge bg-danger'>" . date('M d, Y', $dueDate) . "</span>";
-                                                            } elseif($dueDate == $today) {
-                                                                echo "<span class='badge bg-warning text-dark'>Today</span>";
-                                                            } else {
-                                                                echo date('M d, Y', $dueDate);
-                                                            }
-                                                        } ?>
-                                                    </td>
-                                                    <td>
-                                                        <?php 
-                                                            if ($task['status'] == 'pending') {
-                                                                echo '<span class="badge bg-secondary">Pending</span>';
-                                                            } elseif ($task['status'] == 'in_progress') {
-                                                                echo '<span class="badge bg-info">In Progress</span>';
-                                                            }
-                                                        ?>
-                                                    </td>
-                                                    <?php if ($_SESSION['role'] == "admin") { ?>
-                                                        <td><?=$task['full_name']?></td>
-                                                    <?php } ?>
-                                                    <td class="text-end">
-                                                        <?php if ($_SESSION['role'] == "admin") { ?>
-                                                            <a href="edit-task.php?id=<?=$task['id']?>" class="btn btn-sm btn-primary">View</a>
-                                                        <?php } else { ?>
-                                                            <a href="edit-task-employee.php?id=<?=$task['id']?>" class="btn btn-sm btn-primary">View</a>
-                                                        <?php } ?>
-                                                    </td>
-                                                </tr>
-                                            <?php } ?>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    <?php } else { ?>
-                        <div class="alert alert-info">
-                            No new tasks have been assigned recently.
-                        </div>
-                    <?php } ?>
-                </div>
-                <?php } ?>
 			</div>
 		</section>
 	</main>

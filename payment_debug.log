@@ -1252,3 +1252,1599 @@ Status: 200
 Body: {"pidx":"Gkv2zTxAChrhRiotVaqsmT","payment_url":"https://test-pay.khalti.com/?pidx=Gkv2zTxAChrhRiotVaqsmT","expires_at":"2025-04-27T16:14:37.517870+05:45","expires_in":1800}
 Error: 
 
+2025-04-29 06:56:08 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1745902568_68105be890410",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1745902568_68105be890410\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-29 06:56:08 - Response:
+Status: 200
+Body: {"pidx":"fcqkzVQoYvd6BKkrpmJ6GA","payment_url":"https://test-pay.khalti.com/?pidx=fcqkzVQoYvd6BKkrpmJ6GA","expires_at":"2025-04-29T11:11:07.715930+05:45","expires_in":1800}
+Error: 
+
+2025-04-29 06:58:07 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost:8080\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost:8080\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1745902687_68105c5fc9c20",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1745902687_68105c5fc9c20\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-29 06:58:08 - Response:
+Status: 200
+Body: {"pidx":"VFbk9iZYRUPDuVpWTKfYMN","payment_url":"https://test-pay.khalti.com/?pidx=VFbk9iZYRUPDuVpWTKfYMN","expires_at":"2025-04-29T11:13:06.849614+05:45","expires_in":1800}
+Error: 
+
+[2025-04-29 06:58:25] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 06:58:25] FULL URL: /Project_Desk/process_payment.php?pidx=VFbk9iZYRUPDuVpWTKfYMN&transaction_id=dTNiVKVzZCu23ouowgxkZH&tidx=dTNiVKVzZCu23ouowgxkZH&txnId=dTNiVKVzZCu23ouowgxkZH&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745902687_68105c5fc9c20&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745902687_68105c5fc9c20%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 06:58:25] GET PARAMS: Array
+(
+    [pidx] => VFbk9iZYRUPDuVpWTKfYMN
+    [transaction_id] => dTNiVKVzZCu23ouowgxkZH
+    [tidx] => dTNiVKVzZCu23ouowgxkZH
+    [txnId] => dTNiVKVzZCu23ouowgxkZH
+    [amount] => 20000
+    [total_amount] => 20000
+    [mobile] => 98XXXXX003
+    [status] => Completed
+    [purchase_order_id] => ORDER_7_1745902687_68105c5fc9c20
+    [purchase_order_name] => Basic Plan
+    [merchant_name] => Project Desk
+    [merchant_username] => Samprada
+    [merchant_extra] => {"plan_id":"1","user_id":"7","order_id":"ORDER_7_1745902687_68105c5fc9c20","plan_name":"Basic Plan","amount":20000}
+)
+
+[2025-04-29 06:58:25] SESSION: Array
+(
+    [role] => employee
+    [id] => 7
+    [user_id] => 7
+    [username] => Samprada
+    [welcomed] => 1
+    [payment_data] => Array
+        (
+            [pidx] => VFbk9iZYRUPDuVpWTKfYMN
+            [plan_id] => 1
+            [amount] => 20000
+            [order_id] => ORDER_7_1745902687_68105c5fc9c20
+            [expires_at] => 2025-04-29T11:13:06.849614+05:45
+            [expires_in] => 1800
+        )
+
+)
+
+[2025-04-29 06:58:25] PIDX received: VFbk9iZYRUPDuVpWTKfYMN
+[2025-04-29 06:58:25] Verifying payment with Khalti lookup API
+[2025-04-29 06:58:26] Khalti lookup response: {"pidx":"VFbk9iZYRUPDuVpWTKfYMN","total_amount":20000,"status":"Completed","transaction_id":"dTNiVKVzZCu23ouowgxkZH","fee":600,"refunded":false}
+[2025-04-29 06:58:26] Khalti lookup status code: 200
+[2025-04-29 06:58:26] Payment lookup status: Completed
+[2025-04-29 06:58:26] Payment verification successful. Status: Completed
+[2025-04-29 06:58:26] Verified payment details: Transaction ID: dTNiVKVzZCu23ouowgxkZH, Amount: 20000
+[2025-04-29 06:58:26] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745902687_68105c5fc9c20
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 06:58:26] Got plan ID from merchant_extra: 1
+[2025-04-29 06:58:26] Database connection successful
+[2025-04-29 06:58:26] Creating subscription: User ID: 7, Plan ID: 1, Trans ID: dTNiVKVzZCu23ouowgxkZH
+[2025-04-29 06:58:26] ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'transaction_id' in 'field list'
+[2025-04-29 07:00:31] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 07:00:31] FULL URL: /Project_Desk/process_payment.php?pidx=VFbk9iZYRUPDuVpWTKfYMN&transaction_id=dTNiVKVzZCu23ouowgxkZH&tidx=dTNiVKVzZCu23ouowgxkZH&txnId=dTNiVKVzZCu23ouowgxkZH&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745902687_68105c5fc9c20&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745902687_68105c5fc9c20%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 07:00:31] GET PARAMS: Array
+(
+    [pidx] => VFbk9iZYRUPDuVpWTKfYMN
+    [transaction_id] => dTNiVKVzZCu23ouowgxkZH
+    [tidx] => dTNiVKVzZCu23ouowgxkZH
+    [txnId] => dTNiVKVzZCu23ouowgxkZH
+    [amount] => 20000
+    [total_amount] => 20000
+    [mobile] => 98XXXXX003
+    [status] => Completed
+    [purchase_order_id] => ORDER_7_1745902687_68105c5fc9c20
+    [purchase_order_name] => Basic Plan
+    [merchant_name] => Project Desk
+    [merchant_username] => Samprada
+    [merchant_extra] => {"plan_id":"1","user_id":"7","order_id":"ORDER_7_1745902687_68105c5fc9c20","plan_name":"Basic Plan","amount":20000}
+)
+
+[2025-04-29 07:00:31] SESSION: Array
+(
+    [role] => employee
+    [id] => 7
+    [user_id] => 7
+    [username] => Samprada
+    [welcomed] => 1
+    [payment_data] => Array
+        (
+            [pidx] => VFbk9iZYRUPDuVpWTKfYMN
+            [plan_id] => 1
+            [amount] => 20000
+            [order_id] => ORDER_7_1745902687_68105c5fc9c20
+            [expires_at] => 2025-04-29T11:13:06.849614+05:45
+            [expires_in] => 1800
+        )
+
+)
+
+[2025-04-29 07:00:31] PIDX received: VFbk9iZYRUPDuVpWTKfYMN
+[2025-04-29 07:00:31] Verifying payment with Khalti lookup API
+[2025-04-29 07:00:31] Khalti lookup response: {"pidx":"VFbk9iZYRUPDuVpWTKfYMN","total_amount":20000,"status":"Completed","transaction_id":"dTNiVKVzZCu23ouowgxkZH","fee":600,"refunded":false}
+[2025-04-29 07:00:31] Khalti lookup status code: 200
+[2025-04-29 07:00:31] Payment lookup status: Completed
+[2025-04-29 07:00:31] Payment verification successful. Status: Completed
+[2025-04-29 07:00:31] Verified payment details: Transaction ID: dTNiVKVzZCu23ouowgxkZH, Amount: 20000
+[2025-04-29 07:00:31] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745902687_68105c5fc9c20
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 07:00:31] Got plan ID from merchant_extra: 1
+[2025-04-29 07:00:32] Database connection successful
+[2025-04-29 07:00:32] Creating subscription: User ID: 7, Plan ID: 1, Trans ID: dTNiVKVzZCu23ouowgxkZH
+[2025-04-29 07:00:32] ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'transaction_id' in 'field list'
+[2025-04-29 07:00:48] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 07:00:48] FULL URL: /Project_Desk/process_payment.php?pidx=VFbk9iZYRUPDuVpWTKfYMN&transaction_id=dTNiVKVzZCu23ouowgxkZH&tidx=dTNiVKVzZCu23ouowgxkZH&txnId=dTNiVKVzZCu23ouowgxkZH&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745902687_68105c5fc9c20&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745902687_68105c5fc9c20%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 07:00:48] GET PARAMS: Array
+(
+    [pidx] => VFbk9iZYRUPDuVpWTKfYMN
+    [transaction_id] => dTNiVKVzZCu23ouowgxkZH
+    [tidx] => dTNiVKVzZCu23ouowgxkZH
+    [txnId] => dTNiVKVzZCu23ouowgxkZH
+    [amount] => 20000
+    [total_amount] => 20000
+    [mobile] => 98XXXXX003
+    [status] => Completed
+    [purchase_order_id] => ORDER_7_1745902687_68105c5fc9c20
+    [purchase_order_name] => Basic Plan
+    [merchant_name] => Project Desk
+    [merchant_username] => Samprada
+    [merchant_extra] => {"plan_id":"1","user_id":"7","order_id":"ORDER_7_1745902687_68105c5fc9c20","plan_name":"Basic Plan","amount":20000}
+)
+
+[2025-04-29 07:00:48] SESSION: Array
+(
+    [role] => employee
+    [id] => 7
+    [user_id] => 7
+    [username] => Samprada
+    [welcomed] => 1
+    [payment_data] => Array
+        (
+            [pidx] => VFbk9iZYRUPDuVpWTKfYMN
+            [plan_id] => 1
+            [amount] => 20000
+            [order_id] => ORDER_7_1745902687_68105c5fc9c20
+            [expires_at] => 2025-04-29T11:13:06.849614+05:45
+            [expires_in] => 1800
+        )
+
+)
+
+[2025-04-29 07:00:48] PIDX received: VFbk9iZYRUPDuVpWTKfYMN
+[2025-04-29 07:00:48] Verifying payment with Khalti lookup API
+[2025-04-29 07:00:48] Khalti lookup response: {"pidx":"VFbk9iZYRUPDuVpWTKfYMN","total_amount":20000,"status":"Completed","transaction_id":"dTNiVKVzZCu23ouowgxkZH","fee":600,"refunded":false}
+[2025-04-29 07:00:48] Khalti lookup status code: 200
+[2025-04-29 07:00:48] Payment lookup status: Completed
+[2025-04-29 07:00:48] Payment verification successful. Status: Completed
+[2025-04-29 07:00:48] Verified payment details: Transaction ID: dTNiVKVzZCu23ouowgxkZH, Amount: 20000
+[2025-04-29 07:00:48] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745902687_68105c5fc9c20
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 07:00:48] Got plan ID from merchant_extra: 1
+[2025-04-29 07:00:48] Database connection successful
+[2025-04-29 07:00:48] Creating subscription: User ID: 7, Plan ID: 1, Trans ID: dTNiVKVzZCu23ouowgxkZH
+[2025-04-29 07:00:48] ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'transaction_id' in 'field list'
+[2025-04-29 07:02:37] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 07:02:37] FULL URL: /Project_Desk/process_payment.php?pidx=VFbk9iZYRUPDuVpWTKfYMN&transaction_id=dTNiVKVzZCu23ouowgxkZH&tidx=dTNiVKVzZCu23ouowgxkZH&txnId=dTNiVKVzZCu23ouowgxkZH&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745902687_68105c5fc9c20&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745902687_68105c5fc9c20%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 07:02:37] GET PARAMS: Array
+(
+    [pidx] => VFbk9iZYRUPDuVpWTKfYMN
+    [transaction_id] => dTNiVKVzZCu23ouowgxkZH
+    [tidx] => dTNiVKVzZCu23ouowgxkZH
+    [txnId] => dTNiVKVzZCu23ouowgxkZH
+    [amount] => 20000
+    [total_amount] => 20000
+    [mobile] => 98XXXXX003
+    [status] => Completed
+    [purchase_order_id] => ORDER_7_1745902687_68105c5fc9c20
+    [purchase_order_name] => Basic Plan
+    [merchant_name] => Project Desk
+    [merchant_username] => Samprada
+    [merchant_extra] => {"plan_id":"1","user_id":"7","order_id":"ORDER_7_1745902687_68105c5fc9c20","plan_name":"Basic Plan","amount":20000}
+)
+
+[2025-04-29 07:02:37] SESSION: Array
+(
+    [role] => employee
+    [id] => 7
+    [user_id] => 7
+    [username] => Samprada
+    [welcomed] => 1
+    [payment_data] => Array
+        (
+            [pidx] => VFbk9iZYRUPDuVpWTKfYMN
+            [plan_id] => 1
+            [amount] => 20000
+            [order_id] => ORDER_7_1745902687_68105c5fc9c20
+            [expires_at] => 2025-04-29T11:13:06.849614+05:45
+            [expires_in] => 1800
+        )
+
+)
+
+[2025-04-29 07:02:37] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745902687_68105c5fc9c20
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 07:02:37] Transaction ID: dTNiVKVzZCu23ouowgxkZH
+[2025-04-29 07:02:37] Amount: 20000
+[2025-04-29 07:02:37] Status: Completed
+[2025-04-29 07:02:37] Purchase Order ID: ORDER_7_1745902687_68105c5fc9c20
+[2025-04-29 07:02:37] PIDX received: VFbk9iZYRUPDuVpWTKfYMN
+[2025-04-29 07:02:37] Verifying payment with Khalti lookup API
+[2025-04-29 07:02:37] Khalti lookup response: {"pidx":"VFbk9iZYRUPDuVpWTKfYMN","total_amount":20000,"status":"Completed","transaction_id":"dTNiVKVzZCu23ouowgxkZH","fee":600,"refunded":false}
+[2025-04-29 07:02:37] Khalti lookup status code: 200
+[2025-04-29 07:02:37] Payment lookup status: Completed
+[2025-04-29 07:02:37] Payment verification successful. Status: Completed
+[2025-04-29 07:02:37] Verified payment details: Transaction ID: dTNiVKVzZCu23ouowgxkZH, Amount: 20000
+[2025-04-29 07:02:37] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745902687_68105c5fc9c20
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 07:02:37] Got plan ID from merchant_extra: 1
+[2025-04-29 07:02:38] Database connection successful
+[2025-04-29 07:02:38] Creating subscription: User ID: 7, Plan ID: 1, Trans ID: dTNiVKVzZCu23ouowgxkZH
+[2025-04-29 07:02:38] ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'transaction_id' in 'field list'
+[2025-04-29 07:03:29] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 07:03:29] FULL URL: /Project_Desk/process_payment.php?pidx=VFbk9iZYRUPDuVpWTKfYMN&transaction_id=dTNiVKVzZCu23ouowgxkZH&tidx=dTNiVKVzZCu23ouowgxkZH&txnId=dTNiVKVzZCu23ouowgxkZH&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745902687_68105c5fc9c20&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745902687_68105c5fc9c20%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 07:03:29] Parameter pidx received: VFbk9iZYRUPDuVpWTKfYMN
+[2025-04-29 07:03:29] Parameter transaction_id received: dTNiVKVzZCu23ouowgxkZH
+[2025-04-29 07:03:29] Parameter amount received: 20000
+[2025-04-29 07:03:29] Parameter status received: Completed
+[2025-04-29 07:03:29] Parameter purchase_order_id received: ORDER_7_1745902687_68105c5fc9c20
+[2025-04-29 07:03:29] Parameter merchant_extra received: {"plan_id":"1","user_id":"7","order_id":"ORDER_7_1745902687_68105c5fc9c20","plan_name":"Basic Plan","amount":20000}
+[2025-04-29 07:03:29] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745902687_68105c5fc9c20
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 07:03:29] Merchant extra field plan_id: 1
+[2025-04-29 07:03:29] Merchant extra field user_id: 7
+[2025-04-29 07:03:29] Merchant extra field order_id: ORDER_7_1745902687_68105c5fc9c20
+[2025-04-29 07:03:29] Merchant extra field plan_name: Basic Plan
+[2025-04-29 07:03:29] Merchant extra field amount: 20000
+[2025-04-29 07:03:29] PIDX received: VFbk9iZYRUPDuVpWTKfYMN
+[2025-04-29 07:03:29] Verifying payment with Khalti lookup API
+[2025-04-29 07:03:29] Khalti lookup response: {"pidx":"VFbk9iZYRUPDuVpWTKfYMN","total_amount":20000,"status":"Completed","transaction_id":"dTNiVKVzZCu23ouowgxkZH","fee":600,"refunded":false}
+[2025-04-29 07:03:29] Khalti lookup status code: 200
+[2025-04-29 07:03:29] Payment lookup status: Completed
+[2025-04-29 07:03:29] Payment verification successful. Status: Completed
+[2025-04-29 07:03:29] Verified payment details: Transaction ID: dTNiVKVzZCu23ouowgxkZH, Amount: 20000
+[2025-04-29 07:03:29] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745902687_68105c5fc9c20
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 07:03:29] Got plan ID from merchant_extra: 1
+[2025-04-29 07:03:29] Database connection successful
+[2025-04-29 07:03:29] Creating subscription: User ID: 7, Plan ID: 1, Trans ID: dTNiVKVzZCu23ouowgxkZH
+[2025-04-29 07:03:29] ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'transaction_id' in 'field list'
+2025-04-29 07:06:11 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost:8080\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost:8080\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1745903171_68105e436d927",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1745903171_68105e436d927\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-29 07:06:11 - Response:
+Status: 200
+Body: {"pidx":"9o9Kd7oijBDf9CNstwqpgQ","payment_url":"https://test-pay.khalti.com/?pidx=9o9Kd7oijBDf9CNstwqpgQ","expires_at":"2025-04-29T11:21:10.565539+05:45","expires_in":1800}
+Error: 
+
+[2025-04-29 07:06:27] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 07:06:27] FULL URL: /Project_Desk/process_payment.php?pidx=9o9Kd7oijBDf9CNstwqpgQ&transaction_id=KpSrYsDR7ttM9MK7B2NduF&tidx=KpSrYsDR7ttM9MK7B2NduF&txnId=KpSrYsDR7ttM9MK7B2NduF&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745903171_68105e436d927&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745903171_68105e436d927%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 07:06:27] All URL parameters validated successfully
+[2025-04-29 07:06:27] Payment ID (pidx): 9o9Kd7oijBDf9CNstwqpgQ
+[2025-04-29 07:06:27] Transaction ID: KpSrYsDR7ttM9MK7B2NduF
+[2025-04-29 07:06:27] Amount: 20000
+[2025-04-29 07:06:27] Status: Completed
+[2025-04-29 07:06:27] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745903171_68105e436d927
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 07:06:27] Merchant extra field plan_id: 1
+[2025-04-29 07:06:27] Merchant extra field user_id: 7
+[2025-04-29 07:06:27] Merchant extra field order_id: ORDER_7_1745903171_68105e436d927
+[2025-04-29 07:06:27] Merchant extra field plan_name: Basic Plan
+[2025-04-29 07:06:27] Merchant extra field amount: 20000
+[2025-04-29 07:06:27] PIDX received: 9o9Kd7oijBDf9CNstwqpgQ
+[2025-04-29 07:06:27] Verifying payment with Khalti lookup API
+[2025-04-29 07:06:28] Khalti lookup response: {"pidx":"9o9Kd7oijBDf9CNstwqpgQ","total_amount":20000,"status":"Completed","transaction_id":"KpSrYsDR7ttM9MK7B2NduF","fee":600,"refunded":false}
+[2025-04-29 07:06:28] Khalti lookup status code: 200
+[2025-04-29 07:06:28] Payment lookup status: Completed
+[2025-04-29 07:06:28] Payment verification successful. Status: Completed
+[2025-04-29 07:06:28] Verified payment details: Transaction ID: KpSrYsDR7ttM9MK7B2NduF, Amount: 20000
+[2025-04-29 07:06:28] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745903171_68105e436d927
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 07:06:28] Got plan ID from merchant_extra: 1
+[2025-04-29 07:06:28] Database connection successful
+[2025-04-29 07:06:28] Creating subscription: User ID: 7, Plan ID: 1, Trans ID: KpSrYsDR7ttM9MK7B2NduF
+[2025-04-29 07:06:28] ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'transaction_id' in 'field list'
+2025-04-29 08:07:05 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost:8080\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost:8080\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1745906825_68106c893e81b",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1745906825_68106c893e81b\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-29 08:07:05 - Response:
+Status: 200
+Body: {"pidx":"TityPYo8t6v2hP7FhN9SwW","payment_url":"https://test-pay.khalti.com/?pidx=TityPYo8t6v2hP7FhN9SwW","expires_at":"2025-04-29T12:22:04.497774+05:45","expires_in":1800}
+Error: 
+
+[2025-04-29 08:07:24] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:07:24] FULL URL: /Project_Desk/process_payment.php?pidx=TityPYo8t6v2hP7FhN9SwW&transaction_id=BP8ZdodBbvUgTBzw6JHQ8E&tidx=BP8ZdodBbvUgTBzw6JHQ8E&txnId=BP8ZdodBbvUgTBzw6JHQ8E&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745906825_68106c893e81b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745906825_68106c893e81b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:07:24] All URL parameters validated successfully
+[2025-04-29 08:07:24] Payment ID (pidx): TityPYo8t6v2hP7FhN9SwW
+[2025-04-29 08:07:24] Transaction ID: BP8ZdodBbvUgTBzw6JHQ8E
+[2025-04-29 08:07:24] Amount: 20000
+[2025-04-29 08:07:24] Status: Completed
+[2025-04-29 08:07:24] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745906825_68106c893e81b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:07:24] Merchant extra field plan_id: 1
+[2025-04-29 08:07:24] Merchant extra field user_id: 7
+[2025-04-29 08:07:24] Merchant extra field order_id: ORDER_7_1745906825_68106c893e81b
+[2025-04-29 08:07:24] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:07:24] Merchant extra field amount: 20000
+[2025-04-29 08:07:24] PIDX received: TityPYo8t6v2hP7FhN9SwW
+[2025-04-29 08:07:24] Verifying payment with Khalti lookup API
+[2025-04-29 08:07:25] Khalti lookup response: {"pidx":"TityPYo8t6v2hP7FhN9SwW","total_amount":20000,"status":"Completed","transaction_id":"BP8ZdodBbvUgTBzw6JHQ8E","fee":600,"refunded":false}
+[2025-04-29 08:07:25] Khalti lookup status code: 200
+[2025-04-29 08:07:25] Payment lookup status: Completed
+[2025-04-29 08:07:25] Payment verification successful. Status: Completed
+[2025-04-29 08:07:25] Verified payment details: Transaction ID: BP8ZdodBbvUgTBzw6JHQ8E, Amount: 20000
+[2025-04-29 08:07:25] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745906825_68106c893e81b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:07:25] Got plan ID from merchant_extra: 1
+[2025-04-29 08:07:25] Database connection successful
+[2025-04-29 08:07:25] Creating subscription: User ID: 7, Plan ID: 1, Trans ID: BP8ZdodBbvUgTBzw6JHQ8E
+[2025-04-29 08:07:25] ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'transaction_id' in 'field list'
+[2025-04-29 08:07:40] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:07:40] FULL URL: /Project_Desk/process_payment.php?pidx=TityPYo8t6v2hP7FhN9SwW&transaction_id=BP8ZdodBbvUgTBzw6JHQ8E&tidx=BP8ZdodBbvUgTBzw6JHQ8E&txnId=BP8ZdodBbvUgTBzw6JHQ8E&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745906825_68106c893e81b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745906825_68106c893e81b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:07:40] All URL parameters validated successfully
+[2025-04-29 08:07:40] Payment ID (pidx): TityPYo8t6v2hP7FhN9SwW
+[2025-04-29 08:07:40] Transaction ID: BP8ZdodBbvUgTBzw6JHQ8E
+[2025-04-29 08:07:40] Amount: 20000
+[2025-04-29 08:07:40] Status: Completed
+[2025-04-29 08:07:40] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745906825_68106c893e81b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:07:40] Merchant extra field plan_id: 1
+[2025-04-29 08:07:40] Merchant extra field user_id: 7
+[2025-04-29 08:07:40] Merchant extra field order_id: ORDER_7_1745906825_68106c893e81b
+[2025-04-29 08:07:40] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:07:40] Merchant extra field amount: 20000
+[2025-04-29 08:07:40] PIDX received: TityPYo8t6v2hP7FhN9SwW
+[2025-04-29 08:07:40] Verifying payment with Khalti lookup API
+[2025-04-29 08:08:10] Khalti lookup response: 
+[2025-04-29 08:08:10] Khalti lookup status code: 0
+[2025-04-29 08:08:10] Curl error during lookup: Operation timed out after 30002 milliseconds with 0 bytes received
+[2025-04-29 08:09:20] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:09:20] FULL URL: /Project_Desk/process_payment.php?pidx=TityPYo8t6v2hP7FhN9SwW&transaction_id=BP8ZdodBbvUgTBzw6JHQ8E&tidx=BP8ZdodBbvUgTBzw6JHQ8E&txnId=BP8ZdodBbvUgTBzw6JHQ8E&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745906825_68106c893e81b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745906825_68106c893e81b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:09:20] All URL parameters validated successfully
+[2025-04-29 08:09:20] Payment ID (pidx): TityPYo8t6v2hP7FhN9SwW
+[2025-04-29 08:09:20] Transaction ID: BP8ZdodBbvUgTBzw6JHQ8E
+[2025-04-29 08:09:20] Amount: 20000
+[2025-04-29 08:09:20] Status: Completed
+[2025-04-29 08:09:20] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745906825_68106c893e81b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:09:20] Merchant extra field plan_id: 1
+[2025-04-29 08:09:20] Merchant extra field user_id: 7
+[2025-04-29 08:09:20] Merchant extra field order_id: ORDER_7_1745906825_68106c893e81b
+[2025-04-29 08:09:20] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:09:20] Merchant extra field amount: 20000
+[2025-04-29 08:09:20] PIDX received: TityPYo8t6v2hP7FhN9SwW
+[2025-04-29 08:09:20] Verifying payment with Khalti lookup API
+[2025-04-29 08:09:20] Khalti lookup response: {"pidx":"TityPYo8t6v2hP7FhN9SwW","total_amount":20000,"status":"Completed","transaction_id":"BP8ZdodBbvUgTBzw6JHQ8E","fee":600,"refunded":false}
+[2025-04-29 08:09:20] Khalti lookup status code: 200
+[2025-04-29 08:09:20] Payment lookup status: Completed
+[2025-04-29 08:09:20] Payment verification successful. Status: Completed
+[2025-04-29 08:09:20] Verified payment details: Transaction ID: BP8ZdodBbvUgTBzw6JHQ8E, Amount: 20000
+[2025-04-29 08:09:20] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745906825_68106c893e81b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:09:20] Got plan ID from merchant_extra: 1
+[2025-04-29 08:09:20] Database connection successful
+[2025-04-29 08:09:20] Creating subscription: User ID: 7, Plan ID: 1, Trans ID: BP8ZdodBbvUgTBzw6JHQ8E
+[2025-04-29 08:09:20] ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'transaction_id' in 'field list'
+[2025-04-29 08:10:07] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:10:07] FULL URL: /Project_Desk/process_payment.php?pidx=TityPYo8t6v2hP7FhN9SwW&transaction_id=BP8ZdodBbvUgTBzw6JHQ8E&tidx=BP8ZdodBbvUgTBzw6JHQ8E&txnId=BP8ZdodBbvUgTBzw6JHQ8E&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745906825_68106c893e81b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745906825_68106c893e81b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:10:07] All URL parameters validated successfully
+[2025-04-29 08:10:07] Payment ID (pidx): TityPYo8t6v2hP7FhN9SwW
+[2025-04-29 08:10:07] Transaction ID: BP8ZdodBbvUgTBzw6JHQ8E
+[2025-04-29 08:10:07] Amount: 20000
+[2025-04-29 08:10:07] Status: Completed
+[2025-04-29 08:10:07] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745906825_68106c893e81b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:10:07] Merchant extra field plan_id: 1
+[2025-04-29 08:10:07] Merchant extra field user_id: 7
+[2025-04-29 08:10:07] Merchant extra field order_id: ORDER_7_1745906825_68106c893e81b
+[2025-04-29 08:10:07] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:10:07] Merchant extra field amount: 20000
+[2025-04-29 08:10:07] PIDX received: TityPYo8t6v2hP7FhN9SwW
+[2025-04-29 08:10:07] Verifying payment with Khalti lookup API
+[2025-04-29 08:10:07] Khalti lookup response: {"pidx":"TityPYo8t6v2hP7FhN9SwW","total_amount":20000,"status":"Completed","transaction_id":"BP8ZdodBbvUgTBzw6JHQ8E","fee":600,"refunded":false}
+[2025-04-29 08:10:07] Khalti lookup status code: 200
+[2025-04-29 08:10:07] Payment lookup status: Completed
+[2025-04-29 08:10:07] Payment verification successful. Status: Completed
+[2025-04-29 08:10:07] Verified payment details: Transaction ID: BP8ZdodBbvUgTBzw6JHQ8E, Amount: 20000
+[2025-04-29 08:10:07] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745906825_68106c893e81b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:10:07] Got plan ID from merchant_extra: 1
+[2025-04-29 08:10:07] Database connection successful
+[2025-04-29 08:10:07] Creating subscription: User ID: 7, Plan ID: 1, Trans ID: BP8ZdodBbvUgTBzw6JHQ8E
+[2025-04-29 08:10:07] ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'transaction_id' in 'field list'
+2025-04-29 08:11:21 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost:8080\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost:8080\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_7_1745907081_68106d895908b",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Samprada",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"7\",\"order_id\":\"ORDER_7_1745907081_68106d895908b\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-29 08:11:22 - Response:
+Status: 200
+Body: {"pidx":"8YW5tqQtMfzRVEd9DFSrKc","payment_url":"https://test-pay.khalti.com/?pidx=8YW5tqQtMfzRVEd9DFSrKc","expires_at":"2025-04-29T12:26:21.091580+05:45","expires_in":1800}
+Error: 
+
+[2025-04-29 08:11:39] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:11:39] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:11:39] All URL parameters validated successfully
+[2025-04-29 08:11:39] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:11:39] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:11:39] Amount: 20000
+[2025-04-29 08:11:39] Status: Completed
+[2025-04-29 08:11:39] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:11:39] Merchant extra field plan_id: 1
+[2025-04-29 08:11:39] Merchant extra field user_id: 7
+[2025-04-29 08:11:39] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:11:39] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:11:39] Merchant extra field amount: 20000
+[2025-04-29 08:11:39] PIDX received: 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:11:39] Verifying payment with Khalti lookup API
+[2025-04-29 08:11:39] Khalti lookup response: {"pidx":"8YW5tqQtMfzRVEd9DFSrKc","total_amount":20000,"status":"Completed","transaction_id":"YLGbqk2TbZHhDZ8bPxm2iK","fee":600,"refunded":false}
+[2025-04-29 08:11:39] Khalti lookup status code: 200
+[2025-04-29 08:11:39] Payment lookup status: Completed
+[2025-04-29 08:11:39] Payment verification successful. Status: Completed
+[2025-04-29 08:11:39] Verified payment details: Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK, Amount: 20000
+[2025-04-29 08:11:39] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:11:39] Got plan ID from merchant_extra: 1
+[2025-04-29 08:11:39] Database connection successful
+[2025-04-29 08:11:39] Creating subscription: User ID: 7, Plan ID: 1, Trans ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:11:39] ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'transaction_id' in 'field list'
+[2025-04-29 08:13:07] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:13:07] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:13:21] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:13:21] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:13:22] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:13:22] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:13:22] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:13:22] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:13:32] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:13:32] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:13:35] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:13:35] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:13:35] All URL parameters validated successfully
+[2025-04-29 08:13:35] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:13:35] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:13:35] Amount: 20000
+[2025-04-29 08:13:35] Status: Completed
+[2025-04-29 08:13:53] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:13:53] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:13:53] All URL parameters validated successfully
+[2025-04-29 08:13:53] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:13:53] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:13:53] Amount: 20000
+[2025-04-29 08:13:53] Status: Completed
+[2025-04-29 08:13:57] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:13:57] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:13:57] All URL parameters validated successfully
+[2025-04-29 08:13:57] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:13:57] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:13:57] Amount: 20000
+[2025-04-29 08:13:57] Status: Completed
+[2025-04-29 08:13:57] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:14:16] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:14:16] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:14:16] All URL parameters validated successfully
+[2025-04-29 08:14:16] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:14:16] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:14:16] Amount: 20000
+[2025-04-29 08:14:16] Status: Completed
+[2025-04-29 08:14:16] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:14:16] Merchant extra field plan_id: 1
+[2025-04-29 08:14:16] Merchant extra field user_id: 7
+[2025-04-29 08:14:16] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:14:16] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:14:16] Merchant extra field amount: 20000
+[2025-04-29 08:14:16] PIDX received: 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:14:16] Verifying payment with Khalti lookup API
+[2025-04-29 08:14:16] Khalti lookup response: {"pidx":"8YW5tqQtMfzRVEd9DFSrKc","total_amount":20000,"status":"Completed","transaction_id":"YLGbqk2TbZHhDZ8bPxm2iK","fee":600,"refunded":false}
+[2025-04-29 08:14:16] Khalti lookup status code: 200
+[2025-04-29 08:14:16] Payment lookup status: Completed
+[2025-04-29 08:14:16] Payment verification successful. Status: Completed
+[2025-04-29 08:14:16] Verified payment details: Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK, Amount: 20000
+[2025-04-29 08:14:16] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:14:16] Got plan ID from merchant_extra: 1
+[2025-04-29 08:14:16] Database connection successful
+[2025-04-29 08:14:16] Creating subscription: User ID: 7, Plan ID: 1, Trans ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:14:16] ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'transaction_id' in 'field list'
+[2025-04-29 08:14:24] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:14:24] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:14:24] All URL parameters validated successfully
+[2025-04-29 08:14:24] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:14:24] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:14:24] Amount: 20000
+[2025-04-29 08:14:24] Status: Completed
+[2025-04-29 08:14:24] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:14:24] Merchant extra field plan_id: 1
+[2025-04-29 08:14:24] Merchant extra field user_id: 7
+[2025-04-29 08:14:24] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:14:24] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:14:24] Merchant extra field amount: 20000
+[2025-04-29 08:14:35] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:14:35] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:14:35] All URL parameters validated successfully
+[2025-04-29 08:14:35] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:14:35] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:14:35] Amount: 20000
+[2025-04-29 08:14:35] Status: Completed
+[2025-04-29 08:14:35] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:14:35] Merchant extra field plan_id: 1
+[2025-04-29 08:14:35] Merchant extra field user_id: 7
+[2025-04-29 08:14:35] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:14:35] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:14:35] Merchant extra field amount: 20000
+[2025-04-29 08:14:37] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:14:37] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:14:37] All URL parameters validated successfully
+[2025-04-29 08:14:37] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:14:37] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:14:37] Amount: 20000
+[2025-04-29 08:14:37] Status: Completed
+[2025-04-29 08:14:37] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:14:37] Merchant extra field plan_id: 1
+[2025-04-29 08:14:37] Merchant extra field user_id: 7
+[2025-04-29 08:14:37] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:14:37] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:14:37] Merchant extra field amount: 20000
+[2025-04-29 08:14:38] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:14:38] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:14:38] All URL parameters validated successfully
+[2025-04-29 08:14:38] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:14:38] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:14:38] Amount: 20000
+[2025-04-29 08:14:38] Status: Completed
+[2025-04-29 08:14:38] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:14:38] Merchant extra field plan_id: 1
+[2025-04-29 08:14:38] Merchant extra field user_id: 7
+[2025-04-29 08:14:38] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:14:38] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:14:38] Merchant extra field amount: 20000
+[2025-04-29 08:14:38] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:14:38] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:14:38] All URL parameters validated successfully
+[2025-04-29 08:14:38] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:14:38] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:14:38] Amount: 20000
+[2025-04-29 08:14:38] Status: Completed
+[2025-04-29 08:14:38] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:14:38] Merchant extra field plan_id: 1
+[2025-04-29 08:14:38] Merchant extra field user_id: 7
+[2025-04-29 08:14:38] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:14:38] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:14:38] Merchant extra field amount: 20000
+[2025-04-29 08:14:48] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:14:48] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:14:48] All URL parameters validated successfully
+[2025-04-29 08:14:48] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:14:48] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:14:48] Amount: 20000
+[2025-04-29 08:14:48] Status: Completed
+[2025-04-29 08:14:48] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:14:48] Merchant extra field plan_id: 1
+[2025-04-29 08:14:48] Merchant extra field user_id: 7
+[2025-04-29 08:14:48] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:14:48] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:14:48] Merchant extra field amount: 20000
+[2025-04-29 08:14:48] PIDX received: 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:14:48] Verifying payment with Khalti lookup API
+[2025-04-29 08:14:58] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:14:58] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:14:58] All URL parameters validated successfully
+[2025-04-29 08:14:58] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:14:58] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:14:58] Amount: 20000
+[2025-04-29 08:14:58] Status: Completed
+[2025-04-29 08:14:58] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:14:58] Merchant extra field plan_id: 1
+[2025-04-29 08:14:58] Merchant extra field user_id: 7
+[2025-04-29 08:14:58] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:14:58] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:14:58] Merchant extra field amount: 20000
+[2025-04-29 08:14:58] PIDX received: 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:14:58] Verifying payment with Khalti lookup API
+[2025-04-29 08:14:59] Khalti lookup response: {"pidx":"8YW5tqQtMfzRVEd9DFSrKc","total_amount":20000,"status":"Completed","transaction_id":"YLGbqk2TbZHhDZ8bPxm2iK","fee":600,"refunded":false}
+[2025-04-29 08:14:59] Khalti lookup status code: 200
+[2025-04-29 08:15:13] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:15:13] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:15:13] All URL parameters validated successfully
+[2025-04-29 08:15:13] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:15:13] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:15:13] Amount: 20000
+[2025-04-29 08:15:13] Status: Completed
+[2025-04-29 08:15:13] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:15:13] Merchant extra field plan_id: 1
+[2025-04-29 08:15:13] Merchant extra field user_id: 7
+[2025-04-29 08:15:13] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:15:13] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:15:13] Merchant extra field amount: 20000
+[2025-04-29 08:15:13] PIDX received: 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:15:13] Verifying payment with Khalti lookup API
+[2025-04-29 08:15:13] Khalti lookup response: {"pidx":"8YW5tqQtMfzRVEd9DFSrKc","total_amount":20000,"status":"Completed","transaction_id":"YLGbqk2TbZHhDZ8bPxm2iK","fee":600,"refunded":false}
+[2025-04-29 08:15:13] Khalti lookup status code: 200
+[2025-04-29 08:15:13] Payment lookup status: Completed
+[2025-04-29 08:15:28] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:15:28] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:15:28] All URL parameters validated successfully
+[2025-04-29 08:15:28] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:15:28] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:15:28] Amount: 20000
+[2025-04-29 08:15:28] Status: Completed
+[2025-04-29 08:15:28] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:15:28] Merchant extra field plan_id: 1
+[2025-04-29 08:15:28] Merchant extra field user_id: 7
+[2025-04-29 08:15:28] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:15:28] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:15:28] Merchant extra field amount: 20000
+[2025-04-29 08:15:28] PIDX received: 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:15:28] Verifying payment with Khalti lookup API
+[2025-04-29 08:15:29] Khalti lookup response: {"pidx":"8YW5tqQtMfzRVEd9DFSrKc","total_amount":20000,"status":"Completed","transaction_id":"YLGbqk2TbZHhDZ8bPxm2iK","fee":600,"refunded":false}
+[2025-04-29 08:15:29] Khalti lookup status code: 200
+[2025-04-29 08:15:29] Payment lookup status: Completed
+[2025-04-29 08:15:29] Payment verification successful. Status: Completed
+[2025-04-29 08:15:29] Verified payment details: Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK, Amount: 20000
+[2025-04-29 08:15:29] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:15:29] Got plan ID from merchant_extra: 1
+[2025-04-29 08:15:40] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:15:40] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:15:40] All URL parameters validated successfully
+[2025-04-29 08:15:40] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:15:40] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:15:40] Amount: 20000
+[2025-04-29 08:15:40] Status: Completed
+[2025-04-29 08:15:40] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:15:40] Merchant extra field plan_id: 1
+[2025-04-29 08:15:40] Merchant extra field user_id: 7
+[2025-04-29 08:15:40] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:15:40] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:15:40] Merchant extra field amount: 20000
+[2025-04-29 08:15:40] PIDX received: 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:15:40] Verifying payment with Khalti lookup API
+[2025-04-29 08:15:40] Khalti lookup response: {"pidx":"8YW5tqQtMfzRVEd9DFSrKc","total_amount":20000,"status":"Completed","transaction_id":"YLGbqk2TbZHhDZ8bPxm2iK","fee":600,"refunded":false}
+[2025-04-29 08:15:40] Khalti lookup status code: 200
+[2025-04-29 08:15:40] Payment lookup status: Completed
+[2025-04-29 08:15:40] Payment verification successful. Status: Completed
+[2025-04-29 08:15:40] Verified payment details: Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK, Amount: 20000
+[2025-04-29 08:15:40] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:15:40] Got plan ID from merchant_extra: 1
+[2025-04-29 08:15:55] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:15:55] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:15:55] All URL parameters validated successfully
+[2025-04-29 08:15:55] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:15:55] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:15:55] Amount: 20000
+[2025-04-29 08:15:55] Status: Completed
+[2025-04-29 08:15:55] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:15:55] Merchant extra field plan_id: 1
+[2025-04-29 08:15:55] Merchant extra field user_id: 7
+[2025-04-29 08:15:55] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:15:55] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:15:55] Merchant extra field amount: 20000
+[2025-04-29 08:15:55] PIDX received: 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:15:55] Verifying payment with Khalti lookup API
+[2025-04-29 08:15:55] Khalti lookup response: {"pidx":"8YW5tqQtMfzRVEd9DFSrKc","total_amount":20000,"status":"Completed","transaction_id":"YLGbqk2TbZHhDZ8bPxm2iK","fee":600,"refunded":false}
+[2025-04-29 08:15:55] Khalti lookup status code: 200
+[2025-04-29 08:15:55] Payment lookup status: Completed
+[2025-04-29 08:15:55] Payment verification successful. Status: Completed
+[2025-04-29 08:15:55] Verified payment details: Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK, Amount: 20000
+[2025-04-29 08:15:55] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:15:55] Got plan ID from merchant_extra: 1
+[2025-04-29 08:15:55] Database connection successful
+[2025-04-29 08:16:05] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:16:05] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:16:05] All URL parameters validated successfully
+[2025-04-29 08:16:05] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:16:05] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:16:05] Amount: 20000
+[2025-04-29 08:16:05] Status: Completed
+[2025-04-29 08:16:05] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:16:05] Merchant extra field plan_id: 1
+[2025-04-29 08:16:05] Merchant extra field user_id: 7
+[2025-04-29 08:16:05] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:16:05] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:16:05] Merchant extra field amount: 20000
+[2025-04-29 08:16:05] PIDX received: 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:16:05] Verifying payment with Khalti lookup API
+[2025-04-29 08:16:08] Khalti lookup response: {"pidx":"8YW5tqQtMfzRVEd9DFSrKc","total_amount":20000,"status":"Completed","transaction_id":"YLGbqk2TbZHhDZ8bPxm2iK","fee":600,"refunded":false}
+[2025-04-29 08:16:08] Khalti lookup status code: 200
+[2025-04-29 08:16:08] Payment lookup status: Completed
+[2025-04-29 08:16:08] Payment verification successful. Status: Completed
+[2025-04-29 08:16:08] Verified payment details: Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK, Amount: 20000
+[2025-04-29 08:16:08] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:16:08] Got plan ID from merchant_extra: 1
+[2025-04-29 08:16:08] Database connection successful
+[2025-04-29 08:16:14] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:16:14] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:16:14] All URL parameters validated successfully
+[2025-04-29 08:16:14] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:16:14] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:16:14] Amount: 20000
+[2025-04-29 08:16:14] Status: Completed
+[2025-04-29 08:16:14] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:16:14] Merchant extra field plan_id: 1
+[2025-04-29 08:16:14] Merchant extra field user_id: 7
+[2025-04-29 08:16:14] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:16:14] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:16:14] Merchant extra field amount: 20000
+[2025-04-29 08:16:14] PIDX received: 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:16:14] Verifying payment with Khalti lookup API
+[2025-04-29 08:16:14] Khalti lookup response: {"pidx":"8YW5tqQtMfzRVEd9DFSrKc","total_amount":20000,"status":"Completed","transaction_id":"YLGbqk2TbZHhDZ8bPxm2iK","fee":600,"refunded":false}
+[2025-04-29 08:16:14] Khalti lookup status code: 200
+[2025-04-29 08:16:14] Payment lookup status: Completed
+[2025-04-29 08:16:14] Payment verification successful. Status: Completed
+[2025-04-29 08:16:14] Verified payment details: Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK, Amount: 20000
+[2025-04-29 08:16:14] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:16:14] Got plan ID from merchant_extra: 1
+[2025-04-29 08:16:14] Database connection successful
+[2025-04-29 08:16:25] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:16:25] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:16:25] All URL parameters validated successfully
+[2025-04-29 08:16:25] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:16:25] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:16:25] Amount: 20000
+[2025-04-29 08:16:25] Status: Completed
+[2025-04-29 08:16:25] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:16:25] Merchant extra field plan_id: 1
+[2025-04-29 08:16:25] Merchant extra field user_id: 7
+[2025-04-29 08:16:25] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:16:25] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:16:25] Merchant extra field amount: 20000
+[2025-04-29 08:16:25] PIDX received: 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:16:25] Verifying payment with Khalti lookup API
+[2025-04-29 08:16:25] Khalti lookup response: {"pidx":"8YW5tqQtMfzRVEd9DFSrKc","total_amount":20000,"status":"Completed","transaction_id":"YLGbqk2TbZHhDZ8bPxm2iK","fee":600,"refunded":false}
+[2025-04-29 08:16:25] Khalti lookup status code: 200
+[2025-04-29 08:16:25] Payment lookup status: Completed
+[2025-04-29 08:16:25] Payment verification successful. Status: Completed
+[2025-04-29 08:16:25] Verified payment details: Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK, Amount: 20000
+[2025-04-29 08:16:25] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:16:25] Got plan ID from merchant_extra: 1
+[2025-04-29 08:16:25] Database connection successful
+[2025-04-29 08:16:27] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:16:27] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:16:27] All URL parameters validated successfully
+[2025-04-29 08:16:27] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:16:27] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:16:27] Amount: 20000
+[2025-04-29 08:16:27] Status: Completed
+[2025-04-29 08:16:27] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:16:27] Merchant extra field plan_id: 1
+[2025-04-29 08:16:27] Merchant extra field user_id: 7
+[2025-04-29 08:16:27] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:16:27] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:16:27] Merchant extra field amount: 20000
+[2025-04-29 08:16:27] PIDX received: 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:16:27] Verifying payment with Khalti lookup API
+[2025-04-29 08:16:27] Khalti lookup response: {"pidx":"8YW5tqQtMfzRVEd9DFSrKc","total_amount":20000,"status":"Completed","transaction_id":"YLGbqk2TbZHhDZ8bPxm2iK","fee":600,"refunded":false}
+[2025-04-29 08:16:27] Khalti lookup status code: 200
+[2025-04-29 08:16:27] Payment lookup status: Completed
+[2025-04-29 08:16:27] Payment verification successful. Status: Completed
+[2025-04-29 08:16:27] Verified payment details: Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK, Amount: 20000
+[2025-04-29 08:16:27] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:16:27] Got plan ID from merchant_extra: 1
+[2025-04-29 08:16:27] Database connection successful
+[2025-04-29 08:16:33] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:16:33] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:16:33] All URL parameters validated successfully
+[2025-04-29 08:16:33] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:16:33] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:16:33] Amount: 20000
+[2025-04-29 08:16:33] Status: Completed
+[2025-04-29 08:16:33] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:16:33] Merchant extra field plan_id: 1
+[2025-04-29 08:16:33] Merchant extra field user_id: 7
+[2025-04-29 08:16:33] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:16:33] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:16:33] Merchant extra field amount: 20000
+[2025-04-29 08:16:33] PIDX received: 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:16:33] Verifying payment with Khalti lookup API
+[2025-04-29 08:16:34] Khalti lookup response: {"pidx":"8YW5tqQtMfzRVEd9DFSrKc","total_amount":20000,"status":"Completed","transaction_id":"YLGbqk2TbZHhDZ8bPxm2iK","fee":600,"refunded":false}
+[2025-04-29 08:16:34] Khalti lookup status code: 200
+[2025-04-29 08:16:34] Payment lookup status: Completed
+[2025-04-29 08:16:34] Payment verification successful. Status: Completed
+[2025-04-29 08:16:34] Verified payment details: Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK, Amount: 20000
+[2025-04-29 08:16:34] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:16:34] Got plan ID from merchant_extra: 1
+[2025-04-29 08:16:34] Database connection successful
+[2025-04-29 08:16:44] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:16:44] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:16:44] All URL parameters validated successfully
+[2025-04-29 08:16:44] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:16:44] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:16:44] Amount: 20000
+[2025-04-29 08:16:44] Status: Completed
+[2025-04-29 08:16:44] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:16:44] Merchant extra field plan_id: 1
+[2025-04-29 08:16:44] Merchant extra field user_id: 7
+[2025-04-29 08:16:44] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:16:44] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:16:44] Merchant extra field amount: 20000
+[2025-04-29 08:16:44] PIDX received: 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:16:44] Verifying payment with Khalti lookup API
+[2025-04-29 08:16:44] Khalti lookup response: {"pidx":"8YW5tqQtMfzRVEd9DFSrKc","total_amount":20000,"status":"Completed","transaction_id":"YLGbqk2TbZHhDZ8bPxm2iK","fee":600,"refunded":false}
+[2025-04-29 08:16:44] Khalti lookup status code: 200
+[2025-04-29 08:16:44] Payment lookup status: Completed
+[2025-04-29 08:16:44] Payment verification successful. Status: Completed
+[2025-04-29 08:16:44] Verified payment details: Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK, Amount: 20000
+[2025-04-29 08:16:44] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:16:44] Got plan ID from merchant_extra: 1
+[2025-04-29 08:16:44] Database connection successful
+[2025-04-29 08:16:44] Creating subscription: User ID: 7, Plan ID: 1, Trans ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:16:52] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:16:52] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:16:52] All URL parameters validated successfully
+[2025-04-29 08:16:52] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:16:52] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:16:52] Amount: 20000
+[2025-04-29 08:16:52] Status: Completed
+[2025-04-29 08:16:52] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:16:52] Merchant extra field plan_id: 1
+[2025-04-29 08:16:52] Merchant extra field user_id: 7
+[2025-04-29 08:16:52] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:16:52] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:16:52] Merchant extra field amount: 20000
+[2025-04-29 08:16:52] PIDX received: 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:16:52] Verifying payment with Khalti lookup API
+[2025-04-29 08:16:52] Khalti lookup response: {"pidx":"8YW5tqQtMfzRVEd9DFSrKc","total_amount":20000,"status":"Completed","transaction_id":"YLGbqk2TbZHhDZ8bPxm2iK","fee":600,"refunded":false}
+[2025-04-29 08:16:52] Khalti lookup status code: 200
+[2025-04-29 08:16:52] Payment lookup status: Completed
+[2025-04-29 08:16:52] Payment verification successful. Status: Completed
+[2025-04-29 08:16:52] Verified payment details: Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK, Amount: 20000
+[2025-04-29 08:16:52] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:16:52] Got plan ID from merchant_extra: 1
+[2025-04-29 08:16:52] Database connection successful
+[2025-04-29 08:16:52] Creating subscription: User ID: 7, Plan ID: 1, Trans ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:16:52] ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'transaction_id' in 'field list'
+[2025-04-29 08:17:00] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:17:00] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:17:00] All URL parameters validated successfully
+[2025-04-29 08:17:00] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:17:00] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:17:00] Amount: 20000
+[2025-04-29 08:17:00] Status: Completed
+[2025-04-29 08:17:00] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:17:00] Merchant extra field plan_id: 1
+[2025-04-29 08:17:00] Merchant extra field user_id: 7
+[2025-04-29 08:17:00] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:17:00] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:17:00] Merchant extra field amount: 20000
+[2025-04-29 08:17:00] PIDX received: 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:17:00] Verifying payment with Khalti lookup API
+[2025-04-29 08:17:01] Khalti lookup response: {"pidx":"8YW5tqQtMfzRVEd9DFSrKc","total_amount":20000,"status":"Completed","transaction_id":"YLGbqk2TbZHhDZ8bPxm2iK","fee":600,"refunded":false}
+[2025-04-29 08:17:01] Khalti lookup status code: 200
+[2025-04-29 08:17:01] Payment lookup status: Completed
+[2025-04-29 08:17:01] Payment verification successful. Status: Completed
+[2025-04-29 08:17:01] Verified payment details: Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK, Amount: 20000
+[2025-04-29 08:17:01] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:17:01] Got plan ID from merchant_extra: 1
+[2025-04-29 08:17:01] Database connection successful
+[2025-04-29 08:17:01] Creating subscription: User ID: 7, Plan ID: 1, Trans ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:17:07] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:17:07] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:17:07] All URL parameters validated successfully
+[2025-04-29 08:17:07] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:17:07] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:17:07] Amount: 20000
+[2025-04-29 08:17:07] Status: Completed
+[2025-04-29 08:17:07] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:17:07] Merchant extra field plan_id: 1
+[2025-04-29 08:17:07] Merchant extra field user_id: 7
+[2025-04-29 08:17:07] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:17:07] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:17:07] Merchant extra field amount: 20000
+[2025-04-29 08:17:07] PIDX received: 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:17:07] Verifying payment with Khalti lookup API
+[2025-04-29 08:17:07] Khalti lookup response: {"pidx":"8YW5tqQtMfzRVEd9DFSrKc","total_amount":20000,"status":"Completed","transaction_id":"YLGbqk2TbZHhDZ8bPxm2iK","fee":600,"refunded":false}
+[2025-04-29 08:17:07] Khalti lookup status code: 200
+[2025-04-29 08:17:07] Payment lookup status: Completed
+[2025-04-29 08:17:07] Payment verification successful. Status: Completed
+[2025-04-29 08:17:07] Verified payment details: Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK, Amount: 20000
+[2025-04-29 08:17:07] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:17:07] Got plan ID from merchant_extra: 1
+[2025-04-29 08:17:07] Database connection successful
+[2025-04-29 08:17:07] Creating subscription: User ID: 7, Plan ID: 1, Trans ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:17:07] ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'transaction_id' in 'field list'
+[2025-04-29 08:19:00] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:19:00] FULL URL: /Project_Desk/process_payment.php?pidx=8YW5tqQtMfzRVEd9DFSrKc&transaction_id=YLGbqk2TbZHhDZ8bPxm2iK&tidx=YLGbqk2TbZHhDZ8bPxm2iK&txnId=YLGbqk2TbZHhDZ8bPxm2iK&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745907081_68106d895908b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745907081_68106d895908b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:19:00] All URL parameters validated successfully
+[2025-04-29 08:19:00] Payment ID (pidx): 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:19:00] Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:19:00] Amount: 20000
+[2025-04-29 08:19:00] Status: Completed
+[2025-04-29 08:19:00] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:19:00] Merchant extra field plan_id: 1
+[2025-04-29 08:19:00] Merchant extra field user_id: 7
+[2025-04-29 08:19:00] Merchant extra field order_id: ORDER_7_1745907081_68106d895908b
+[2025-04-29 08:19:00] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:19:00] Merchant extra field amount: 20000
+[2025-04-29 08:19:00] PIDX received: 8YW5tqQtMfzRVEd9DFSrKc
+[2025-04-29 08:19:00] Verifying payment with Khalti lookup API
+[2025-04-29 08:19:00] Khalti lookup response: {"pidx":"8YW5tqQtMfzRVEd9DFSrKc","total_amount":20000,"status":"Completed","transaction_id":"YLGbqk2TbZHhDZ8bPxm2iK","fee":600,"refunded":false}
+[2025-04-29 08:19:00] Khalti lookup status code: 200
+[2025-04-29 08:19:00] Payment lookup status: Completed
+[2025-04-29 08:19:00] Payment verification successful. Status: Completed
+[2025-04-29 08:19:00] Verified payment details: Transaction ID: YLGbqk2TbZHhDZ8bPxm2iK, Amount: 20000
+[2025-04-29 08:19:00] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745907081_68106d895908b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:19:00] Got plan ID from merchant_extra: 1
+[2025-04-29 08:19:00] Database connection successful
+[2025-04-29 08:19:00] Creating subscription: User ID: 7, Plan ID: 1, Trans ID: YLGbqk2TbZHhDZ8bPxm2iK
+[2025-04-29 08:19:00] Subscription created successfully!
+[2025-04-29 08:19:00] REDIRECTING TO NOTES PAGE NOW
+[2025-04-29 08:19:24] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:19:24] FULL URL: /Project_Desk/process_payment.php?pidx=9o9Kd7oijBDf9CNstwqpgQ&transaction_id=KpSrYsDR7ttM9MK7B2NduF&tidx=KpSrYsDR7ttM9MK7B2NduF&txnId=KpSrYsDR7ttM9MK7B2NduF&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_7_1745903171_68105e436d927&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Samprada&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%227%22%2C%22order_id%22%3A%22ORDER_7_1745903171_68105e436d927%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:19:24] All URL parameters validated successfully
+[2025-04-29 08:19:24] Payment ID (pidx): 9o9Kd7oijBDf9CNstwqpgQ
+[2025-04-29 08:19:24] Transaction ID: KpSrYsDR7ttM9MK7B2NduF
+[2025-04-29 08:19:24] Amount: 20000
+[2025-04-29 08:19:24] Status: Completed
+[2025-04-29 08:19:24] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745903171_68105e436d927
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:19:24] Merchant extra field plan_id: 1
+[2025-04-29 08:19:24] Merchant extra field user_id: 7
+[2025-04-29 08:19:24] Merchant extra field order_id: ORDER_7_1745903171_68105e436d927
+[2025-04-29 08:19:24] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:19:24] Merchant extra field amount: 20000
+[2025-04-29 08:19:24] PIDX received: 9o9Kd7oijBDf9CNstwqpgQ
+[2025-04-29 08:19:24] Verifying payment with Khalti lookup API
+[2025-04-29 08:19:25] Khalti lookup response: {"pidx":"9o9Kd7oijBDf9CNstwqpgQ","total_amount":20000,"status":"Completed","transaction_id":"KpSrYsDR7ttM9MK7B2NduF","fee":600,"refunded":false}
+[2025-04-29 08:19:25] Khalti lookup status code: 200
+[2025-04-29 08:19:25] Payment lookup status: Completed
+[2025-04-29 08:19:25] Payment verification successful. Status: Completed
+[2025-04-29 08:19:25] Verified payment details: Transaction ID: KpSrYsDR7ttM9MK7B2NduF, Amount: 20000
+[2025-04-29 08:19:25] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 7
+    [order_id] => ORDER_7_1745903171_68105e436d927
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:19:25] Got plan ID from merchant_extra: 1
+[2025-04-29 08:19:25] Database connection successful
+[2025-04-29 08:19:25] User already has an active subscription for this plan
+2025-04-29 08:19:52 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost:8080\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost:8080\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_12_1745907592_68106f88bdb7b",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Customer",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Veeru",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"12\",\"order_id\":\"ORDER_12_1745907592_68106f88bdb7b\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-04-29 08:19:53 - Response:
+Status: 200
+Body: {"pidx":"PtHUecNC5HGBagfd2Xnrze","payment_url":"https://test-pay.khalti.com/?pidx=PtHUecNC5HGBagfd2Xnrze","expires_at":"2025-04-29T12:34:51.972551+05:45","expires_in":1800}
+Error: 
+
+[2025-04-29 08:20:07] =============== NEW PAYMENT CALLBACK ===============
+[2025-04-29 08:20:07] FULL URL: /Project_Desk/process_payment.php?pidx=PtHUecNC5HGBagfd2Xnrze&transaction_id=QP7S6u4QsMss8d5y6oUZaC&tidx=QP7S6u4QsMss8d5y6oUZaC&txnId=QP7S6u4QsMss8d5y6oUZaC&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_12_1745907592_68106f88bdb7b&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Veeru&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%2212%22%2C%22order_id%22%3A%22ORDER_12_1745907592_68106f88bdb7b%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-04-29 08:20:07] All URL parameters validated successfully
+[2025-04-29 08:20:07] Payment ID (pidx): PtHUecNC5HGBagfd2Xnrze
+[2025-04-29 08:20:07] Transaction ID: QP7S6u4QsMss8d5y6oUZaC
+[2025-04-29 08:20:07] Amount: 20000
+[2025-04-29 08:20:07] Status: Completed
+[2025-04-29 08:20:07] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 12
+    [order_id] => ORDER_12_1745907592_68106f88bdb7b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:20:07] Merchant extra field plan_id: 1
+[2025-04-29 08:20:07] Merchant extra field user_id: 12
+[2025-04-29 08:20:07] Merchant extra field order_id: ORDER_12_1745907592_68106f88bdb7b
+[2025-04-29 08:20:07] Merchant extra field plan_name: Basic Plan
+[2025-04-29 08:20:07] Merchant extra field amount: 20000
+[2025-04-29 08:20:07] PIDX received: PtHUecNC5HGBagfd2Xnrze
+[2025-04-29 08:20:07] Verifying payment with Khalti lookup API
+[2025-04-29 08:20:08] Khalti lookup response: {"pidx":"PtHUecNC5HGBagfd2Xnrze","total_amount":20000,"status":"Completed","transaction_id":"QP7S6u4QsMss8d5y6oUZaC","fee":600,"refunded":false}
+[2025-04-29 08:20:08] Khalti lookup status code: 200
+[2025-04-29 08:20:08] Payment lookup status: Completed
+[2025-04-29 08:20:08] Payment verification successful. Status: Completed
+[2025-04-29 08:20:08] Verified payment details: Transaction ID: QP7S6u4QsMss8d5y6oUZaC, Amount: 20000
+[2025-04-29 08:20:08] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 12
+    [order_id] => ORDER_12_1745907592_68106f88bdb7b
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-04-29 08:20:08] Got plan ID from merchant_extra: 1
+[2025-04-29 08:20:08] Database connection successful
+[2025-04-29 08:20:08] Creating subscription: User ID: 12, Plan ID: 1, Trans ID: QP7S6u4QsMss8d5y6oUZaC
+[2025-04-29 08:20:08] Subscription created successfully!
+[2025-04-29 08:20:08] REDIRECTING TO NOTES PAGE NOW

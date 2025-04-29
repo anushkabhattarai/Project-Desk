@@ -716,7 +716,7 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <?php include "inc/nav.php" ?>
     
     <!-- Main content area -->
-    <main style="margin-left: 250px; padding-top: 60px;">
+    <main style="margin-left: 250px; padding-top: 5px;">
         <div class="container-fluid px-4 py-3">
             <!-- Header Area -->
             <div class="d-flex justify-content-between align-items-center mb-4">

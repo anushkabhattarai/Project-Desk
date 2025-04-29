@@ -1,9 +1,13 @@
 /* Dashboard Styles */
 .dashboard-container {
-    padding: 0.5rem;
+    padding: 1.5rem;
 }
 
-/* Stats cards */
+/* Stats Cards */
+.stats-row {
+    margin-bottom: 2rem;
+}
+
 .stat-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     border-radius: 12px;
@@ -16,18 +20,19 @@
 }
 
 .stat-icon-container {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 1.5rem;
 }
 
+/* Task Cards */
 .task-card .stat-icon-container {
-    background-color: rgba(13, 110, 253, 0.1);
-    color: #0d6efd;
+    background-color: rgba(102, 126, 234, 0.1);
+    color: #667eea;
 }
 
 .overdue-card .stat-icon-container {
@@ -46,90 +51,125 @@
 }
 
 .progress-card .stat-icon-container {
-    background-color: rgba(13, 202, 240, 0.1);
-    color: #0dcaf0;
+    background-color: rgba(23, 162, 184, 0.1);
+    color: #17a2b8;
 }
 
 .completed-card .stat-icon-container {
-    background-color: rgba(25, 135, 84, 0.1);
-    color: #198754;
+    background-color: rgba(40, 167, 69, 0.1);
+    color: #28a745;
 }
 
-/* Task section cards */
+/* Task Section Cards */
 .task-section-card {
     border-radius: 12px;
-    transition: box-shadow 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .task-section-card:hover {
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1) !important;
-}
-
-.task-section-card .card-header {
-    padding: 1.25rem 1.25rem 0.75rem;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
 }
 
 .section-icon {
     width: 40px;
     height: 40px;
-    border-radius: 8px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 1.25rem;
 }
 
 .upcoming-icon {
-    background-color: rgba(13, 110, 253, 0.1);
-    color: #0d6efd;
+    background-color: rgba(102, 126, 234, 0.1);
+    color: #667eea;
 }
 
 .new-task-icon {
-    background-color: rgba(25, 135, 84, 0.1);
-    color: #198754;
+    background-color: rgba(40, 167, 69, 0.1);
+    color: #28a745;
 }
 
-/* Task tables */
+/* Tables */
 .task-table {
-    font-size: 0.95rem;
+    margin-bottom: 0;
 }
 
 .task-table th {
     font-weight: 600;
     color: #495057;
+    border-top: none;
+    padding: 1rem;
 }
 
 .task-table td {
-    padding: 0.75rem 1rem;
+    padding: 1rem;
+    vertical-align: middle;
 }
 
-.btn-view {
+.task-table tr:hover {
+    background-color: rgba(102, 126, 234, 0.05);
+}
+
+/* Badges */
+.badge {
+    padding: 0.5em 0.75em;
+    font-weight: 500;
     border-radius: 6px;
-    padding: 0.25rem 0.75rem;
+}
+
+/* Buttons */
+.btn-view {
+    padding: 0.375rem 1rem;
+    border-radius: 6px;
     font-weight: 500;
     transition: all 0.3s ease;
 }
 
 .btn-view:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Responsive adjustments */
+/* Alerts */
+.alert {
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-    .stats-row {
-        margin-bottom: 1.5rem !important;
+    .dashboard-container {
+        padding: 1rem;
     }
     
     .stat-card {
         margin-bottom: 1rem;
     }
+    
+    .task-table th,
+    .task-table td {
+        padding: 0.75rem;
+    }
 }
 
-/* Animation for new elements */
+/* Animations */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stat-card,
+.task-section-card {
+    animation: fadeIn 0.5s ease-out;
 }
 
 .dashboard-container {
@@ -137,13 +177,4 @@
     padding: 0.5rem;
     background-color: #ffffff; 
     animation: fadeIn 0.5s ease forwards;
-
-}
-
-/* Badge styling */
-.badge {
-    font-weight: 500;
-    padding: 0.35em 0.65em;
-    font-size: 0.75em;
-    border-radius: 4px;
 } 

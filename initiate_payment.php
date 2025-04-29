@@ -120,10 +120,36 @@ if ($amount_in_paisa < 1000) {
 // Generate unique order ID
 $order_id = 'ORDER_' . $_SESSION['id'] . '_' . time() . '_' . uniqid();
 
+// Construct base URL dynamically
+$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+$host = $_SERVER['HTTP_HOST'];
+$base_path = '/Project_Desk';
+$return_url = $protocol . $host . $base_path . '/process_payment.php';
+$website_url = $protocol . $host . $base_path;
+
+// Log URL construction
+error_log('Constructed return URL: ' . $return_url);
+error_log('Constructed website URL: ' . $website_url);
+
+// Validate URLs
+if (!filter_var($return_url, FILTER_VALIDATE_URL)) {
+    error_log('Invalid return URL constructed: ' . $return_url);
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Internal server error: Invalid URL configuration',
+        'debug_info' => [
+            'return_url' => $return_url,
+            'website_url' => $website_url
+        ]
+    ]);
+    exit;
+}
+
 // Prepare the payload with all optional fields
 $payload = array(
-    'return_url' => 'http://localhost/Project_Desk/process_payment.php',
-    'website_url' => 'http://localhost/Project_Desk',
+    'return_url' => $return_url,
+    'website_url' => $website_url,
     'amount' => strval($amount_in_paisa),
     'purchase_order_id' => $order_id,
     'purchase_order_name' => $data['plan_name'],

@@ -7,9 +7,6 @@
 					<h2 class="mb-0 fw-bold fs-4">
 						<span class="text-dark">Project</span><span class="text-primary">Desk</span>
 					</h2>
-					<button type="button" class="btn btn-sm ms-3 p-1" id="navToggle">
-						<i class="fa fa-bars text-secondary" aria-hidden="true"></i>
-					</button>
 				</div>
 			</div>
 			
@@ -18,12 +15,17 @@
 				<div class="d-flex align-items-center">
 					<!-- Notification bell using image -->
 					<div class="dropdown me-3">
-						<button class="btn position-relative p-0" id="notificationBtn">
-							<img src="img/notification.png" width="24" height="24" alt="Notifications">
+						<button class="btn position-relative p-0" id="notificationBtn" data-bs-toggle="dropdown" aria-expanded="false">
+							<img src="img/noti.png" width="24" height="24" alt="Notifications">
 							<span id="notificationNum" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger p-1" style="font-size: 0.6rem;">
 								<span class="visually-hidden">notifications</span>
 							</span>
 						</button>
+						<ul class="dropdown-menu dropdown-menu-end" id="notificationBar" style="min-width: 300px; max-height: 400px; overflow-y: auto;">
+							<li class="dropdown-header">Notifications</li>
+							<li><hr class="dropdown-divider"></li>
+							<div id="notifications"></div>
+						</ul>
 					</div>
 
 					<!-- Profile dropdown -->
@@ -57,50 +59,19 @@
 	</div>
 </header>
 
-<!-- Notification panel -->
-<div class="bg-white shadow-sm rounded border-0" id="notificationBar" 
-	 style="display: none; position: absolute; right: 1rem; top: 3.5rem; width: 300px; z-index: 1040;">
-	<div class="p-2 border-bottom d-flex justify-content-between align-items-center">
-		<span class="fw-medium">Notifications</span>
-	</div>
-	<div style="max-height: 300px; overflow-y: auto;">
-		<ul id="notifications" class="list-group list-group-flush mb-0"></ul>
-	</div>
-</div>
-
-<!-- Load jQuery -->
+<!-- Load required scripts -->
 <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
-<!-- Load Bootstrap -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/common.js"></script>
 
 <script type="text/javascript">
+	function toggleNav() {
+		document.body.classList.toggle('sidebar-collapsed');
+	}
+
 	$(document).ready(function(){
 		// Load initial notifications
 		loadNotifications();
-		
-		// Toggle notification panel
-		$("#notificationBtn").click(function(e) {
-			e.preventDefault();
-			e.stopPropagation();
-			$("#notificationBar").toggle();
-			
-			// Load notifications when opening
-			if($("#notificationBar").is(":visible")) {
-				loadNotifications();
-			}
-		});
-		
-		// Close notification panel when clicking outside
-		$(document).click(function(e) {
-			if (!$(e.target).closest('#notificationBar, #notificationBtn').length) {
-				$("#notificationBar").hide();
-			}
-		});
-		
-		// Toggle sidebar with the navigation button
-		$("#navToggle").click(function() {
-			$("body").toggleClass("sidebar-collapsed");
-		});
 		
 		// Function to load notifications
 		function loadNotifications() {
@@ -118,7 +89,7 @@
 				
 				// If no notifications, show a message
 				if (!data.trim()) {
-					$("#notifications").html('<li class="list-group-item text-center py-3"><span class="text-secondary">No notifications</span></li>');
+					$("#notifications").html('<li class="dropdown-item text-center py-3"><span class="text-secondary">No notifications</span></li>');
 				}
 			});
 		}
@@ -129,20 +100,21 @@
 </script>
 
 <!-- Only necessary CSS for responsive behavior -->
-<script>
-	document.addEventListener('DOMContentLoaded', function() {
-		// Initial check for screen size
-		checkScreenSize();
-		
-		// Listen for window resize
-		window.addEventListener('resize', checkScreenSize);
-		
-		function checkScreenSize() {
-			if (window.innerWidth < 992) {
-				document.body.classList.add('sidebar-collapsed');
-			} else {
-				document.body.classList.remove('sidebar-collapsed');
-			}
+<style>
+	nav {
+		transition: width 0.3s ease;
+	}
+	
+	.sidebar-collapsed {
+		margin-left: 0;
+	}
+	
+	@media (max-width: 991.98px) {
+		nav {
+			width: 0px !important;
 		}
-	});
-</script>
+		body {
+			margin-left: 0 !important;
+		}
+	}
+</style>

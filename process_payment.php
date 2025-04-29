@@ -20,8 +20,121 @@ function log_payment($message) {
 
 log_payment("=============== NEW PAYMENT CALLBACK ===============");
 log_payment("FULL URL: " . $_SERVER['REQUEST_URI']);
-log_payment("GET PARAMS: " . print_r($_GET, true));
-log_payment("SESSION: " . print_r($_SESSION, true));
+
+// Validate URL structure
+$expected_base_url = "/Project_Desk/process_payment.php";
+if (strpos($_SERVER['REQUEST_URI'], $expected_base_url) === false) {
+    log_payment("ERROR: Invalid URL structure. Expected base URL: $expected_base_url");
+    echo "<h2>Payment Processing Error</h2>";
+    echo "<p>Invalid payment URL. Please contact support.</p>";
+    echo "<p><a href='plans.php'>Return to Plans</a></p>";
+    exit;
+}
+
+// Validate URL parameters
+$required_params = [
+    'pidx' => 'Payment ID',
+    'transaction_id' => 'Transaction ID',
+    'amount' => 'Amount',
+    'status' => 'Status',
+    'purchase_order_id' => 'Purchase Order ID',
+    'merchant_extra' => 'Merchant Extra Data'
+];
+
+$missing_params = [];
+$invalid_params = [];
+
+
+foreach ($required_params as $param => $description) {
+    if (!isset($_GET[$param])) {
+        $missing_params[] = $description;
+        log_payment("Missing required parameter: $param ($description)");
+    } else {
+        // Validate parameter values
+        switch ($param) {
+            case 'amount':
+                if (!is_numeric($_GET[$param])) {
+                    $invalid_params[] = "$description must be numeric";
+                    log_payment("Invalid amount: " . $_GET[$param]);
+                }
+                break;
+            case 'status':
+                if (!in_array($_GET[$param], ['Completed', 'Pending', 'Failed'])) {
+                    $invalid_params[] = "$description must be one of: Completed, Pending, Failed";
+                    log_payment("Invalid status: " . $_GET[$param]);
+                }
+                break;
+            case 'merchant_extra':
+                $decoded = json_decode(urldecode($_GET[$param]), true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    $invalid_params[] = "$description must be valid JSON";
+                    log_payment("Invalid merchant_extra JSON: " . json_last_error_msg());
+                }
+                break;
+        }
+    }
+}
+
+if (!empty($missing_params) || !empty($invalid_params)) {
+    $error_message = [];
+    if (!empty($missing_params)) {
+        $error_message[] = "Missing parameters: " . implode(', ', $missing_params);
+    }
+    if (!empty($invalid_params)) {
+        $error_message[] = "Invalid parameters: " . implode(', ', $invalid_params);
+    }
+    
+    log_payment("ERROR: " . implode('; ', $error_message));
+    echo "<h2>Payment Processing Error</h2>";
+    echo "<p>" . implode('<br>', $error_message) . "</p>";
+    echo "<p><a href='plans.php'>Return to Plans</a></p>";
+    exit;
+}
+
+// Log successful parameter validation
+log_payment("All URL parameters validated successfully");
+log_payment("Payment ID (pidx): " . $_GET['pidx']);
+log_payment("Transaction ID: " . $_GET['transaction_id']);
+log_payment("Amount: " . $_GET['amount']);
+log_payment("Status: " . $_GET['status']);
+
+
+// Decode and validate merchant_extra
+if (isset($_GET['merchant_extra'])) {
+    $merchant_extra = json_decode(urldecode($_GET['merchant_extra']), true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        log_payment("ERROR: Invalid merchant_extra JSON: " . json_last_error_msg());
+        echo "<h2>Payment Processing Error</h2>";
+        echo "<p>Invalid payment data. Please contact support.</p>";
+        echo "<p><a href='plans.php'>Return to Plans</a></p>";
+        exit;
+    }
+    
+    log_payment("Decoded merchant_extra: " . print_r($merchant_extra, true));
+
+    
+    // Validate required merchant_extra fields
+    $required_extra = ['plan_id', 'user_id', 'order_id', 'plan_name', 'amount'];
+    $missing_extra = [];
+    
+    foreach ($required_extra as $field) {
+        if (!isset($merchant_extra[$field])) {
+            $missing_extra[] = $field;
+            log_payment("Missing required merchant_extra field: $field");
+        } else {
+            log_payment("Merchant extra field $field: " . $merchant_extra[$field]);
+        }
+    }
+
+    
+    if (!empty($missing_extra)) {
+        log_payment("ERROR: Missing required merchant_extra fields: " . implode(', ', $missing_extra));
+        echo "<h2>Payment Processing Error</h2>";
+        echo "<p>Invalid payment data. Please contact support.</p>";
+        echo "<p><a href='plans.php'>Return to Plans</a></p>";
+        exit;
+    }
+}
 
 // Basic user check
 if (!isset($_SESSION['id'])) {
@@ -30,6 +143,7 @@ if (!isset($_SESSION['id'])) {
     echo "<p><a href='login.php'>Log in</a> to continue.</p>";
     exit;
 }
+
 
 // Check if we received the necessary parameters
 if (isset($_GET['pidx'])) {
@@ -65,6 +179,7 @@ if (isset($_GET['pidx'])) {
     $response = curl_exec($ch);
     $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $err = curl_error($ch);
+
     
     curl_close($ch);
     
@@ -79,9 +194,10 @@ if (isset($_GET['pidx'])) {
         echo "<p><a href='plans.php'>Return to Plans</a></p>";
         exit;
     }
+
+    
     
     $lookup_data = json_decode($response, true);
-    echo $lookup_data;
     if (!$lookup_data) {
         log_payment("Failed to decode lookup response");
         echo "<h2>Payment Verification Error</h2>";
@@ -137,6 +253,8 @@ if (isset($_GET['pidx'])) {
                 }
                 
                 try {
+
+                    
                     // Connect to database
                     $host = "localhost";
                     $username = "root";
@@ -173,13 +291,12 @@ if (isset($_GET['pidx'])) {
                     
                     log_payment("Creating subscription: User ID: {$_SESSION['id']}, Plan ID: $plan_id, Trans ID: $transaction_id");
                     
-                    $stmt = $conn->prepare("INSERT INTO subscriptions (user_id, plan_id, start_date, end_date, status, transaction_id) 
-                                           VALUES (:user_id, :plan_id, :start_date, :end_date, 'active', :transaction_id)");
+                    $stmt = $conn->prepare("INSERT INTO subscriptions (user_id, plan_id, start_date, end_date, status) 
+                                           VALUES (:user_id, :plan_id, :start_date, :end_date, 'active')");
                     $stmt->bindParam(':user_id', $_SESSION['id']);
                     $stmt->bindParam(':plan_id', $plan_id);
                     $stmt->bindParam(':start_date', $start_date);
                     $stmt->bindParam(':end_date', $end_date);
-                    $stmt->bindParam(':transaction_id', $transaction_id);
                     
                     if ($stmt->execute()) {
                         $conn->commit();

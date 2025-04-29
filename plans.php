@@ -146,7 +146,7 @@ $title = "Select a Plan";
     <?php include "inc/nav.php" ?>
     
     <!-- Main content area -->
-    <main style="margin-left: 250px; padding-top: 70px;">
+    <main style="margin-left: 250px; padding-top: 0px;">
         <div class="container py-5">
             <div class="row justify-content-center">
                 <div class="col-lg-10">
