@@ -1,4 +1,4 @@
-<header class="bg-white border-bottom sticky-top" style="height: 60px; z-index: 1030;">
+<header class="bg-white border-bottom p-0 m-0" style="height: 60px; position: relative; z-index: 1031;">
 	<div class="container-fluid h-100">
 		<div class="row h-100 align-items-center">
 			<!-- Left side with logo -->

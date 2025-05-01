@@ -43,6 +43,22 @@ if ($note_id > 0) {
     }
 }
 
+// Fetch comments for the note
+$comments = [];
+$comment_count = 0;
+if ($note_id > 0) {
+    $stmt = $conn->prepare("SELECT c.*, u.full_name as author_name 
+                           FROM note_comments c 
+                           JOIN users u ON c.user_id = u.id 
+                           WHERE c.note_id = ? 
+                           ORDER BY c.created_at DESC");
+    $stmt->bind_param("i", $note_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $comments = $result->fetch_all(MYSQLI_ASSOC);
+    $comment_count = count($comments);
+}
+
 // Handle note save/update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_note'])) {
     $title = trim($_POST['title']);
@@ -132,6 +148,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['share_note'])) {
     }
 }
 
+// Handle comment submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_comment'])) {
+    $comment_text = trim($_POST['comment_text']);
+    if (!empty($comment_text)) {
+        $stmt = $conn->prepare("INSERT INTO note_comments (note_id, user_id, comment) VALUES (?, ?, ?)");
+        $stmt->bind_param("iis", $note_id, $user_id, $comment_text);
+        if ($stmt->execute()) {
+            // Fetch the newly added comment with user details
+            $stmt = $conn->prepare("SELECT c.*, u.full_name as author_name 
+                                  FROM note_comments c 
+                                  JOIN users u ON c.user_id = u.id 
+                                  WHERE c.id = LAST_INSERT_ID()");
+            $stmt->execute();
+            $new_comment = $stmt->get_result()->fetch_assoc();
+            
+            // Return the new comment as JSON
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => true,
+                'comment' => $new_comment,
+                'total_comments' => $comment_count + 1
+            ]);
+            exit;
+        }
+    }
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false]);
+    exit;
+}
+
 // Fetch users for sharing
 $stmt = $conn->prepare("SELECT id, full_name FROM users WHERE id != ?");
 $stmt->bind_param("i", $user_id);
@@ -149,48 +195,42 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <style>
         :root {
-            --primary-color: #6c5ce7;
-            --secondary-color: #a29bfe;
-            --border-color: #e0e0e0;
-            --bg-light: #ffffff;
-            --text-dark: #2d3436;
-            --text-muted: #636e72;
-            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --secondary-color: #6b7280;
+            --border-color: #e5e7eb;
+            --bg-light: #f9fafb;
+            --text-dark: #111827;
+            --text-muted: #6b7280;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             --transition: all 0.2s ease;
         }
-        
+
         body {
-            background-color: #f8f9fa;
+            background-color: var(--bg-light);
             color: var(--text-dark);
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
         }
 
-        .note-container {
-            width: 100%;
-            min-height: 100vh;
-            margin: 0;
-            padding: 0;
+        /* Top Navigation Bar */
+        .top-nav {
             background: white;
-            box-shadow: none;
-            border-radius: 0;
-        }
-
-        .top-bar {
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.75rem 1.5rem;
             position: sticky;
             top: 0;
-            z-index: 101;
-            background: white;
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-content {
             display: flex;
             align-items: center;
             gap: 1rem;
-            height: 64px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         .back-button {
@@ -199,154 +239,82 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            font-size: 0.875rem;
             padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            background: transparent;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
             transition: var(--transition);
         }
 
         .back-button:hover {
-            background: #f1f3f4;
+            background: var(--bg-light);
             color: var(--primary-color);
         }
 
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-left: auto;
-        }
-
-        .header-button {
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-size: 0.875rem;
+        .note-title-input {
+            flex: 1;
+            font-size: 1.25rem;
             font-weight: 500;
-            border: 1px solid var(--border-color);
-            background: white;
-            color: var(--text-dark);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
+            border: none;
+            padding: 0.5rem;
+            margin: 0 1rem;
+            border-radius: 0.375rem;
             transition: var(--transition);
-            cursor: pointer;
         }
 
-        .header-button:hover {
-            background: #f1f3f4;
-            border-color: var(--text-muted);
-        }
-
-        .header-button i {
-            font-size: 1rem;
-        }
-
-        .form-select {
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 0.5rem 2rem 0.5rem 0.75rem;
-            font-size: 0.875rem;
-            transition: var(--transition);
-            background-color: white;
-            cursor: pointer;
-            min-width: 140px;
-        }
-
-        .form-select:hover {
-            border-color: var(--text-muted);
-        }
-
-        .form-select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.1);
+        .note-title-input:focus {
             outline: none;
+            background: var(--bg-light);
         }
 
+        /* Main Content Layout */
         .main-content {
             display: grid;
-            grid-template-columns: 1fr 300px;
-            min-height: calc(100vh - 120px); /* Adjusted for header + toolbar */
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
         }
 
+        /* Editor Section */
         .editor-section {
-            padding: 2rem;
             background: white;
-        }
-
-        .note-header {
-            margin-bottom: 2rem;
-        }
-
-        .note-header input[type="text"] {
-            font-size: 2rem;
-            font-weight: 600;
-            border: none;
-            width: 100%;
-            padding: 0.5rem 0;
-            margin-bottom: 0.5rem;
-            color: var(--text-dark);
-            background: transparent;
-        }
-
-        .note-header input[type="text"]:focus {
-            outline: none;
-            border-bottom: 2px solid var(--primary-color);
-        }
-
-        .note-meta {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            color: var(--text-muted);
-            font-size: 0.9rem;
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
         }
 
         .editor-toolbar {
-            position: sticky;
-            top: 64px;
-            z-index: 100;
-            background: white;
-            padding: 0.5rem;
+            padding: 0.75rem;
             border-bottom: 1px solid var(--border-color);
+            background: var(--bg-light);
             display: flex;
-            align-items: center;
             gap: 0.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            flex-wrap: wrap;
         }
 
         .toolbar-group {
             display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 0 4px;
-        }
-
-        .toolbar-separator {
-            width: 1px;
-            height: 24px;
-            background: var(--border-color);
-            margin: 0 4px;
+            gap: 0.25rem;
+            padding: 0.25rem;
+            background: white;
+            border-radius: 0.375rem;
         }
 
         .toolbar-button {
-            width: 34px;
-            height: 34px;
-            border-radius: 4px;
+            padding: 0.5rem;
             border: none;
             background: transparent;
+            border-radius: 0.25rem;
             color: var(--text-dark);
-            display: flex;
-            align-items: center;
-            justify-content: center;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: var(--transition);
         }
 
         .toolbar-button:hover {
-            background: var(--secondary-color);
-            color: white;
+            background: var(--bg-light);
+            color: var(--primary-color);
         }
 
         .toolbar-button.active {
@@ -355,61 +323,62 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         }
 
         .editor-content {
-            min-height: 500px;
-            padding: 1rem;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 1rem;
-            line-height: 1.6;
-            color: var(--text-dark);
-        }
-
-        .editor-content:focus {
+            padding: 2rem;
+            min-height: calc(100vh - 300px);
             outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
         }
 
+        /* Comments Section */
         .comments-section {
-            background: #f8f9fa;
-            border-left: 1px solid var(--border-color);
-            padding: 1.5rem;
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow-md);
+            height: fit-content;
+            position: sticky;
+            top: 5rem;
         }
 
         .comments-header {
-            margin-bottom: 1.5rem;
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
         .comments-header h5 {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
             margin: 0;
         }
 
-        .badge {
+        .comment-count {
             background: var(--primary-color);
             color: white;
-            font-weight: 500;
             padding: 0.25rem 0.75rem;
-            border-radius: 20px;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .comments-list {
+            max-height: calc(100vh - 400px);
+            overflow-y: auto;
+            padding: 1.25rem;
         }
 
         .comment {
-            background: white;
             padding: 1rem;
-            border-radius: 8px;
+            border-radius: 0.5rem;
+            background: var(--bg-light);
             margin-bottom: 1rem;
-            box-shadow: var(--shadow-sm);
         }
 
         .comment-header {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             margin-bottom: 0.5rem;
-            font-size: 0.9rem;
         }
 
         .comment-author {
@@ -418,68 +387,118 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         }
 
         .comment-time {
+            font-size: 0.75rem;
             color: var(--text-muted);
         }
 
-        .comment-form textarea {
-            width: 100%;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 0.75rem;
-            margin-bottom: 1rem;
-            resize: none;
-            font-size: 0.9rem;
+        .comment-text {
+            font-size: 0.875rem;
+            color: var(--text-dark);
         }
 
-        .comment-form textarea:focus {
+        .comment-form {
+            padding: 1.25rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comment-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            resize: none;
+            transition: var(--transition);
+        }
+
+        .comment-input:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
 
+        /* Buttons */
         .btn-primary {
             background: var(--primary-color);
             border: none;
             padding: 0.75rem 1.5rem;
-            border-radius: 8px;
+            border-radius: 0.5rem;
+            color: white;
             font-weight: 500;
             transition: var(--transition);
         }
 
         .btn-primary:hover {
-            background: #5f51e5;
+            background: var(--primary-hover);
             transform: translateY(-1px);
         }
 
-        .btn-outline-secondary {
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .status-select {
+            padding: 0.75rem;
             border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
             color: var(--text-dark);
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 500;
+            background-color: white;
+            min-width: 140px;
             transition: var(--transition);
         }
 
-        .btn-outline-secondary:hover {
-            background: #f8f9fa;
+        .status-select:focus {
+            outline: none;
             border-color: var(--primary-color);
-            color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
 
+        /* Modal Styling */
         .modal-content {
-            border-radius: 16px;
+            border-radius: 0.75rem;
             border: none;
+            box-shadow: var(--shadow-md);
         }
 
         .modal-header {
+            padding: 1.25rem;
             border-bottom: 1px solid var(--border-color);
-            padding: 1.5rem;
         }
 
         .modal-body {
-            padding: 1.5rem;
+            padding: 1.25rem;
         }
 
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .comments-section {
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .action-buttons {
+                flex-wrap: wrap;
+            }
+
+            .status-select {
+                width: 100%;
+            }
+        }
+
+        /* Toast Styles */
         .toast-container {
             position: fixed;
             bottom: 2rem;
@@ -489,183 +508,186 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
         .toast {
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border: none;
-            margin-top: 0.5rem;
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow-md);
+            min-width: 250px;
+            opacity: 0;
+            transition: opacity 0.15s ease-in-out;
         }
 
-        .save-bar {
-            position: sticky;
-            bottom: 0;
-            background: white;
-            padding: 1rem 2rem;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-            z-index: 100;
+        .toast.show {
+            opacity: 1;
         }
 
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .comments-section {
-                border-left: none;
-                border-top: 1px solid var(--border-color);
-            }
+        .toast.success {
+            border-left: 4px solid #10b981;
         }
 
-        /* Update button active state styling */
-        .btn-light.active {
-            background-color: #e8f0fe !important;
-            color: #1a73e8 !important;
-            border-color: #e8f0fe !important;
+        .toast.error {
+            border-left: 4px solid #ef4444;
         }
 
-        .editor-content {
-            padding: 2rem;
-            min-height: 500px;
-            outline: none;
-            font-size: 1rem;
-            line-height: 1.6;
+        .toast.saving {
+            border-left: 4px solid var(--primary-color);
         }
 
-        .editor-content:focus {
-            outline: none;
+        .toast-body {
+            padding: 1rem;
+            color: var(--text-dark);
         }
 
-        .editor-content img {
-            max-width: 100%;
-            height: auto;
-            margin: 1rem 0;
+        .toast .spinner-border {
+            width: 1rem;
+            height: 1rem;
+            border-width: 0.15em;
         }
 
-        /* Placeholder styling */
-        .editor-content:empty:before {
-            content: attr(data-placeholder);
-            color: #6c757d;
-            pointer-events: none;
+        .toast-header {
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.75rem 1rem;
+            background: transparent;
+        }
+
+        .toast-header .btn-close {
+            margin-right: -0.375rem;
         }
     </style>
 </head>
 <body>
     <!-- Toast Container -->
-    <div class="toast-container"></div>
-
-    <div class="container-fluid note-container">
-        <div class="bg-white border-bottom sticky-top">
-            <div class="px-3 py-2 border-bottom bg-light">
-                <div class="btn-toolbar" role="toolbar" aria-label="Text formatting toolbar">
-                    <div class="btn-group me-2" role="group">
-                        <button type="button" class="btn btn-light" data-command="undo" title="Undo">
-                            <i class="bi bi-arrow-counterclockwise"></i>
-                        </button>
-                        <button type="button" class="btn btn-light" data-command="redo" title="Redo">
-                            <i class="bi bi-arrow-clockwise"></i>
-                        </button>
+    <div class="toast-container">
+        <!-- Saving Toast -->
+        <div class="toast align-items-center saving-toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <div class="d-flex align-items-center">
+                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                            <span class="visually-hidden">Saving...</span>
+                        </div>
+                        Saving your note...
                     </div>
-
-                    <div class="btn-group me-2" role="group">
-                        <button type="button" class="btn btn-light" data-command="bold" title="Bold">
-                            <i class="bi bi-type-bold"></i>
-                        </button>
-                        <button type="button" class="btn btn-light" data-command="italic" title="Italic">
-                            <i class="bi bi-type-italic"></i>
-                        </button>
-                        <button type="button" class="btn btn-light" data-command="underline" title="Underline">
-                            <i class="bi bi-type-underline"></i>
-                        </button>
-                    </div>
-
-                    <div class="btn-group me-2" role="group">
-                        <button type="button" class="btn btn-light" data-command="justifyLeft" title="Align left">
-                            <i class="bi bi-text-left"></i>
-                        </button>
-                        <button type="button" class="btn btn-light" data-command="justifyCenter" title="Align center">
-                            <i class="bi bi-text-center"></i>
-                        </button>
-                        <button type="button" class="btn btn-light" data-command="justifyRight" title="Align right">
-                            <i class="bi bi-text-right"></i>
-                        </button>
-                    </div>
-
-                    <div class="btn-group me-2" role="group">
-                        <button type="button" class="btn btn-light" data-command="insertUnorderedList" title="Bullet list">
-                            <i class="bi bi-list-ul"></i>
-                        </button>
-                        <button type="button" class="btn btn-light" data-command="insertOrderedList" title="Numbered list">
-                            <i class="bi bi-list-ol"></i>
-                        </button>
-                    </div>
-
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-light" data-command="insertImage" title="Add image">
-                            <i class="bi bi-image"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="px-3 py-2 d-flex align-items-center">
-                <a href="notes.php" class="btn btn-light me-3">
-                    <i class="bi bi-arrow-left"></i>
-                    Back to Notes
-                </a>
-                <div class="d-flex align-items-center flex-grow-1">
-                    <input type="text" class="form-control form-control-lg border-0 shadow-none" 
-                           id="title" name="title" placeholder="Untitled document"
-                           value="<?php echo isset($note) ? htmlspecialchars($note['title']) : ''; ?>">
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                    <select class="form-select" id="status" name="status">
-                        <option value="not-started" <?php echo (isset($note) && $note['status'] == 'not-started') ? 'selected' : ''; ?>>Not Started</option>
-                        <option value="pending" <?php echo (isset($note) && $note['status'] == 'pending') ? 'selected' : ''; ?>>In Progress</option>
-                        <option value="completed" <?php echo (isset($note) && $note['status'] == 'completed') ? 'selected' : ''; ?>>Completed</option>
-                    </select>
-                    <button type="button" class="btn btn-primary" id="saveButton">
-                        <i class="bi bi-save"></i>
-                        Save
-                    </button>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#shareModal">
-                        <i class="bi bi-share-fill"></i>
-                        Share
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="main-content">
-            <div class="editor-section">
-                <div class="editor-content" id="editor" contenteditable="true" 
-                     data-placeholder="Start writing your note..."><?php 
-                    echo isset($note) ? htmlspecialchars_decode($note['content']) : ''; 
-                ?></div>
-                
-                <input type="hidden" id="content" name="content">
-            </div>
-
-            <div class="comments-section">
-                <div class="comments-header">
-                    <h5>Comments</h5>
-                    <span class="badge" id="comment-count">0</span>
-                </div>
-                
-                <div class="comments-content" id="comments-container">
-                    <!-- Comments will be dynamically added here -->
-                </div>
-
-                <div class="comment-form">
-                    <textarea id="comment-text" rows="3" placeholder="Write a comment..."></textarea>
-                    <button type="button" class="btn btn-primary w-100" id="add-comment">
-                        Comment
-                    </button>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-content">
+            <a href="notes.php" class="back-button">
+                <i class="bi bi-arrow-left"></i>
+                Back to Notes
+            </a>
+            <input type="text" class="note-title-input" id="title" name="title" 
+                   placeholder="Untitled note" 
+                   value="<?php echo isset($note) ? htmlspecialchars($note['title']) : ''; ?>">
+            <div class="action-buttons">
+                <select class="status-select" id="status" name="status">
+                    <option value="not-started" <?php echo (isset($note) && $note['status'] == 'not-started') ? 'selected' : ''; ?>>Not Started</option>
+                    <option value="pending" <?php echo (isset($note) && $note['status'] == 'pending') ? 'selected' : ''; ?>>In Progress</option>
+                    <option value="completed" <?php echo (isset($note) && $note['status'] == 'completed') ? 'selected' : ''; ?>>Completed</option>
+                </select>
+                <button type="button" class="btn btn-primary" id="saveButton">
+                    <i class="bi bi-save"></i>
+                    Save
+                </button>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#shareModal">
+                    <i class="bi bi-share-fill"></i>
+                    Share
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Editor Section -->
+        <div class="editor-section">
+            <div class="editor-toolbar">
+                <div class="toolbar-group">
+                    <button type="button" class="toolbar-button" data-command="undo" title="Undo">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </button>
+                    <button type="button" class="toolbar-button" data-command="redo" title="Redo">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+
+                <div class="toolbar-group">
+                    <button type="button" class="toolbar-button" data-command="bold" title="Bold">
+                        <i class="bi bi-type-bold"></i>
+                    </button>
+                    <button type="button" class="toolbar-button" data-command="italic" title="Italic">
+                        <i class="bi bi-type-italic"></i>
+                    </button>
+                    <button type="button" class="toolbar-button" data-command="underline" title="Underline">
+                        <i class="bi bi-type-underline"></i>
+                    </button>
+                </div>
+
+                <div class="toolbar-group">
+                    <button type="button" class="toolbar-button" data-command="justifyLeft" title="Align left">
+                        <i class="bi bi-text-left"></i>
+                    </button>
+                    <button type="button" class="toolbar-button" data-command="justifyCenter" title="Align center">
+                        <i class="bi bi-text-center"></i>
+                    </button>
+                    <button type="button" class="toolbar-button" data-command="justifyRight" title="Align right">
+                        <i class="bi bi-text-right"></i>
+                    </button>
+                </div>
+
+                <div class="toolbar-group">
+                    <button type="button" class="toolbar-button" data-command="insertUnorderedList" title="Bullet list">
+                        <i class="bi bi-list-ul"></i>
+                    </button>
+                    <button type="button" class="toolbar-button" data-command="insertOrderedList" title="Numbered list">
+                        <i class="bi bi-list-ol"></i>
+                    </button>
+                </div>
+
+                <div class="toolbar-group">
+                    <button type="button" class="toolbar-button" data-command="insertImage" title="Add image">
+                        <i class="bi bi-image"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="editor-content" id="editor" contenteditable="true" 
+                 data-placeholder="Start writing your note..."><?php 
+                echo isset($note) ? htmlspecialchars_decode($note['content']) : ''; 
+            ?></div>
+        </div>
+
+        <!-- Comments Section -->
+        <div class="comments-section">
+            <div class="comments-header">
+                <h5>Comments</h5>
+                <span class="comment-count" id="comment-count">0</span>
+            </div>
+            
+            <div class="comments-list" id="comments-container">
+                <!-- Comments will be dynamically added here -->
+            </div>
+
+            <div class="comment-form">
+                <textarea id="comment-text" class="comment-input" rows="3" 
+                          placeholder="Write a comment..."></textarea>
+                <button type="button" class="btn btn-primary w-100" id="add-comment">
+                    Add Comment
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Form for Saving -->
+    <form id="noteForm" method="POST">
+        <input type="hidden" name="save_note" value="1">
+        <input type="hidden" name="title" id="formTitle">
+        <input type="hidden" name="content" id="formContent">
+        <input type="hidden" name="status" id="formStatus">
+        <input type="hidden" name="pinned" id="formPinned" value="0">
+    </form>
 
     <!-- Share Modal -->
     <div class="modal fade" id="shareModal" tabindex="-1">
@@ -706,62 +728,119 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         </div>
     </div>
 
-    <form id="noteForm" method="POST" style="display: none;">
-        <input type="hidden" name="save_note" value="1">
-        <input type="hidden" name="title" id="formTitle">
-        <input type="hidden" name="content" id="formContent">
-        <input type="hidden" name="status" id="formStatus">
-        <input type="hidden" name="pinned" id="formPinned">
-    </form>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        let isSaving = false;  // Add flag to track save action
-
-        // Add confirmation before leaving
-        window.addEventListener('beforeunload', function(e) {
-            if (isSaving) {
-                return;  // Don't show warning if we're saving
+        function showToast(message, type = 'success', duration = 3000) {
+            const toastContainer = document.querySelector('.toast-container');
+            
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center ${type}`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            
+            // Create toast content
+            let icon = '';
+            switch(type) {
+                case 'success':
+                    icon = '<i class="bi bi-check-circle me-2"></i>';
+                    break;
+                case 'error':
+                    icon = '<i class="bi bi-x-circle me-2"></i>';
+                    break;
+                case 'saving':
+                    icon = '<div class="spinner-border spinner-border-sm me-2" role="status"><span class="visually-hidden">Saving...</span></div>';
+                    break;
             }
             
-            const editor = document.getElementById('editor');
-            const title = document.getElementById('title');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <div class="d-flex align-items-center">
+                            ${icon}
+                            ${message}
+                        </div>
+                    </div>
+                    ${type !== 'saving' ? '<button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>' : ''}
+                </div>
+            `;
             
-            // Check if there are unsaved changes
-            if (editor.getAttribute('data-original-content') !== editor.innerHTML ||
-                title.getAttribute('data-original-value') !== title.value) {
-                e.preventDefault();
-                e.returnValue = '';
+            // Add toast to container
+            toastContainer.appendChild(toast);
+            
+            // Show toast
+            toast.classList.add('show');
+            
+            // Remove toast after duration (except for saving toast)
+            if (type !== 'saving') {
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 150);
+                }, duration);
             }
-        });
+            
+            return toast;
+        }
 
-        // Store original content for change detection
         document.addEventListener('DOMContentLoaded', function() {
             const editor = document.getElementById('editor');
             const title = document.getElementById('title');
             
+            // Store original content for change detection
             editor.setAttribute('data-original-content', editor.innerHTML);
             title.setAttribute('data-original-value', title.value);
 
-            // Add save button click handler
-            document.getElementById('saveButton').addEventListener('click', function() {
-                isSaving = true;  // Set flag before saving
+            // Save button click handler
+            document.getElementById('saveButton').addEventListener('click', async function() {
+                // Show saving toast
+                const savingToast = showToast('Saving your note...', 'saving');
                 
-                // Get values from the editor and form
-                const title = document.getElementById('title').value;
-                const content = document.getElementById('editor').innerHTML;
-                const status = document.getElementById('status').value;
-                const pinned = document.getElementById('pinned')?.checked ? 1 : 0;
-                
-                // Set values in the hidden form
-                document.getElementById('formTitle').value = title;
-                document.getElementById('formContent').value = content;
-                document.getElementById('formStatus').value = status;
-                document.getElementById('formPinned').value = pinned;
-                
-                // Submit the form
-                document.getElementById('noteForm').submit();
+                try {
+                    // Get current values
+                    const titleValue = document.getElementById('title').value;
+                    const contentValue = editor.innerHTML;
+                    const statusValue = document.getElementById('status').value;
+                    
+                    // Update form values
+                    document.getElementById('formTitle').value = titleValue;
+                    document.getElementById('formContent').value = contentValue;
+                    document.getElementById('formStatus').value = statusValue;
+                    
+                    // Submit the form using fetch
+                    const form = document.getElementById('noteForm');
+                    const formData = new FormData(form);
+                    
+                    const response = await fetch(window.location.href, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    // Remove saving toast
+                    savingToast.remove();
+                    
+                    if (response.ok) {
+                        showToast('Note saved successfully!', 'success');
+                        // Update original content to prevent unnecessary warnings
+                        editor.setAttribute('data-original-content', editor.innerHTML);
+                        title.setAttribute('data-original-value', title.value);
+                    } else {
+                        throw new Error('Failed to save note');
+                    }
+                } catch (error) {
+                    // Remove saving toast
+                    savingToast.remove();
+                    showToast('Error saving note. Please try again.', 'error');
+                }
             });
+
+            // Update content when typing
+            editor.addEventListener('input', function() {
+                document.getElementById('formContent').value = this.innerHTML;
+            });
+
+            // Initialize content
+            document.getElementById('formContent').value = editor.innerHTML;
         });
 
         // Custom Editor Implementation
@@ -939,66 +1018,53 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             }
         });
 
-        // Client-side comment handling
-        const comments = [];
-        
+        // Update comment handling code
         document.getElementById('add-comment').addEventListener('click', function(e) {
             e.preventDefault();
             const commentText = document.getElementById('comment-text').value.trim();
             if (commentText) {
-                const comment = {
-                    text: commentText,
-                    author: '<?php echo $_SESSION['username'] ?? "User"; ?>',
-                    timestamp: new Date().toLocaleString()
-                };
-                comments.push(comment);
-                document.getElementById('comment-text').value = '';
-                displayComments();
-                updateCommentCount();
+                const formData = new FormData();
+                formData.append('add_comment', '1');
+                formData.append('comment_text', commentText);
+
+                fetch(window.location.href, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('comment-text').value = '';
+                        addCommentToDOM(data.comment);
+                        updateCommentCount(data.total_comments);
+                    }
+                });
             }
         });
 
-        function displayComments() {
+        function addCommentToDOM(comment) {
             const container = document.getElementById('comments-container');
-            container.innerHTML = comments.map(comment => `
-                <div class="comment">
-                    <div class="comment-header">
-                        <span class="comment-author">${comment.author}</span>
-                        <span class="comment-time">${comment.timestamp}</span>
-                    </div>
-                    <div class="comment-text">${comment.text}</div>
+            const commentElement = document.createElement('div');
+            commentElement.className = 'comment';
+            commentElement.innerHTML = `
+                <div class="comment-header">
+                    <span class="comment-author">${comment.author_name}</span>
+                    <span class="comment-time">${new Date(comment.created_at).toLocaleString()}</span>
                 </div>
-            `).join('');
-        }
-
-        function updateCommentCount() {
-            document.getElementById('comment-count').textContent = comments.length;
-        }
-
-        // Toast notification function
-        function showToast(title, message, type = 'success') {
-            const toastContainer = document.querySelector('.toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerHTML = `
-                <div class="toast-header">
-                    <strong class="me-auto">${title}</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-                </div>
-                <div class="toast-body">
-                    ${message}
-                </div>
+                <div class="comment-text">${comment.comment}</div>
             `;
-            toastContainer.appendChild(toast);
-            const bsToast = new bootstrap.Toast(toast, {
-                autohide: true,
-                delay: 3000
-            });
-            bsToast.show();
-            toast.addEventListener('hidden.bs.toast', () => {
-                toast.remove();
-            });
+            container.insertBefore(commentElement, container.firstChild);
         }
+
+        function updateCommentCount(count) {
+            document.getElementById('comment-count').textContent = count;
+        }
+
+        // Initialize existing comments
+        <?php foreach ($comments as $comment): ?>
+            addCommentToDOM(<?php echo json_encode($comment); ?>);
+        <?php endforeach; ?>
+        updateCommentCount(<?php echo $comment_count; ?>);
 
         // Handle share form submission
         document.getElementById('shareForm').addEventListener('submit', function(e) {

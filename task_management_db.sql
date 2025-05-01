@@ -47,7 +47,32 @@ INSERT INTO `notes` (`id`, `title`, `content`, `user_id`, `status`, `pinned`, `c
 (2, 'Project Ideas', 'List of potential project ideas:\n- Task management system\n- Personal blog\n- E-commerce platform', 2, 'pending', 0, '2025-04-04 08:39:04', '2025-04-04 08:39:04'),
 (3, 'Meeting Notes', 'Key points from team meeting:\n- Discussed project timeline\n- Assigned tasks\n- Set next meeting date', 7, 'completed', 0, '2025-04-04 08:39:04', '2025-04-07 08:27:39'),
 (8, 'arhuahwd', 'helo my name is bhjbwaj<div bis_skin_checked=\"1\"><br></div>', 6, 'pending', 0, '2025-04-04 09:11:33', '2025-04-05 06:26:39'),
-(9, 'ui ux principles', 'Following UI design best practices makes digital products easier for everyone to use, follow, and enjoy. The benefits of applying UI design principles are many, including:\r\n<div bis_skin_checked=\"1\">\r\n</div><div bis_skin_checked=\"1\">Enhances usability. “Think of a user as someone asking you directions. If you just showed them a map and expected them to memorize it, they\'ll probably get lost,” Tom says. “But if you point them to a sign that says their destination is this way, they can follow the signs from there … That\'s a much better experience. UI design principles help you set up signs users can follow towards their goals—one click, scroll, or interaction at a time.”\r\n</div><div bis_skin_checked=\"1\">Improves decision-making. Clear and consistent UI design principles give a structured framework for predicting user needs and making informed design choices.\r\n</div><div bis_skin_checked=\"1\">Increases efficiency. Aligning UI design principles at the start of projects lifts the cognitive load for designers, streamlining workflows and making product teams more efficient. Figma data analysts found that participants with access to a design system completed their design objective 34% faster than those without one.\r\n</div><div bis_skin_checked=\"1\">Reduces cognitive load. A well-designed interface can simplify tasks, reducing the mental effort required to complete user actions. Less cognitive load can help create a more intuitive and enjoyable experience.</div>', 1, 'completed', 1, '2025-04-17 08:03:49', '2025-04-17 09:10:29');
+(9, 'ui ux principles', 'Following UI design best practices makes digital products easier for everyone to use, follow, and enjoy. The benefits of applying UI design principles are many, including:\r\n<div bis_skin_checked=\"1\">\r\n</div><div bis_skin_checked=\"1\">Enhances usability. "Think of a user as someone asking you directions. If you just showed them a map and expected them to memorize it, they\'ll probably get lost," Tom says. "But if you point them to a sign that says their destination is this way, they can follow the signs from there … That\'s a much better experience. UI design principles help you set up signs users can follow towards their goals—one click, scroll, or interaction at a time."\r\n</div><div bis_skin_checked=\"1\">Improves decision-making. Clear and consistent UI design principles give a structured framework for predicting user needs and making informed design choices.\r\n</div><div bis_skin_checked=\"1\">Increases efficiency. Aligning UI design principles at the start of projects lifts the cognitive load for designers, streamlining workflows and making product teams more efficient. Figma data analysts found that participants with access to a design system completed their design objective 34% faster than those without one.\r\n</div><div bis_skin_checked=\"1\">Reduces cognitive load. A well-designed interface can simplify tasks, reducing the mental effort required to complete user actions. Less cognitive load can help create a more intuitive and enjoyable experience.</div>', 1, 'completed', 1, '2025-04-17 08:03:49', '2025-04-17 09:10:29');
+
+--
+-- Table structure for table `note_comments`
+--
+
+CREATE TABLE `note_comments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `note_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `comment` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `note_id` (`note_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `note_comments_ibfk_1` FOREIGN KEY (`note_id`) REFERENCES `notes` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `note_comments_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `note_comments`
+--
+
+INSERT INTO `note_comments` (`note_id`, `user_id`, `comment`, `created_at`) VALUES
+(8, 7, 'This is a great note!', '2025-05-01 11:24:22'),
+(8, 5, 'Thanks for sharing!', '2025-05-01 11:24:26');
 
 -- --------------------------------------------------------
 
@@ -301,6 +326,14 @@ ALTER TABLE `notes`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indexes for table `note_comments`
+--
+ALTER TABLE `note_comments`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `note_id` (`note_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- Indexes for table `note_shares`
 --
 ALTER TABLE `note_shares`
@@ -355,6 +388,12 @@ ALTER TABLE `notes`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
+-- AUTO_INCREMENT for table `note_comments`
+--
+ALTER TABLE `note_comments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
 -- AUTO_INCREMENT for table `note_shares`
 --
 ALTER TABLE `note_shares`
@@ -401,34 +440,14 @@ ALTER TABLE `notes`
   ADD CONSTRAINT `notes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
+-- Constraints for table `note_comments`
+--
+ALTER TABLE `note_comments`
+  ADD CONSTRAINT `note_comments_ibfk_1` FOREIGN KEY (`note_id`) REFERENCES `notes` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `note_comments_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `note_shares`
 --
 ALTER TABLE `note_shares`
-  ADD CONSTRAINT `note_shares_ibfk_1` FOREIGN KEY (`note_id`) REFERENCES `notes` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `note_shares_ibfk_2` FOREIGN KEY (`shared_by`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `note_shares_ibfk_3` FOREIGN KEY (`shared_with`) REFERENCES `users` (`id`);
-
---
--- Constraints for table `subscriptions`
---
-ALTER TABLE `subscriptions`
-  ADD CONSTRAINT `subscriptions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `subscriptions_ibfk_2` FOREIGN KEY (`plan_id`) REFERENCES `plans` (`id`);
-
---
--- Constraints for table `support_replies`
---
-ALTER TABLE `support_replies`
-  ADD CONSTRAINT `support_replies_ibfk_1` FOREIGN KEY (`ticket_id`) REFERENCES `support_tickets` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `support_replies_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `support_tickets`
---
-ALTER TABLE `support_tickets`
-  ADD CONSTRAINT `support_tickets_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+  ADD CONSTRAINT `note_shares_ibfk_1` FOREIGN KEY (`

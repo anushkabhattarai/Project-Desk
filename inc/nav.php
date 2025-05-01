@@ -1,4 +1,4 @@
-<nav class="bg-white shadow-sm border-end" style="width: 250px; min-height: 100vh; position: fixed; left: 0; top: 0; z-index: 999; padding-top: 70px;">
+<nav class="bg-white shadow-sm border-end" style="width: 250px; min-height: 100vh; position: fixed; left: 0; top: 0; z-index: 999; padding-top: 70px; transition: width 0.3s ease;">
     <!-- User Profile Section -->
     <div class="p-4 text-center border-bottom">
         <div class="position-relative d-inline-block mb-3">
@@ -30,10 +30,25 @@
                 </li>
                 
                 <!-- Notes Section -->
+                <li class="nav-item mt-2">
+                    <div class="text-uppercase text-muted small fw-semibold ms-3 mb-2">Notes</div>
+                </li>
                 <li class="nav-item">
                     <a href="notes.php" class="nav-link rounded-3 py-2 px-3 d-flex align-items-center">
                         <i class="fa fa-sticky-note me-3 text-opacity-75" aria-hidden="true"></i>
-                        <span>Notes</span>
+                        <span>All Notes</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="private_notes.php" class="nav-link rounded-3 py-2 px-3 d-flex align-items-center">
+                        <i class="fa fa-lock me-3 text-opacity-75" aria-hidden="true"></i>
+                        <span>Private Notes</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="shared-notes.php" class="nav-link rounded-3 py-2 px-3 d-flex align-items-center">
+                        <i class="fa fa-share-alt me-3 text-opacity-75" aria-hidden="true"></i>
+                        <span>Shared Notes</span>
                     </a>
                 </li>
                 
@@ -80,11 +95,19 @@
                     </a>
                 </li>
                 
-                <!-- Notes Section - Always visible but will redirect to plans if needed -->
+                <!-- Notes Section -->
+                <li class="nav-item mt-2">
+                    <div class="text-uppercase text-muted small fw-semibold ms-3 mb-2">Notes</div>
+                </li>
                 <li class="nav-item">
                     <a href="notes.php" class="nav-link rounded-3 py-2 px-3 d-flex align-items-center">
                         <i class="fa fa-sticky-note me-3 text-opacity-75" aria-hidden="true"></i>
                         <span>Notes</span>
+                    </a>
+                <li class="nav-item">
+                    <a href="shared-notes.php" class="nav-link rounded-3 py-2 px-3 d-flex align-items-center">
+                        <i class="fa fa-share-alt me-3 text-opacity-75" aria-hidden="true"></i>
+                        <span>Shared Notes</span>
                     </a>
                 </li>
                 
@@ -132,12 +155,26 @@
     // Add active class to current page
     document.addEventListener('DOMContentLoaded', function() {
         const currentLocation = window.location.pathname;
+        const currentPage = currentLocation.split('/').pop();
         const navLinks = document.querySelectorAll('#navList a');
         
         navLinks.forEach(link => {
-            if(link.getAttribute('href') === currentLocation.substring(currentLocation.lastIndexOf('/') + 1)) {
+            const linkHref = link.getAttribute('href');
+            if (linkHref === currentPage) {
                 link.classList.add('active');
             }
+        });
+
+        // Add rotation animation for chevron icon
+        const notesCollapse = document.getElementById('notesCollapse');
+        const notesChevron = document.getElementById('notesChevron');
+        
+        notesCollapse.addEventListener('show.bs.collapse', function () {
+            notesChevron.style.transform = 'rotate(180deg)';
+        });
+        
+        notesCollapse.addEventListener('hide.bs.collapse', function () {
+            notesChevron.style.transform = 'rotate(0deg)';
         });
     });
 </script>
@@ -146,6 +183,9 @@
     .nav-link {
         color: #495057;
         transition: all 0.2s ease;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     .nav-link:hover {
         background-color: rgba(13, 110, 253, 0.05);
@@ -196,5 +236,20 @@
 
     .new-note {
         animation: slideIn 0.3s ease forwards;
+    }
+
+    /* Responsive styles */
+    @media (max-width: 991.98px) {
+        nav {
+            width: 0px !important;
+            overflow: hidden;
+        }
+        body {
+            margin-left: 0 !important;
+        }
+    }
+
+    .transition-transform {
+        transition: transform 0.3s ease;
     }
 </style>

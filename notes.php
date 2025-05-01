@@ -206,10 +206,31 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         /* Adjust timestamp size and spacing */
         .note-card .timestamp {
-            font-size: 0.8rem; /* Reduced from 0.85rem */
+            font-size: 0.8rem;
             color: #94a3b8;
-            margin: 0.25rem 0 0.5rem 0; /* Reduced from 0.5rem 0 1rem 0 */
-            height: 1rem; /* Reduced from 1.2rem */
+            margin: 0.25rem 0 0.5rem 0;
+            height: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .note-card .timestamp i {
+            font-size: 0.9rem;
+        }
+
+        .note-card .timestamp .ms-2 {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.1rem 0.5rem;
+            background-color: #f1f5f9;
+            border-radius: 12px;
+            color: #64748b;
+        }
+
+        .note-card .timestamp .ms-2 i {
+            color: #94a3b8;
         }
 
         /* Adjust content area */
@@ -665,6 +686,7 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
         }
 
         .hierarchy-header {
@@ -683,6 +705,7 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .hierarchy-note {
             transition: all 0.2s ease;
             border-left: 3px solid #e0e0e0;
+            margin-bottom: 0.5rem;
         }
 
         .hierarchy-note:hover {
@@ -690,7 +713,6 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             box-shadow: 0 3px 10px rgba(0,0,0,0.08);
         }
 
-        /* Status-specific styles for hierarchy items */
         .hierarchy-note[data-status="not-started"] {
             border-left-color: #dc2626;
         }
@@ -708,6 +730,71 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             background-color: #f8f9fa;
             color: #333;
             font-weight: 500;
+        }
+
+        /* Add Kanban board styles */
+        .kanban-column {
+            min-height: 500px;
+            background-color: #f8f9fa;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .kanban-card {
+            cursor: move;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            margin-bottom: 0.5rem;
+        }
+
+        .kanban-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .kanban-card.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        .kanban-card.completed-note {
+            cursor: not-allowed;
+            opacity: 0.8;
+            background-color: #f8f9fa;
+        }
+
+        .kanban-card.completed-note:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .kanban-column .card-header {
+            border-bottom: none;
+            padding: 1rem;
+        }
+
+        .kanban-column .card-header h5 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .list-group-item {
+            border: 1px solid rgba(0, 0, 0, 0.125);
+            padding: 0.75rem 1.25rem;
+            margin-bottom: -1px;
+            background-color: #fff;
+            transition: all 0.2s ease;
+        }
+
+        .list-group-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .list-group-item .status-select-wrapper {
+            min-width: 120px;
+        }
+
+        .list-group-item .btn-group {
+            margin-left: 0.5rem;
         }
     </style>
 </head>
@@ -738,12 +825,13 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     
                     <!-- View selector -->
                     <div class="btn-group" role="group" aria-label="View options">
+                        <button type="button" class="btn btn-outline-secondary view-btn" data-view="kanban">
+                            <i class="fa fa-columns"></i>
+                        </button>
                         <button type="button" class="btn btn-outline-secondary view-btn" data-view="hierarchical">
                             <i class="fa fa-sitemap"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-secondary view-btn" data-view="list">
-                            <i class="fa fa-list"></i>
-                        </button>
+
                         <button type="button" class="btn btn-outline-secondary view-btn" data-view="cards">
                             <i class="fa fa-th"></i>
                         </button>
@@ -795,6 +883,72 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             document.querySelector('.view-btn[data-view="hierarchical"]').classList.add('active');
             renderNotes();
+
+            // Add drag and drop event listeners
+            document.addEventListener('dragstart', function(e) {
+                if (e.target.classList.contains('kanban-card')) {
+                    // Check if the note is completed
+                    const noteId = e.target.dataset.noteId;
+                    const note = notes.find(n => n.id == noteId);
+                    
+                    if (note && note.status === 'completed') {
+                        e.preventDefault();
+                        return;
+                    }
+                    
+                    e.target.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', noteId);
+                }
+            });
+
+            document.addEventListener('dragend', function(e) {
+                if (e.target.classList.contains('kanban-card')) {
+                    e.target.classList.remove('dragging');
+                }
+            });
+
+            document.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                const column = e.target.closest('.kanban-column');
+                if (column) {
+                    const draggingCard = document.querySelector('.dragging');
+                    if (draggingCard) {
+                        const cards = [...column.querySelectorAll('.kanban-card:not(.dragging)')];
+                        const afterCard = cards.reduce((closest, card) => {
+                            const box = card.getBoundingClientRect();
+                            const offset = e.clientY - box.top - box.height / 2;
+                            if (offset < 0 && offset > closest.offset) {
+                                return { offset: offset, element: card };
+                            } else {
+                                return closest;
+                            }
+                        }, { offset: Number.NEGATIVE_INFINITY }).element;
+
+                        if (afterCard) {
+                            column.insertBefore(draggingCard, afterCard);
+                        } else {
+                            column.appendChild(draggingCard);
+                        }
+                    }
+                }
+            });
+
+            document.addEventListener('drop', function(e) {
+                e.preventDefault();
+                const column = e.target.closest('.kanban-column');
+                if (column) {
+                    const noteId = e.dataTransfer.getData('text/plain');
+                    const newStatus = column.dataset.status;
+                    
+                    // Check if the note is completed
+                    const note = notes.find(n => n.id == noteId);
+                    if (note && note.status === 'completed') {
+                        return;
+                    }
+                    
+                    updateNoteStatus(noteId, newStatus);
+                }
+            });
         });
 
         // Update renderNotes function to handle database notes
@@ -802,29 +956,11 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             const notesGrid = document.getElementById('notesGrid');
             notesGrid.innerHTML = '';
             
-            if (currentView === 'list') {
-                notesGrid.className = 'list-group mb-4';
-            } else if (currentView === 'cards') {
+            if (currentView === 'cards') {
                 notesGrid.className = 'row g-3';
-            } else {
+            } else if (currentView === 'hierarchical') {
                 notesGrid.className = 'hierarchical-container';
-            }
-
-            if (notesToRender.length === 0) {
-                notesGrid.innerHTML = `
-                    <div class="col-12 text-center py-5">
-                        <i class="fa fa-sticky-note-o fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">No notes found</h5>
-                        <p class="text-muted mb-3">Get started by creating your first note</p>
-                        <button class="btn btn-primary" onclick="window.location.href='editnote.php'">
-                            <i class="fa fa-plus me-2"></i>Create Note
-                        </button>
-                    </div>
-                `;
-                return;
-            }
-
-            if (currentView === 'hierarchical') {
+                
                 const statusGroups = {
                     'not-started': { title: 'Not Started', notes: [], color: '#dc2626' },
                     'pending': { title: 'In Progress', notes: [], color: '#F59E0B' },
@@ -892,8 +1028,65 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         notesGrid.appendChild(hierarchySection);
                     }
                 });
-            } else {
-                // Existing views (list, cards)
+            } else if (currentView === 'kanban') {
+                notesGrid.className = 'row g-3';
+                notesGrid.innerHTML = `
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header bg-danger bg-opacity-10 text-danger">
+                                <h5 class="mb-0">Not Started</h5>
+                            </div>
+                            <div class="card-body kanban-column" data-status="not-started">
+                                <div class="d-flex flex-column gap-2">
+                                    ${renderKanbanCards(notesToRender.filter(note => note.status === 'not-started'))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header bg-warning bg-opacity-10 text-warning">
+                                <h5 class="mb-0">In Progress</h5>
+                            </div>
+                            <div class="card-body kanban-column" data-status="pending">
+                                <div class="d-flex flex-column gap-2">
+                                    ${renderKanbanCards(notesToRender.filter(note => note.status === 'pending'))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header bg-success bg-opacity-10 text-success">
+                                <h5 class="mb-0">Completed</h5>
+                            </div>
+                            <div class="card-body kanban-column" data-status="completed">
+                                <div class="d-flex flex-column gap-2">
+                                    ${renderKanbanCards(notesToRender.filter(note => note.status === 'completed'))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            if (notesToRender.length === 0) {
+                notesGrid.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <i class="fa fa-sticky-note-o fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No notes found</h5>
+                        <p class="text-muted mb-3">Get started by creating your first note</p>
+                        <button class="btn btn-primary" onclick="window.location.href='editnote.php'">
+                            <i class="fa fa-plus me-2"></i>Create Note
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            if (currentView === 'cards') {
+                // Cards view
                 notesToRender.forEach(note => {
                     const date = new Date(note.created_at);
                     const formattedDate = date.toLocaleDateString('en-US', { 
@@ -905,71 +1098,90 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     const truncatedContent = note.content.replace(/<[^>]*>/g, '').slice(0, 150) + '...';
                     const status = note.status || 'not-started';
                     
-                    let noteElement = '';
-                    
-                    if (currentView === 'list') {
-                        // List view
-                        noteElement = `
-                            <div class="list-group-item d-flex justify-content-between align-items-center ${status}" data-note-id="${note.id}">
-                                <div class="ms-2 me-auto">
-                                    <div class="fw-bold">${note.title}</div>
-                                    <small class="text-muted"><i class="fa fa-clock-o me-1"></i>${formattedDate}</small>
+                    const noteElement = `
+                        <div class="col-md-6 col-lg-3">
+                            <div class="note-card ${status}" data-note-id="${note.id}">
+                                <h3 class="username">${note.title}</h3>
+                                <div class="timestamp">
+                                    <i class="fa fa-clock-o me-1"></i>${formattedDate}
+                                    ${note.owner_name ? `<span class="ms-2"><i class="fa fa-user me-1"></i>${note.owner_name}</span>` : ''}
                                 </div>
-                                <div class="d-flex gap-2">
-                                    <div class="status-select-wrapper me-2">
-                                        <select class="status-select ${status} form-select form-select-sm" 
+                                <p class="note-content">${truncatedContent}</p>
+                                <div class="note-card-footer">
+                                    <div class="status-select-wrapper">
+                                        <select class="status-select ${status}" 
                                                 onchange="updateNoteStatus(${note.id}, this.value)">
                                             <option value="not-started" ${status === 'not-started' ? 'selected' : ''}>Not Started</option>
                                             <option value="pending" ${status === 'pending' ? 'selected' : ''}>Pending</option>
                                             <option value="completed" ${status === 'completed' ? 'selected' : ''}>Completed</option>
                                         </select>
                                     </div>
-                                    <a href="editnote.php?id=${note.id}" class="btn btn-sm btn-outline-primary">
-                                        <i class="fa fa-edit"></i>
-                                    </a>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteNote(${note.id})">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                        notesGrid.innerHTML += noteElement;
-                    } else if (currentView === 'cards') {
-                        // Cards view - slightly different from list
-                        noteElement = `
-                            <div class="col-md-6 col-lg-3">
-                                <div class="note-card ${status}" data-note-id="${note.id}">
-                                    <h3 class="username">${note.title}</h3>
-                                    <div class="timestamp">
-                                        <i class="fa fa-clock-o me-1"></i>${formattedDate}
-                                    </div>
-                                    <p class="note-content">${truncatedContent}</p>
-                                    <div class="note-card-footer">
-                                        <div class="status-select-wrapper">
-                                            <select class="status-select ${status}" 
-                                                    onchange="updateNoteStatus(${note.id}, this.value)">
-                                                <option value="not-started" ${status === 'not-started' ? 'selected' : ''}>Not Started</option>
-                                                <option value="pending" ${status === 'pending' ? 'selected' : ''}>Pending</option>
-                                                <option value="completed" ${status === 'completed' ? 'selected' : ''}>Completed</option>
-                                            </select>
-                                        </div>
-                                        <div class="btn-group">
-                                            <a href="editnote.php?id=${note.id}" class="btn btn-sm btn-outline-primary">
-                                                <i class="fa fa-edit"></i>
-                                            </a>
-                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteNote(${note.id})">
-                                                <i class="fa fa-trash"></i>
-                                            </button>
-                                        </div>
+                                    <div class="btn-group">
+                                        <a href="editnote.php?id=${note.id}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fa fa-edit"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteNote(${note.id})">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
-                        `;
-                    }
-                    
+                        </div>
+                    `;
                     notesGrid.innerHTML += noteElement;
                 });
             }
+        }
+
+        // Update the renderKanbanCards function to show owner name
+        function renderKanbanCards(notes) {
+            if (notes.length === 0) {
+                return `
+                    <div class="text-center text-muted py-3">
+                        <i class="fa fa-inbox fa-2x mb-2"></i>
+                        <p class="mb-0">No notes</p>
+                    </div>
+                `;
+            }
+
+            return notes.map(note => {
+                const date = new Date(note.created_at);
+                const formattedDate = date.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+                
+                const truncatedContent = note.content ? note.content.replace(/<[^>]*>/g, '').slice(0, 100) + '...' : '';
+                const isCompleted = note.status === 'completed';
+                
+                return `
+                    <div class="card kanban-card ${isCompleted ? 'completed-note' : ''}" 
+                         data-note-id="${note.id}" 
+                         draggable="${!isCompleted}">
+                        <div class="card-body p-3">
+                            <h6 class="card-title mb-2">${note.title}</h6>
+                            <p class="card-text small text-muted mb-2">${truncatedContent}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="small text-muted">
+                                    <i class="fa fa-clock-o me-1"></i>${formattedDate}
+                                    ${note.owner_name ? `<span class="ms-2"><i class="fa fa-user me-1"></i>${note.owner_name}</span>` : ''}
+                                </div>
+                                <div class="btn-group">
+                                    <a href="editnote.php?id=${note.id}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fa fa-edit"></i>
+                                    </a>
+                                    ${note.user_id == <?php echo $_SESSION['id']; ?> ? `
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteNote(${note.id})">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         // Delete note
@@ -1043,6 +1255,12 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Update the note's status in our local notes array
+                    const noteIndex = notes.findIndex(note => note.id == noteId);
+                    if (noteIndex !== -1) {
+                        notes[noteIndex].status = newStatus;
+                    }
+
                     // Show success notification
                     const notification = document.createElement('div');
                     notification.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3';
@@ -1057,11 +1275,8 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         notification.remove();
                     }, 3000);
                     
-                    // Update UI
-                    const noteElement = document.querySelector(`[data-note-id="${noteId}"]`);
-                    if (noteElement) {
-                        noteElement.className = noteElement.className.replace(/not-started|pending|completed/g, newStatus);
-                    }
+                    // Re-render the current view to reflect the changes
+                    renderNotes();
                 } else {
                     alert('Failed to update status: ' + data.message);
                 }
