@@ -140,6 +140,47 @@ $title = "Select a Plan";
     <link rel="stylesheet" href="css/style.css">
     <!-- Khalti Styling -->
     <script src="https://khalti.s3.ap-south-1.amazonaws.com/KPG/dist/2020.12.22.0.0.0/khalti-checkout.iffe.js"></script>
+    <style>
+        /* Add these styles in the head section */
+        .plan-card {
+            transition: all 0.3s ease;
+        }
+        
+        .plan-card.highlight {
+            transform: scale(1.05);
+            border: 2px solid #4f46e5 !important;
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.15) !important;
+        }
+        
+        .plan-card.highlight .card-body {
+            position: relative;
+        }
+        
+        .plan-card.highlight::before {
+            content: "Recommended";
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4f46e5;
+            color: white;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            z-index: 1;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
+        }
+
+        .plan-card.highlight .btn-primary {
+            animation: pulse 2s infinite;
+        }
+    </style>
 </head>
 <body class="bg-light">
     <?php include "inc/header.php"; ?>
@@ -168,7 +209,9 @@ $title = "Select a Plan";
                     <div class="row g-4">
                         <?php foreach ($plans as $plan): ?>
                             <div class="col-md-6">
-                                <div class="card h-100 border-0 shadow-sm">
+                                <div class="card h-100 border-0 shadow-sm plan-card <?php 
+                                    echo (isset($_GET['highlight']) && $_GET['highlight'] === 'premium' && strtolower($plan['name']) === 'premium plan') ? 'highlight' : ''; 
+                                ?>">
                                     <div class="card-body p-4">
                                         <div class="text-center mb-4">
                                             <h3 class="card-title fw-bold"><?php echo htmlspecialchars($plan['name']); ?></h3>
@@ -180,18 +223,25 @@ $title = "Select a Plan";
                                         </div>
                                         
                                         <ul class="list-unstyled mb-4">
-                                            <li class="mb-2">
-                                                <i class="fa fa-check text-success me-2"></i>
-                                                <span>Up to <?php echo $plan['note_limit']; ?> notes</span>
-                                            </li>
-                                            <li class="mb-2">
-                                                <i class="fa fa-check text-success me-2"></i>
-                                                <span>Up to <?php echo $plan['private_note_limit']; ?> private notes</span>
-                                            </li>
-                                            <li class="mb-2">
-                                                <i class="fa fa-check text-success me-2"></i>
-                                                <span>Share with up to <?php echo $plan['share_limit']; ?> users</span>
-                                            </li>
+                                            <?php if ($plan['is_unlimited']): ?>
+                                                <li class="mb-2">
+                                                    <i class="fa fa-check text-success me-2"></i>
+                                                    <span>Unlimited notes</span>
+                                                </li>
+                                                <li class="mb-2">
+                                                    <i class="fa fa-check text-success me-2"></i>
+                                                    <span>Unlimited sharing</span>
+                                                </li>
+                                            <?php else: ?>
+                                                <li class="mb-2">
+                                                    <i class="fa fa-check text-success me-2"></i>
+                                                    <span>Up to <?php echo $plan['note_limit']; ?> notes</span>
+                                                </li>
+                                                <li class="mb-2">
+                                                    <i class="fa fa-check text-success me-2"></i>
+                                                    <span>Share with up to <?php echo $plan['share_limit']; ?> users</span>
+                                                </li>
+                                            <?php endif; ?>
                                             <li class="mb-2">
                                                 <i class="fa fa-check text-success me-2"></i>
                                                 <span>Secure payment via Khalti</span>
@@ -401,6 +451,14 @@ $title = "Select a Plan";
                 setTimeout(() => {
                     window.location.href = 'notes.php';
                 }, 3000);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Scroll to highlighted plan if exists
+            const highlightedPlan = document.querySelector('.plan-card.highlight');
+            if (highlightedPlan) {
+                highlightedPlan.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         });
     </script>

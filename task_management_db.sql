@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 26, 2025 at 03:16 PM
+-- Generation Time: May 01, 2025 at 09:17 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -34,6 +34,7 @@ CREATE TABLE `notes` (
   `user_id` int(11) NOT NULL,
   `status` enum('not-started','pending','completed') DEFAULT 'not-started',
   `pinned` tinyint(1) DEFAULT 0,
+  `is_private` tinyint(1) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -42,12 +43,12 @@ CREATE TABLE `notes` (
 -- Dumping data for table `notes`
 --
 
-INSERT INTO `notes` (`id`, `title`, `content`, `user_id`, `status`, `pinned`, `created_at`, `updated_at`) VALUES
-(1, 'Welcome Note', 'Welcome to your personal notes! This is a sample note to help you get started.', 5, 'completed', 1, '2025-04-04 08:39:04', '2025-04-04 08:40:48'),
-(2, 'Project Ideas', 'List of potential project ideas:\n- Task management system\n- Personal blog\n- E-commerce platform', 2, 'pending', 0, '2025-04-04 08:39:04', '2025-04-04 08:39:04'),
-(3, 'Meeting Notes', 'Key points from team meeting:\n- Discussed project timeline\n- Assigned tasks\n- Set next meeting date', 7, 'completed', 0, '2025-04-04 08:39:04', '2025-04-07 08:27:39'),
-(8, 'arhuahwd', 'helo my name is bhjbwaj<div bis_skin_checked=\"1\"><br></div>', 6, 'pending', 0, '2025-04-04 09:11:33', '2025-04-05 06:26:39'),
-(9, 'ui ux principles', 'Following UI design best practices makes digital products easier for everyone to use, follow, and enjoy. The benefits of applying UI design principles are many, including:\r\n<div bis_skin_checked=\"1\">\r\n</div><div bis_skin_checked=\"1\">Enhances usability. “Think of a user as someone asking you directions. If you just showed them a map and expected them to memorize it, they\'ll probably get lost,” Tom says. “But if you point them to a sign that says their destination is this way, they can follow the signs from there … That\'s a much better experience. UI design principles help you set up signs users can follow towards their goals—one click, scroll, or interaction at a time.”\r\n</div><div bis_skin_checked=\"1\">Improves decision-making. Clear and consistent UI design principles give a structured framework for predicting user needs and making informed design choices.\r\n</div><div bis_skin_checked=\"1\">Increases efficiency. Aligning UI design principles at the start of projects lifts the cognitive load for designers, streamlining workflows and making product teams more efficient. Figma data analysts found that participants with access to a design system completed their design objective 34% faster than those without one.\r\n</div><div bis_skin_checked=\"1\">Reduces cognitive load. A well-designed interface can simplify tasks, reducing the mental effort required to complete user actions. Less cognitive load can help create a more intuitive and enjoyable experience.</div>', 1, 'completed', 1, '2025-04-17 08:03:49', '2025-04-17 09:10:29');
+INSERT INTO `notes` (`id`, `title`, `content`, `user_id`, `status`, `pinned`, `is_private`, `created_at`, `updated_at`) VALUES
+(1, 'Welcome Note', 'Welcome to your personal notes! This is a sample note to help you get started.', 5, 'completed', 1, 0, '2025-04-04 08:39:04', '2025-04-04 08:40:48'),
+(2, 'Project Ideas', 'List of potential project ideas:\n- Task management system\n- Personal blog\n- E-commerce platform', 2, 'pending', 0, 0, '2025-04-04 08:39:04', '2025-04-04 08:39:04'),
+(3, 'Meeting Notes', 'Key points from team meeting:\n- Discussed project timeline\n- Assigned tasks\n- Set next meeting date', 7, 'completed', 0, 0, '2025-04-04 08:39:04', '2025-04-07 08:27:39'),
+(9, 'ui ux principles', 'Following UI design best practices makes digital products easier for everyone to use, follow, and enjoy. The benefits of applying UI design principles are many, including:\r\n<div bis_skin_checked=\"1\">\r\n</div><div bis_skin_checked=\"1\">Enhances usability. "Think of a user as someone asking you directions. If you just showed them a map and expected them to memorize it, they\'ll probably get lost," Tom says. "But if you point them to a sign that says their destination is this way, they can follow the signs from there … That\'s a much better experience. UI design principles help you set up signs users can follow towards their goals—one click, scroll, or interaction at a time."\r\n</div><div bis_skin_checked=\"1\">Improves decision-making. Clear and consistent UI design principles give a structured framework for predicting user needs and making informed design choices.\r\n</div><div bis_skin_checked=\"1\">Increases efficiency. Aligning UI design principles at the start of projects lifts the cognitive load for designers, streamlining workflows and making product teams more efficient. Figma data analysts found that participants with access to a design system completed their design objective 34% faster than those without one.\r\n</div><div bis_skin_checked=\"1\">Reduces cognitive load. A well-designed interface can simplify tasks, reducing the mental effort required to complete user actions. Less cognitive load can help create a more intuitive and enjoyable experience.</div>', 1, 'completed', 1, 0, '2025-04-17 08:03:49', '2025-04-17 09:10:29'),
+(10, 'hbbh', '<p id=\"bffe\" class=\"pw-post-body-paragraph abj abk wb abl b abm abn abo abp abq abr abs abt abu abv abw abx tw aby abz aca acb acc acd ace acf lf bw\" data-selectable-paragraph=\"\" style=\"box-sizing: inherit; margin: 2.14em 0px -0.46em; color: rgb(36, 36, 36); word-break: break-word; line-height: 32px; letter-spacing: -0.003em; font-family: source-serif-pro, Georgia, Cambria, &quot;Times New Roman&quot;, Times, serif; font-size: 20px;\"><span class=\"abl go\" style=\"box-sizing: inherit; font-weight: 700;\">Technologies we cannot live without:</span></p><ol class=\"\" style=\"box-sizing: inherit; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; padding: 0px; list-style: none none; color: rgba(0, 0, 0, 0.8); font-family: medium-content-sans-serif-font, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, Cantarell, &quot;Open Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: medium;\"><li id=\"ae05\" class=\"abj abk wb abl b abm abn abo abp abq abr abs abt abu abv abw abx tw aby abz aca acb acc acd ace acf akv akw akx bw\" data-selectable-paragraph=\"\" style=\"box-sizing: inherit; color: rgb(36, 36, 36); line-height: 32px; letter-spacing: -0.003em; font-family: source-serif-pro, Georgia, Cambria, &quot;Times New Roman&quot;, Times, serif; margin-bottom: -0.46em; list-style-type: decimal; margin-left: 30px; padding-left: 0px; font-size: 20px; margin-top: 2.14em;\"><span class=\"abl go\" style=\"box-sizing: inherit; font-weight: 700;\">Smartphone&nbsp;</span>— it was the phone that came first to us as an invention with the primary purpose of communication. But then it took up all other functions too, even entertainment related. So now our phone is our TV, music system, work device, communication gadget, camera, and it just doesn't end with all the new apps. So smartphones become one technology we cannot live without.</li><li id=\"4a70\" class=\"abj abk wb abl b abm aky abo abp abq akz abs abt abu ala abw abx tw alb abz aca acb alc acd ace acf akv akw akx bw\" data-selectable-paragraph=\"\" style=\"box-sizing: inherit; color: rgb(36, 36, 36); line-height: 32px; letter-spacing: -0.003em; font-family: source-serif-pro, Georgia, Cambria, &quot;Times New Roman&quot;, Times, serif; margin-bottom: -0.46em; list-style-type: decimal; margin-left: 30px; padding-left: 0px; font-size: 20px; margin-top: 1.14em;\"><span class=\"abl go\" style=\"box-sizing: inherit; font-weight: 700;\">Computer/laptop</span>&nbsp;— With all the aid of technology and its benefits, the whole world and the economy is now digitally performing. This means we need a computer/laptop for our work. All of the work happens on them, so we cannot live without them too. And just like the phone, laptops as well have multi-features that can aid us in different ways, although it primarily is used for only work, gaming becomes a very good example.</li><li id=\"16eb\" class=\"abj abk wb abl b abm aky abo abp abq akz abs abt abu ala abw abx tw alb abz aca acb alc acd ace acf akv akw akx bw\" data-selectable-paragraph=\"\" style=\"box-sizing: inherit; color: rgb(36, 36, 36); line-height: 32px; letter-spacing: -0.003em; font-family: source-serif-pro, Georgia, Cambria, &quot;Times New Roman&quot;, Times, serif; margin-bottom: -0.46em; list-style-type: decimal; margin-left: 30px; padding-left: 0px; font-size: 20px; margin-top: 1.14em;\"><span class=\"abl go\" style=\"box-sizing: inherit; font-weight: 700;\">Internet</span>&nbsp;— After having penned down the smartphone and laptop, I can shout from atop a terrace that this is another inevitable gadget for us. Internet technology is the instrument that takes us out anywhere in the world (with the aid of the above two gadgets). For instance, we could be sitting in a village and looking at Paris on our phone connected to the internet, and not just a video. You know it could be a 360° video too. And besides virtual teleporting, the internet gives us worldwide connectivity; we can talk to anyone with just a tap, thanks to social media.</li><li id=\"ea16\" class=\"abj abk wb abl b abm aky abo abp abq akz abs abt abu ala abw abx tw alb abz aca acb alc acd ace acf akv akw akx bw\" data-selectable-paragraph=\"\" style=\"box-sizing: inherit; color: rgb(36, 36, 36); line-height: 32px; letter-spacing: -0.003em; font-family: source-serif-pro, Georgia, Cambria, &quot;Times New Roman&quot;, Times, serif; margin-bottom: -0.46em; list-style-type: decimal; margin-left: 30px; padding-left: 0px; font-size: 20px; margin-top: 1.14em;\"><span class=\"abl go\" style=\"box-sizing: inherit; font-weight: 700;\">Electricity</span>&nbsp;— Electricity is the prime aspect that is linked to and brings us different other technologies such as the TV, phone, fridge, well practically almost everything. Almost all gadgets run on electricity, so hence it becomes unlivable without it. Electricity supports healthcare, too, just to mark its importance.</li><li id=\"5201\" class=\"abj abk wb abl b abm aky abo abp abq akz abs abt abu ala abw abx tw alb abz aca acb alc acd ace acf akv akw akx bw\" data-selectable-paragraph=\"\" style=\"box-sizing: inherit; color: rgb(36, 36, 36); line-height: 32px; letter-spacing: -0.003em; font-family: source-serif-pro, Georgia, Cambria, &quot;Times New Roman&quot;, Times, serif; margin-bottom: -0.46em; list-style-type: decimal; margin-left: 30px; padding-left: 0px; font-size: 20px; margin-top: 1.14em;\"><span class=\"abl go\" style=\"box-sizing: inherit; font-weight: 700;\">Vehicle</span>&nbsp;— not exactly like we cannot live without it, but then we need it. For long-distance traveling, you can't go walking right. And for emergencies, vehicles, aka ambulances, are lifesavers. Not to mention, it's a delivery-approached world, I mean, we order everything online now, and they're delivered to our location without us having to do anything more than just a tap (have to pay, though).</li><li id=\"1837\" class=\"abj abk wb abl b abm aky abo abp abq akz abs abt abu ala abw abx tw alb abz aca acb alc acd ace acf akv akw akx bw\" data-selectable-paragraph=\"\" style=\"box-sizing: inherit; color: rgb(36, 36, 36); line-height: 32px; letter-spacing: -0.003em; font-family: source-serif-pro, Georgia, Cambria, &quot;Times New Roman&quot;, Times, serif; margin-bottom: -0.46em; list-style-type: decimal; margin-left: 30px; padding-left: 0px; font-size: 20px; margin-top: 1.14em;\"><span class=\"abl go\" style=\"box-sizing: inherit; font-weight: 700;\">Google</span>&nbsp;— Supported combinedly by electricity, the internet, and the phone/computer, simple and straightforward to say, we cannot live without Google. Whatever it is, when it's a question/curiosity, we hop on to google. We get almost all our answers on google. Things we are not comfortable asking the humans. We just search for it on google and get our answers from it. Google answers us, gives us directions, books a restaurant, makes phone calls, finds a lost person, and there's a lot more, but you have to go now.</li></ol>', 7, 'not-started', 1, 0, '2025-05-01 07:15:53', '2025-05-01 07:15:53');
 
 -- --------------------------------------------------------
 
@@ -56,25 +57,19 @@ INSERT INTO `notes` (`id`, `title`, `content`, `user_id`, `status`, `pinned`, `c
 --
 
 CREATE TABLE `note_comments` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL,
   `note_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `comment` text NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  KEY `note_id` (`note_id`),
-  KEY `user_id` (`user_id`),
-  CONSTRAINT `note_comments_ibfk_1` FOREIGN KEY (`note_id`) REFERENCES `notes` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `note_comments_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `note_comments`
 --
 
-INSERT INTO `note_comments` (`note_id`, `user_id`, `comment`, `created_at`) VALUES
-(8, 7, 'This is a great note!', '2025-05-01 11:24:22'),
-(8, 5, 'Thanks for sharing!', '2025-05-01 11:24:26');
+INSERT INTO `note_comments` (`id`, `note_id`, `user_id`, `comment`, `created_at`) VALUES
+(15, 10, 7, 'hey', '2025-05-01 07:16:08');
 
 -- --------------------------------------------------------
 
@@ -90,15 +85,6 @@ CREATE TABLE `note_shares` (
   `can_edit` tinyint(1) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `note_shares`
---
-
-INSERT INTO `note_shares` (`id`, `note_id`, `shared_by`, `shared_with`, `can_edit`, `created_at`) VALUES
-(2, 8, 6, 5, 1, '2025-04-04 10:59:18'),
-(3, 8, 6, 7, 1, '2025-04-04 11:04:08'),
-(4, 8, 6, 3, 1, '2025-04-04 11:24:01');
 
 -- --------------------------------------------------------
 
@@ -169,8 +155,87 @@ CREATE TABLE `plans` (
 --
 
 INSERT INTO `plans` (`id`, `name`, `description`, `price`, `note_limit`, `private_note_limit`, `share_limit`, `is_unlimited`, `created_at`) VALUES
-(1, 'Basic Plan', 'Basic plan with limited features', 200.00, 5, 5, 5, 0, '2025-04-12 11:38:38'),
-(2, 'Premium Plan', 'Premium plan with unlimited features', 500.00, 50, 50, 50, 1, '2025-04-12 11:38:38');
+(1, 'Basic Plan', 'Basic plan with limited features. Share up to 5 notes.', 200.00, 10, 5, 5, 0, '2025-04-12 11:38:38'),
+(2, 'Premium Plan', 'Premium plan with unlimited features. Unlimited note sharing.', 500.00, NULL, NULL, NULL, 1, '2025-04-12 11:38:38');
+
+-- Update plans table to have clearer sharing limits
+UPDATE plans SET 
+    description = 'Basic plan with limited features. Share up to 5 notes.',
+    note_limit = 10,
+    share_limit = 5,
+    is_unlimited = 0
+WHERE name = 'Basic Plan';
+
+UPDATE plans SET 
+    description = 'Premium plan with unlimited features. Unlimited note sharing.',
+    note_limit = NULL,
+    share_limit = NULL,
+    is_unlimited = 1
+WHERE name = 'Premium Plan';
+
+-- Add trigger to enforce share limits based on plan
+DELIMITER //
+
+CREATE TRIGGER before_note_share_insert
+BEFORE INSERT ON note_shares
+FOR EACH ROW
+BEGIN
+    DECLARE user_share_count INT;
+    DECLARE user_share_limit INT;
+    DECLARE is_unlimited BOOLEAN;
+    
+    -- Get the user's current share count
+    SELECT COUNT(*) INTO user_share_count 
+    FROM note_shares 
+    WHERE shared_by = NEW.shared_by;
+    
+    -- Get the user's plan limits
+    SELECT p.share_limit, p.is_unlimited INTO user_share_limit, is_unlimited
+    FROM plans p 
+    INNER JOIN subscriptions s ON p.id = s.plan_id 
+    WHERE s.user_id = NEW.shared_by 
+    AND s.status = 'active' 
+    AND s.end_date >= CURRENT_DATE
+    ORDER BY s.created_at DESC 
+    LIMIT 1;
+    
+    -- If no active subscription, use Basic Plan limits
+    IF user_share_limit IS NULL THEN
+        SET user_share_limit = 5;
+        SET is_unlimited = 0;
+    END IF;
+    
+    -- Check if user has reached their share limit
+    IF NOT is_unlimited AND user_share_count >= user_share_limit THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Share limit reached for your current plan';
+    END IF;
+END;
+//
+
+DELIMITER ;
+
+-- Add an index to improve performance of share limit checking
+CREATE INDEX idx_note_shares_shared_by ON note_shares(shared_by);
+
+-- Add an index for active subscriptions
+CREATE INDEX idx_active_subscriptions ON subscriptions(user_id, status, end_date);
+
+-- Add view to easily check user's sharing stats
+CREATE OR REPLACE VIEW user_sharing_stats AS
+SELECT 
+    u.id as user_id,
+    u.full_name,
+    COUNT(DISTINCT ns.note_id) as total_shares,
+    COALESCE(p.share_limit, 5) as share_limit,
+    COALESCE(p.is_unlimited, 0) as is_unlimited
+FROM users u
+LEFT JOIN note_shares ns ON u.id = ns.shared_by
+LEFT JOIN subscriptions s ON u.id = s.user_id 
+    AND s.status = 'active' 
+    AND s.end_date >= CURRENT_DATE
+LEFT JOIN plans p ON s.plan_id = p.id
+GROUP BY u.id, u.full_name, p.share_limit, p.is_unlimited;
 
 -- --------------------------------------------------------
 
@@ -187,6 +252,13 @@ CREATE TABLE `subscriptions` (
   `status` enum('active','expired','cancelled') DEFAULT 'active',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `subscriptions`
+--
+
+INSERT INTO `subscriptions` (`id`, `user_id`, `plan_id`, `start_date`, `end_date`, `status`, `created_at`) VALUES
+(2, 7, 1, '2025-05-01', '2025-05-31', 'active', '2025-05-01 07:10:54');
 
 -- --------------------------------------------------------
 
@@ -328,6 +400,14 @@ ALTER TABLE `notes`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indexes for table `note_comments`
+--
+ALTER TABLE `note_comments`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `note_id` (`note_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- Indexes for table `note_shares`
 --
 ALTER TABLE `note_shares`
@@ -379,7 +459,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `notes`
 --
 ALTER TABLE `notes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
+-- AUTO_INCREMENT for table `note_comments`
+--
+ALTER TABLE `note_comments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `note_shares`
@@ -397,7 +483,7 @@ ALTER TABLE `plans`
 -- AUTO_INCREMENT for table `subscriptions`
 --
 ALTER TABLE `subscriptions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `support_replies`
@@ -426,6 +512,13 @@ ALTER TABLE `users`
 --
 ALTER TABLE `notes`
   ADD CONSTRAINT `notes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `note_comments`
+--
+ALTER TABLE `note_comments`
+  ADD CONSTRAINT `note_comments_ibfk_1` FOREIGN KEY (`note_id`) REFERENCES `notes` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `note_comments_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `note_shares`

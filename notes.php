@@ -905,9 +905,21 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </button>
                     </div>
                     
-                    <button class="btn btn-primary rounded-pill px-4" onclick="window.location.href='editnote.php'">
-                        <i class="fa fa-plus me-2"></i>New Note
-                    </button>
+                    <?php if ($canCreateNote): ?>
+                        <a href="editnote.php" class="btn btn-primary">
+                            <i class="bi bi-plus-lg"></i> New Note
+                        </a>
+                    <?php else: ?>
+                        <div class="text-end">
+                            <button class="btn btn-secondary" disabled>
+                                <i class="bi bi-plus-lg"></i> New Note
+                            </button>
+                            <div class="text-danger mt-1">
+                                You have reached your plan's note limit (<?php echo $noteLimit; ?> notes).
+                                <a href="plans.php" class="text-primary">Upgrade your plan</a> to create more notes.
+                            </div>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
 

@@ -41,6 +41,25 @@ if ($note_id > 0) {
         header('Location: notes.php');
         exit();
     }
+
+    // Count how many people have access to this note
+    $stmt = $conn->prepare("SELECT COUNT(*) as share_count FROM note_shares WHERE note_id = ?");
+    $stmt->bind_param("i", $note_id);
+    $stmt->execute();
+    $share_result = $stmt->get_result();
+    $share_count = $share_result->fetch_assoc()['share_count'];
+
+    // Get list of users who have access
+    $stmt = $conn->prepare("
+        SELECT u.full_name, ns.can_edit, ns.created_at 
+        FROM note_shares ns 
+        JOIN users u ON ns.shared_with = u.id 
+        WHERE ns.note_id = ? 
+        ORDER BY ns.created_at DESC
+    ");
+    $stmt->bind_param("i", $note_id);
+    $stmt->execute();
+    $shared_users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
 // Fetch comments for the note
@@ -77,10 +96,12 @@ function getUserPlanLimits($conn, $userId) {
     
     // If no active subscription, return basic plan limits
     if (!$plan) {
-        $stmt = $conn->prepare("SELECT note_limit, private_note_limit, share_limit FROM plans WHERE name = 'Basic Plan'");
-        $stmt->execute();
-        $result = $stmt->get_result();
-        return $result->fetch_assoc();
+        return [
+            'note_limit' => 10,
+            'private_note_limit' => 0,
+            'share_limit' => 5,  // Basic plan can share up to 5 notes
+            'is_unlimited' => false
+        ];
     }
     
     return $plan;
@@ -124,9 +145,35 @@ $canShareNote = $planLimits['is_unlimited'] || $currentSharedNotes < $shareLimit
 
 // If creating a new note and user has reached limit, redirect to notes page
 if (!$note_id && !$canCreateNote) {
-    $_SESSION['error_message'] = "You have reached your plan's note limit. Please upgrade to create more notes.";
+    $_SESSION['error_message'] = "You have reached your plan's note limit of {$noteLimit} notes. Please upgrade your plan to create more notes.";
     header('Location: notes.php');
     exit();
+}
+
+// After database connection, add this to check share count
+if ($note_id > 0) {
+    // Get current share count for this note
+    $stmt = $conn->prepare("SELECT COUNT(*) as current_shares FROM note_shares WHERE note_id = ?");
+    $stmt->bind_param("i", $note_id);
+    $stmt->execute();
+    $current_shares = $stmt->get_result()->fetch_assoc()['current_shares'];
+
+    // Get user's plan limit
+    $stmt = $conn->prepare("
+        SELECT p.share_limit, p.is_unlimited 
+        FROM plans p 
+        INNER JOIN subscriptions s ON p.id = s.plan_id 
+        WHERE s.user_id = ? AND s.status = 'active' 
+        AND s.end_date >= CURRENT_DATE
+        ORDER BY s.created_at DESC 
+        LIMIT 1
+    ");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $plan_result = $stmt->get_result()->fetch_assoc();
+    
+    $share_limit = $plan_result ? ($plan_result['is_unlimited'] ? null : $plan_result['share_limit']) : 5;
+    $has_reached_limit = !is_null($share_limit) && $current_shares >= $share_limit;
 }
 
 // Handle note save/update
@@ -140,29 +187,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_note'])) {
     if (empty($title)) {
         $error_message = "Title is required";
     } else {
-        // Check private note limit if trying to create a private note
-        if ($is_private && !$canCreatePrivateNote && (!$note || !$note['is_private'])) {
-            $error_message = "You have reached your plan's private note limit. Please upgrade to create more private notes.";
+        // Check note limit if creating a new note
+        if (!$note_id && !$canCreateNote) {
+            $error_message = "You have reached your plan's note limit of {$noteLimit} notes. Please upgrade your plan to create more notes.";
         } else {
-            if ($note_id > 0) {
-                // Update existing note
-                $stmt = $conn->prepare("UPDATE notes SET title = ?, content = ?, status = ?, pinned = ?, is_private = ? WHERE id = ? AND user_id = ?");
-                $stmt->bind_param("sssiiii", $title, $content, $status, $pinned, $is_private, $note_id, $user_id);
+            // Check private note limit if trying to create a private note
+            if ($is_private && !$canCreatePrivateNote && (!$note || !$note['is_private'])) {
+                $error_message = "You have reached your plan's private note limit. Please upgrade to create more private notes.";
             } else {
-                // Create new note
-                $stmt = $conn->prepare("INSERT INTO notes (title, content, user_id, status, pinned, is_private) VALUES (?, ?, ?, ?, ?, ?)");
-                $stmt->bind_param("ssissi", $title, $content, $user_id, $status, $pinned, $is_private);
-            }
-            
-            if ($stmt->execute()) {
-                $success_message = "Note saved successfully!";
-                if (!$note_id) {
-                    $note_id = $conn->insert_id;
-                    header("Location: editnote.php?id=" . $note_id);
-                    exit();
+                if ($note_id > 0) {
+                    // Update existing note
+                    $stmt = $conn->prepare("UPDATE notes SET title = ?, content = ?, status = ?, pinned = ?, is_private = ? WHERE id = ? AND user_id = ?");
+                    $stmt->bind_param("sssiiii", $title, $content, $status, $pinned, $is_private, $note_id, $user_id);
+                } else {
+                    // Create new note
+                    $stmt = $conn->prepare("INSERT INTO notes (title, content, user_id, status, pinned, is_private) VALUES (?, ?, ?, ?, ?, ?)");
+                    $stmt->bind_param("ssissi", $title, $content, $user_id, $status, $pinned, $is_private);
                 }
-            } else {
-                $error_message = "Error saving note: " . $conn->error;
+                
+                if ($stmt->execute()) {
+                    $success_message = "Note saved successfully!";
+                    if (!$note_id) {
+                        $note_id = $conn->insert_id;
+                        header("Location: editnote.php?id=" . $note_id);
+                        exit();
+                    }
+                } else {
+                    $error_message = "Error saving note: " . $conn->error;
+                }
             }
         }
     }
@@ -171,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_note'])) {
 // Handle note sharing
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['share_note'])) {
     if (!$canShareNote) {
-        $error_message = "You have reached your plan's share limit. Please upgrade to share more notes.";
+        $error_message = "You have reached your plan's share limit of 5 notes. Please upgrade to share more notes.";
     } else {
         $share_with = (int)$_POST['share_with'];
         $can_edit = isset($_POST['can_edit']) ? 1 : 0;
@@ -183,19 +235,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['share_note'])) {
         $existing_share = $stmt->get_result()->fetch_assoc();
         
         if (!$existing_share) {
-            $stmt = $conn->prepare("INSERT INTO note_shares (note_id, shared_by, shared_with, can_edit) VALUES (?, ?, ?, ?)");
-            $stmt->bind_param("iiii", $note_id, $user_id, $share_with, $can_edit);
+            // Begin transaction
+            $conn->begin_transaction();
             
-            if ($stmt->execute()) {
+            try {
+                // Insert the share record
+                $stmt = $conn->prepare("INSERT INTO note_shares (note_id, shared_by, shared_with, can_edit) VALUES (?, ?, ?, ?)");
+                $stmt->bind_param("iiii", $note_id, $user_id, $share_with, $can_edit);
+                
+                if (!$stmt->execute()) {
+                    throw new Exception("Failed to share note");
+                }
+                
                 // Create notification
                 $note_title = $note['title'];
-                $message = "A note titled '$note_title' has been shared with you.";
+                $message = "A note titled '$note_title' has been shared with you" . ($can_edit ? " with edit permissions." : ".");
                 $stmt = $conn->prepare("INSERT INTO notifications (message, recipient, type, date) VALUES (?, ?, 'Note Shared', CURRENT_DATE)");
                 $stmt->bind_param("si", $message, $share_with);
-                $stmt->execute();
+                
+                if (!$stmt->execute()) {
+                    throw new Exception("Failed to create notification");
+                }
+                
+                // Commit transaction
+                $conn->commit();
                 $success_message = "Note shared successfully!";
-            } else {
-                $error_message = "Error sharing note";
+                
+                // Refresh share count and shared users list
+                $stmt = $conn->prepare("SELECT COUNT(*) as share_count FROM note_shares WHERE note_id = ?");
+                $stmt->bind_param("i", $note_id);
+                $stmt->execute();
+                $share_result = $stmt->get_result();
+                $share_count = $share_result->fetch_assoc()['share_count'];
+                
+                $stmt = $conn->prepare("
+                    SELECT u.full_name, ns.can_edit, ns.created_at 
+                    FROM note_shares ns 
+                    JOIN users u ON ns.shared_with = u.id 
+                    WHERE ns.note_id = ? 
+                    ORDER BY ns.created_at DESC
+                ");
+                $stmt->bind_param("i", $note_id);
+                $stmt->execute();
+                $shared_users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+                
+            } catch (Exception $e) {
+                // Rollback transaction on error
+                $conn->rollback();
+                $error_message = $e->getMessage();
             }
         } else {
             $error_message = "Note is already shared with this user";
@@ -308,18 +395,26 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
         .note-title-input {
             flex: 1;
-            font-size: 1.25rem;
-            font-weight: 500;
+            font-size: 1.5rem;
+            font-weight: 600;
             border: none;
-            padding: 0.5rem;
+            padding: 0.75rem 1rem;
             margin: 0 1rem;
-            border-radius: 0.375rem;
+            border-radius: 0.5rem;
             transition: var(--transition);
+            background: var(--bg-light);
+            color: var(--text-dark);
         }
 
         .note-title-input:focus {
             outline: none;
-            background: var(--bg-light);
+            background: white;
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        .note-title-input::placeholder {
+            color: var(--text-muted);
+            font-weight: 500;
         }
 
         /* Main Content Layout */
@@ -475,40 +570,78 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
         /* Buttons */
         .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
             background: var(--primary-color);
             border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
             color: white;
-            font-weight: 500;
-            transition: var(--transition);
         }
 
         .btn-primary:hover {
             background: var(--primary-hover);
             transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary i {
+            font-size: 1.1em;
         }
 
         .action-buttons {
             display: flex;
-            gap: 0.75rem;
+            gap: 1rem;
+            align-items: center;
         }
 
         .status-select {
-            padding: 0.75rem;
+            padding: 0.75rem 1rem;
             border: 1px solid var(--border-color);
             border-radius: 0.5rem;
             font-size: 0.875rem;
+            font-weight: 500;
             color: var(--text-dark);
             background-color: white;
-            min-width: 140px;
+            min-width: 160px;
             transition: var(--transition);
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px 12px;
         }
 
         .status-select:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Status Select Options Styling */
+        .status-select option {
+            padding: 0.5rem;
+            font-weight: 500;
+        }
+
+        .status-select option[value="not-started"] {
+            color: #6b7280;
+        }
+
+        .status-select option[value="pending"] {
+            color: #f59e0b;
+        }
+
+        .status-select option[value="completed"] {
+            color: #10b981;
         }
 
         /* Modal Styling */
@@ -540,16 +673,27 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
         @media (max-width: 768px) {
             .nav-content {
-                flex-direction: column;
-                align-items: stretch;
+                padding: 0.5rem;
+            }
+
+            .note-title-input {
+                font-size: 1.25rem;
+                margin: 0.5rem 0;
             }
 
             .action-buttons {
                 flex-wrap: wrap;
+                justify-content: flex-end;
             }
 
             .status-select {
                 width: 100%;
+                margin-bottom: 0.5rem;
+            }
+
+            .btn-primary {
+                width: 100%;
+                justify-content: center;
             }
         }
 
@@ -605,6 +749,136 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
         .toast-header .btn-close {
             margin-right: -0.375rem;
+        }
+
+        /* Share Modal Improvements */
+        .share-limit-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+            color: var(--text-muted);
+        }
+
+        .share-limit-info i {
+            font-size: 1rem;
+            color: var(--primary-color);
+        }
+
+        .share-limit-info small {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Share Modal Styles */
+        .share-stats {
+            background-color: var(--bg-light);
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+
+        .current-shares {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .current-shares i {
+            font-size: 1.25rem;
+        }
+
+        .shared-users-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .shared-user-item {
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            margin-bottom: 0.5rem;
+            background: white;
+        }
+
+        .shared-user-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .shared-user-item .user-name {
+            display: block;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .shared-user-item .share-details {
+            display: block;
+            font-size: 0.875rem;
+        }
+
+        .modal-body hr {
+            border-color: var(--border-color);
+            margin: 1rem 0;
+        }
+
+        /* Share Limit Modal Styles */
+        #shareLimitModal .modal-content {
+            border-radius: 1rem;
+            background: white;
+        }
+
+        #shareLimitModal .share-limit-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--bg-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
+        #shareLimitModal .share-limit-icon i {
+            font-size: 28px;
+            color: var(--primary-color);
+        }
+
+        #shareLimitModal .modal-title {
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        #shareLimitModal .btn {
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        #shareLimitModal .btn-primary {
+            background: var(--primary-color);
+            border: none;
+        }
+
+        #shareLimitModal .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        #shareLimitModal .btn-light {
+            background: var(--bg-light);
+            border: none;
+            color: var(--text-dark);
+        }
+
+        #shareLimitModal .btn-light:hover {
+            background: #e5e7eb;
+        }
+
+        #shareLimitModal p {
+            font-size: 0.95rem;
+            line-height: 1.5;
         }
     </style>
 </head>
@@ -742,14 +1016,6 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         <input type="hidden" name="content" id="formContent">
         <input type="hidden" name="status" id="formStatus">
         <input type="hidden" name="pinned" id="formPinned" value="0">
-        <div class="form-check mb-3">
-            <input type="checkbox" class="form-check-input" id="is_private" name="is_private" value="1" 
-                   <?php echo ($note && $note['is_private']) ? 'checked' : ''; ?>>
-            <label class="form-check-label" for="is_private">Make this note private</label>
-            <?php if (!$canCreatePrivateNote && (!$note || !$note['is_private'])): ?>
-                <small class="text-danger d-block">You have reached your private note limit. <a href="plans.php">Upgrade your plan</a> to create more private notes.</small>
-            <?php endif; ?>
-        </div>
     </form>
 
     <!-- Share Modal -->
@@ -764,28 +1030,92 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form method="POST" id="shareForm">
-                        <div class="mb-3">
-                            <label class="form-label">Share with</label>
-                            <select name="share_with" class="form-select" required>
-                                <option value="">Select user</option>
-                                <?php foreach ($users as $user): ?>
-                                    <option value="<?php echo $user['id']; ?>">
-                                        <?php echo htmlspecialchars($user['full_name']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="can_edit" name="can_edit">
-                                <label class="form-check-label" for="can_edit">Allow editing</label>
+                    <?php if (isset($share_count) && $share_count > 0): ?>
+                        <div class="share-stats mb-3">
+                            <div class="current-shares">
+                                <i class="bi bi-people-fill text-primary"></i>
+                                <span><?php echo $share_count; ?> people have access</span>
                             </div>
+                            <div class="shared-users-list mt-2">
+                                <?php foreach ($shared_users as $shared_user): ?>
+                                    <div class="shared-user-item">
+                                        <span class="user-name"><?php echo htmlspecialchars($shared_user['full_name']); ?></span>
+                                        <span class="share-details">
+                                            <small class="text-muted">
+                                                <?php echo $shared_user['can_edit'] ? 'Can edit' : 'Can view'; ?> • 
+                                                Shared <?php echo date('M j, Y', strtotime($shared_user['created_at'])); ?>
+                                            </small>
+                                        </span>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                            <hr class="my-3">
                         </div>
-                        <button type="submit" name="share_note" class="btn btn-primary w-100">
-                            Share Note
+                    <?php endif; ?>
+
+                    <?php if (!$canShareNote): ?>
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            You have reached your plan's share limit of 5 notes. 
+                            <a href="plans.php" class="alert-link">Upgrade your plan</a> to share more notes.
+                        </div>
+                    <?php else: ?>
+                        <form method="POST" id="shareForm">
+                            <div class="mb-3">
+                                <label class="form-label">Share with</label>
+                                <div class="share-limit-info mb-2">
+                                    <small class="text-muted">
+                                        <i class="bi bi-info-circle"></i>
+                                        Basic Plan allows sharing with up to 5 people
+                                    </small>
+                                </div>
+                                <select name="share_with" class="form-select" required>
+                                    <option value="">Select user</option>
+                                    <?php foreach ($users as $user): ?>
+                                        <option value="<?php echo $user['id']; ?>">
+                                            <?php echo htmlspecialchars($user['full_name']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="can_edit" name="can_edit">
+                                    <label class="form-check-label" for="can_edit">Allow editing</label>
+                                </div>
+                            </div>
+                            <button type="submit" name="share_note" class="btn btn-primary w-100">
+                                Share Note
+                            </button>
+                        </form>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Limit Modal -->
+    <div class="modal fade" id="shareLimitModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-body p-4 text-center">
+                    <div class="share-limit-icon mb-3">
+                        <i class="bi bi-lock-fill"></i>
+                    </div>
+                    <h5 class="modal-title mb-3">Sharing Limit Reached</h5>
+                    <p class="text-muted mb-4">
+                        You've reached the sharing limit for the Basic Plan. 
+                        To share with more users, please upgrade to the Premium Plan.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="plans.php?highlight=premium" class="btn btn-primary">
+                            <i class="bi bi-arrow-up-circle me-2"></i>
+                            Upgrade to Premium
+                        </a>
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                            Maybe Later
                         </button>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1129,13 +1459,39 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         <?php endforeach; ?>
         updateCommentCount(<?php echo $comment_count; ?>);
 
-        // Handle share form submission
+        // Update share form submission
         document.getElementById('shareForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const select = this.querySelector('select');
-            const userName = select.options[select.selectedIndex].text;
-            showToast('Shared', `Note shared with ${userName}`);
-            bootstrap.Modal.getInstance(document.getElementById('shareModal')).hide();
+            
+            <?php if ($has_reached_limit): ?>
+            // Show share limit modal if limit reached
+            const shareLimitModal = new bootstrap.Modal(document.getElementById('shareLimitModal'));
+            shareLimitModal.show();
+            return;
+            <?php endif; ?>
+            
+            const formData = new FormData(this);
+            formData.append('share_note', '1');
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(html => {
+                if (html.includes('Share limit reached for your current plan')) {
+                    // Show share limit modal if limit reached during submission
+                    const shareLimitModal = new bootstrap.Modal(document.getElementById('shareLimitModal'));
+                    shareLimitModal.show();
+                } else {
+                    // Refresh the page to show updated share count
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Error sharing note. Please try again.', 'error');
+            });
         });
     </script>
 </body>
