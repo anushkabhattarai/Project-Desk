@@ -81,6 +81,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     exit;
 }
 
+// Function to get user's current plan limits
+function getUserPlanLimits($conn, $userId) {
+    $stmt = $conn->prepare("
+        SELECT p.note_limit, p.private_note_limit, p.share_limit, p.is_unlimited 
+        FROM plans p 
+        INNER JOIN subscriptions s ON p.id = s.plan_id 
+        WHERE s.user_id = :user_id AND s.status = 'active' 
+        AND s.end_date >= CURRENT_DATE
+        ORDER BY s.created_at DESC 
+        LIMIT 1
+    ");
+    $stmt->bindParam(':user_id', $userId);
+    $stmt->execute();
+    $plan = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // If no active subscription, return basic plan limits
+    if (!$plan) {
+        $stmt = $conn->prepare("SELECT note_limit, private_note_limit, share_limit FROM plans WHERE name = 'Basic Plan'");
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    
+    return $plan;
+}
+
+// Function to count user's current notes
+function countUserNotes($conn, $userId) {
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM notes WHERE user_id = :user_id");
+    $stmt->bindParam(':user_id', $userId);
+    $stmt->execute();
+    return $stmt->fetchColumn();
+}
+
+// Function to count user's current private notes
+function countUserPrivateNotes($conn, $userId) {
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM notes WHERE user_id = :user_id AND is_private = 1");
+    $stmt->bindParam(':user_id', $userId);
+    $stmt->execute();
+    return $stmt->fetchColumn();
+}
+
+// Function to count user's current shared notes
+function countUserSharedNotes($conn, $userId) {
+    $stmt = $conn->prepare("
+        SELECT COUNT(DISTINCT note_id) 
+        FROM note_shares 
+        WHERE shared_by = :user_id
+    ");
+    $stmt->bindParam(':user_id', $userId);
+    $stmt->execute();
+    return $stmt->fetchColumn();
+}
+
+// Get user's current plan limits
+$planLimits = getUserPlanLimits($conn, $_SESSION['id']);
+$currentNotes = countUserNotes($conn, $_SESSION['id']);
+$currentPrivateNotes = countUserPrivateNotes($conn, $_SESSION['id']);
+$currentSharedNotes = countUserSharedNotes($conn, $_SESSION['id']);
+
+// Check if user has reached any limits
+$noteLimit = $planLimits['note_limit'];
+$privateNoteLimit = $planLimits['private_note_limit'];
+$shareLimit = $planLimits['share_limit'];
+
+$canCreateNote = $planLimits['is_unlimited'] || $currentNotes < $noteLimit;
+$canCreatePrivateNote = $planLimits['is_unlimited'] || $currentPrivateNotes < $privateNoteLimit;
+$canShareNote = $planLimits['is_unlimited'] || $currentSharedNotes < $shareLimit;
+
 // Fetch notes for the current user (including shared notes)
 $sql = "SELECT n.*, u.full_name as owner_name,
         CASE 
@@ -845,6 +913,35 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             <!-- Notes Grid -->
             <div class="row g-3" id="notesGrid">
+                <?php if (!$canCreateNote): ?>
+                    <div class="col-12">
+                        <div class="alert alert-warning">
+                            <i class="fa fa-exclamation-triangle me-2"></i>
+                            You have reached your plan's note limit (<?php echo $noteLimit; ?> notes).
+                            <a href="plans.php" class="alert-link">Upgrade your plan</a> to create more notes.
+                        </div>
+                    </div>
+                <?php endif; ?>
+                
+                <?php if (!$canCreatePrivateNote): ?>
+                    <div class="col-12">
+                        <div class="alert alert-warning">
+                            <i class="fa fa-exclamation-triangle me-2"></i>
+                            You have reached your plan's private note limit (<?php echo $privateNoteLimit; ?> private notes).
+                            <a href="plans.php" class="alert-link">Upgrade your plan</a> to create more private notes.
+                        </div>
+                    </div>
+                <?php endif; ?>
+                
+                <?php if (!$canShareNote): ?>
+                    <div class="col-12">
+                        <div class="alert alert-warning">
+                            <i class="fa fa-exclamation-triangle me-2"></i>
+                            You have reached your plan's share limit (<?php echo $shareLimit; ?> shared notes).
+                            <a href="plans.php" class="alert-link">Upgrade your plan</a> to share more notes.
+                        </div>
+                    </div>
+                <?php endif; ?>
                 <!-- Notes will be dynamically added here -->
             </div>
         </div>
@@ -1285,6 +1382,18 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 console.error('Error:', error);
                 alert('An error occurred while updating the status');
             });
+        }
+
+        // Add plan limit checks to the UI
+        const canCreateNote = <?php echo json_encode($canCreateNote); ?>;
+        const canCreatePrivateNote = <?php echo json_encode($canCreatePrivateNote); ?>;
+        const canShareNote = <?php echo json_encode($canShareNote); ?>;
+        
+        // Update the "New Note" button state
+        const newNoteBtn = document.querySelector('.btn-primary[onclick*="editnote.php"]');
+        if (newNoteBtn && !canCreateNote) {
+            newNoteBtn.classList.add('disabled');
+            newNoteBtn.title = 'You have reached your plan\'s note limit';
         }
     </script>
 </body>

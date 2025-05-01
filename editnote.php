@@ -59,92 +59,147 @@ if ($note_id > 0) {
     $comment_count = count($comments);
 }
 
+// After database connection, add these functions
+function getUserPlanLimits($conn, $userId) {
+    $stmt = $conn->prepare("
+        SELECT p.note_limit, p.private_note_limit, p.share_limit, p.is_unlimited 
+        FROM plans p 
+        INNER JOIN subscriptions s ON p.id = s.plan_id 
+        WHERE s.user_id = ? AND s.status = 'active' 
+        AND s.end_date >= CURRENT_DATE
+        ORDER BY s.created_at DESC 
+        LIMIT 1
+    ");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $plan = $result->fetch_assoc();
+    
+    // If no active subscription, return basic plan limits
+    if (!$plan) {
+        $stmt = $conn->prepare("SELECT note_limit, private_note_limit, share_limit FROM plans WHERE name = 'Basic Plan'");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
+    }
+    
+    return $plan;
+}
+
+function countUserNotes($conn, $userId) {
+    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM notes WHERE user_id = ?");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_assoc()['count'];
+}
+
+function countUserPrivateNotes($conn, $userId) {
+    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM notes WHERE user_id = ? AND is_private = 1");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_assoc()['count'];
+}
+
+function countUserSharedNotes($conn, $userId) {
+    $stmt = $conn->prepare("SELECT COUNT(DISTINCT note_id) as count FROM note_shares WHERE shared_by = ?");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_assoc()['count'];
+}
+
+// Get user's current plan limits
+$planLimits = getUserPlanLimits($conn, $user_id);
+$currentNotes = countUserNotes($conn, $user_id);
+$currentPrivateNotes = countUserPrivateNotes($conn, $user_id);
+$currentSharedNotes = countUserSharedNotes($conn, $user_id);
+
+// Check if user has reached any limits
+$noteLimit = $planLimits['note_limit'];
+$privateNoteLimit = $planLimits['private_note_limit'];
+$shareLimit = $planLimits['share_limit'];
+
+$canCreateNote = $planLimits['is_unlimited'] || $currentNotes < $noteLimit;
+$canCreatePrivateNote = $planLimits['is_unlimited'] || $currentPrivateNotes < $privateNoteLimit;
+$canShareNote = $planLimits['is_unlimited'] || $currentSharedNotes < $shareLimit;
+
+// If creating a new note and user has reached limit, redirect to notes page
+if (!$note_id && !$canCreateNote) {
+    $_SESSION['error_message'] = "You have reached your plan's note limit. Please upgrade to create more notes.";
+    header('Location: notes.php');
+    exit();
+}
+
 // Handle note save/update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_note'])) {
     $title = trim($_POST['title']);
-    $content = $_POST['content']; // Get content directly from POST
+    $content = $_POST['content'];
     $status = $_POST['status'];
     $pinned = isset($_POST['pinned']) ? 1 : 0;
+    $is_private = isset($_POST['is_private']) ? 1 : 0;
     
     if (empty($title)) {
         $error_message = "Title is required";
     } else {
-        if ($note_id > 0) {
-            // Update existing note
-            $stmt = $conn->prepare("UPDATE notes SET title = ?, content = ?, status = ?, pinned = ? WHERE id = ? AND user_id = ?");
-            $stmt->bind_param("sssiii", $title, $content, $status, $pinned, $note_id, $user_id);
+        // Check private note limit if trying to create a private note
+        if ($is_private && !$canCreatePrivateNote && (!$note || !$note['is_private'])) {
+            $error_message = "You have reached your plan's private note limit. Please upgrade to create more private notes.";
         } else {
-            // Create new note
-            $stmt = $conn->prepare("INSERT INTO notes (title, content, user_id, status, pinned) VALUES (?, ?, ?, ?, ?)");
-            $stmt->bind_param("ssisi", $title, $content, $user_id, $status, $pinned);
-        }
-        
-        if ($stmt->execute()) {
-            $success_message = "Note saved successfully!";
-            if (!$note_id) {
-                $note_id = $conn->insert_id;
-                
-                // If the note was just created, get the current user's name for notifications
-                $stmt = $conn->prepare("SELECT full_name FROM users WHERE id = ?");
-                $stmt->bind_param("i", $user_id);
-                $stmt->execute();
-                $result = $stmt->get_result();
-                $creator = $result->fetch_assoc();
-                $creator_name = $creator['full_name'];
-                
-                header("Location: editnote.php?id=" . $note_id);
-                exit();
+            if ($note_id > 0) {
+                // Update existing note
+                $stmt = $conn->prepare("UPDATE notes SET title = ?, content = ?, status = ?, pinned = ?, is_private = ? WHERE id = ? AND user_id = ?");
+                $stmt->bind_param("sssiiii", $title, $content, $status, $pinned, $is_private, $note_id, $user_id);
             } else {
-                // For existing notes, notify shared users about the update
-                $stmt = $conn->prepare("SELECT shared_with FROM note_shares WHERE note_id = ?");
-                $stmt->bind_param("i", $note_id);
-                $stmt->execute();
-                $result = $stmt->get_result();
-                
-                while ($row = $result->fetch_assoc()) {
-                    $shared_user_id = $row['shared_with'];
-                    
-                    // Create notification for the update
-                    $message = "Note '$title' has been updated";
-                    $stmt2 = $conn->prepare("INSERT INTO notifications (message, recipient, type, date) VALUES (?, ?, 'Note Updated', CURRENT_DATE)");
-                    $stmt2->bind_param("si", $message, $shared_user_id);
-                    $stmt2->execute();
-                }
+                // Create new note
+                $stmt = $conn->prepare("INSERT INTO notes (title, content, user_id, status, pinned, is_private) VALUES (?, ?, ?, ?, ?, ?)");
+                $stmt->bind_param("ssissi", $title, $content, $user_id, $status, $pinned, $is_private);
             }
-        } else {
-            $error_message = "Error saving note: " . $conn->error;
+            
+            if ($stmt->execute()) {
+                $success_message = "Note saved successfully!";
+                if (!$note_id) {
+                    $note_id = $conn->insert_id;
+                    header("Location: editnote.php?id=" . $note_id);
+                    exit();
+                }
+            } else {
+                $error_message = "Error saving note: " . $conn->error;
+            }
         }
     }
 }
 
 // Handle note sharing
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['share_note'])) {
-    $share_with = (int)$_POST['share_with'];
-    $can_edit = isset($_POST['can_edit']) ? 1 : 0;
-    
-    // Check if share already exists
-    $stmt = $conn->prepare("SELECT id FROM note_shares WHERE note_id = ? AND shared_with = ?");
-    $stmt->bind_param("ii", $note_id, $share_with);
-    $stmt->execute();
-    $existing_share = $stmt->get_result()->fetch_assoc();
-    
-    if (!$existing_share) {
-        $stmt = $conn->prepare("INSERT INTO note_shares (note_id, shared_by, shared_with, can_edit) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("iiii", $note_id, $user_id, $share_with, $can_edit);
-        
-        if ($stmt->execute()) {
-            // Create notification
-            $note_title = $note['title'];
-            $message = "A note titled '$note_title' has been shared with you.";
-            $stmt = $conn->prepare("INSERT INTO notifications (message, recipient, type, date) VALUES (?, ?, 'Note Shared', CURRENT_DATE)");
-            $stmt->bind_param("si", $message, $share_with);
-            $stmt->execute();
-            $success_message = "Note shared successfully!";
-        } else {
-            $error_message = "Error sharing note";
-        }
+    if (!$canShareNote) {
+        $error_message = "You have reached your plan's share limit. Please upgrade to share more notes.";
     } else {
-        $error_message = "Note is already shared with this user";
+        $share_with = (int)$_POST['share_with'];
+        $can_edit = isset($_POST['can_edit']) ? 1 : 0;
+        
+        // Check if share already exists
+        $stmt = $conn->prepare("SELECT id FROM note_shares WHERE note_id = ? AND shared_with = ?");
+        $stmt->bind_param("ii", $note_id, $share_with);
+        $stmt->execute();
+        $existing_share = $stmt->get_result()->fetch_assoc();
+        
+        if (!$existing_share) {
+            $stmt = $conn->prepare("INSERT INTO note_shares (note_id, shared_by, shared_with, can_edit) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("iiii", $note_id, $user_id, $share_with, $can_edit);
+            
+            if ($stmt->execute()) {
+                // Create notification
+                $note_title = $note['title'];
+                $message = "A note titled '$note_title' has been shared with you.";
+                $stmt = $conn->prepare("INSERT INTO notifications (message, recipient, type, date) VALUES (?, ?, 'Note Shared', CURRENT_DATE)");
+                $stmt->bind_param("si", $message, $share_with);
+                $stmt->execute();
+                $success_message = "Note shared successfully!";
+            } else {
+                $error_message = "Error sharing note";
+            }
+        } else {
+            $error_message = "Note is already shared with this user";
+        }
     }
 }
 
@@ -687,6 +742,14 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         <input type="hidden" name="content" id="formContent">
         <input type="hidden" name="status" id="formStatus">
         <input type="hidden" name="pinned" id="formPinned" value="0">
+        <div class="form-check mb-3">
+            <input type="checkbox" class="form-check-input" id="is_private" name="is_private" value="1" 
+                   <?php echo ($note && $note['is_private']) ? 'checked' : ''; ?>>
+            <label class="form-check-label" for="is_private">Make this note private</label>
+            <?php if (!$canCreatePrivateNote && (!$note || !$note['is_private'])): ?>
+                <small class="text-danger d-block">You have reached your private note limit. <a href="plans.php">Upgrade your plan</a> to create more private notes.</small>
+            <?php endif; ?>
+        </div>
     </form>
 
     <!-- Share Modal -->
