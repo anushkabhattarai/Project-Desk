@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // Function to get user's current plan limits
 function getUserPlanLimits($conn, $userId) {
     $stmt = $conn->prepare("
-        SELECT p.note_limit, p.private_note_limit, p.share_limit, p.is_unlimited 
+        SELECT p.note_limit, p.private_note_limit, p.is_unlimited 
         FROM plans p 
         INNER JOIN subscriptions s ON p.id = s.plan_id 
         WHERE s.user_id = :user_id AND s.status = 'active' 
@@ -98,9 +98,11 @@ function getUserPlanLimits($conn, $userId) {
     
     // If no active subscription, return basic plan limits
     if (!$plan) {
-        $stmt = $conn->prepare("SELECT note_limit, private_note_limit, share_limit FROM plans WHERE name = 'Basic Plan'");
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        return [
+            'note_limit' => 10,
+            'private_note_limit' => 5,
+            'is_unlimited' => 0
+        ];
     }
     
     return $plan;
@@ -122,45 +124,43 @@ function countUserPrivateNotes($conn, $userId) {
     return $stmt->fetchColumn();
 }
 
-// Function to count user's current shared notes
-function countUserSharedNotes($conn, $userId) {
-    $stmt = $conn->prepare("
-        SELECT COUNT(DISTINCT note_id) 
-        FROM note_shares 
-        WHERE shared_by = :user_id
-    ");
-    $stmt->bindParam(':user_id', $userId);
-    $stmt->execute();
-    return $stmt->fetchColumn();
-}
-
 // Get user's current plan limits
 $planLimits = getUserPlanLimits($conn, $_SESSION['id']);
 $currentNotes = countUserNotes($conn, $_SESSION['id']);
 $currentPrivateNotes = countUserPrivateNotes($conn, $_SESSION['id']);
-$currentSharedNotes = countUserSharedNotes($conn, $_SESSION['id']);
 
 // Check if user has reached any limits
 $noteLimit = $planLimits['note_limit'];
 $privateNoteLimit = $planLimits['private_note_limit'];
-$shareLimit = $planLimits['share_limit'];
 
 $canCreateNote = $planLimits['is_unlimited'] || $currentNotes < $noteLimit;
 $canCreatePrivateNote = $planLimits['is_unlimited'] || $currentPrivateNotes < $privateNoteLimit;
-$canShareNote = $planLimits['is_unlimited'] || $currentSharedNotes < $shareLimit;
 
-// Fetch notes for the current user (including shared notes)
-$sql = "SELECT n.*, u.full_name as owner_name,
-        CASE 
-            WHEN n.user_id = :user_id THEN 1 
-            WHEN ns.can_edit = 1 THEN 1
-            ELSE 0
-        END as can_edit
-        FROM notes n
-        LEFT JOIN note_shares ns ON n.id = ns.note_id AND ns.shared_with = :user_id
-        LEFT JOIN users u ON n.user_id = u.id
-        WHERE n.user_id = :user_id OR ns.shared_with = :user_id
-        ORDER BY n.pinned DESC, n.created_at DESC";
+// Modify the SQL query to fetch notes based on user role
+if ($_SESSION['role'] === 'admin') {
+    $sql = "SELECT n.*, u.full_name as owner_name,
+            CASE 
+                WHEN n.user_id = :user_id THEN 1 
+                WHEN ns.can_edit = 1 THEN 1
+                ELSE 0
+            END as can_edit
+            FROM notes n
+            LEFT JOIN note_shares ns ON n.id = ns.note_id AND ns.shared_with = :user_id
+            LEFT JOIN users u ON n.user_id = u.id
+            ORDER BY n.pinned DESC, n.created_at DESC";
+} else {
+    $sql = "SELECT n.*, u.full_name as owner_name,
+            CASE 
+                WHEN n.user_id = :user_id THEN 1 
+                WHEN ns.can_edit = 1 THEN 1
+                ELSE 0
+            END as can_edit
+            FROM notes n
+            LEFT JOIN note_shares ns ON n.id = ns.note_id AND ns.shared_with = :user_id
+            LEFT JOIN users u ON n.user_id = u.id
+            WHERE n.user_id = :user_id OR ns.shared_with = :user_id
+            ORDER BY n.pinned DESC, n.created_at DESC";
+}
 
 $stmt = $conn->prepare($sql);
 $stmt->bindParam(':user_id', $_SESSION['id']);
@@ -725,23 +725,24 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         /* Add or update these styles */
         .container-fluid {
-            padding-top: 1rem !important; /* Reduced from default */
+            padding-top: 0 !important;
         }
 
-        /* Adjust header area spacing */
+        /* Remove margin from header area */
         .d-flex.justify-content-between.align-items-center.mb-4 {
-            margin-bottom: 2rem !important; /* Reduced from 4 */
+            margin-bottom: 1rem !important;
             padding-top: 0 !important;
         }
 
         /* Make the breadcrumb more compact */
         .breadcrumb {
-            margin-top: 0.25rem !important;
+            margin-top: 0 !important;
+            padding: 0 !important;
         }
 
         /* Update main content area padding */
         main {
-            padding-top: 60px !important; /* Reduced from 70px */
+            padding-top: 40px !important;
         }
 
         /* Add these hierarchical view styles to your existing <style> section */
@@ -871,8 +872,15 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <?php include "inc/nav.php" ?>
     
     <!-- Main content area -->
-    <main style="margin-left: 250px; padding-top: 5px;">
-        <div class="container-fluid px-4 py-3">
+    <main style="margin-left: 250px; padding-top: 0;">
+        <div class="container-fluid px-4 pt-2">
+            <?php if ($_SESSION['role'] === 'admin'): ?>
+                <div class="alert alert-info m-3">
+                    <i class="fa fa-info-circle me-2"></i>
+                    You are viewing all notes from all users as an administrator
+                </div>
+            <?php endif; ?>
+            
             <!-- Header Area -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
@@ -941,16 +949,6 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <i class="fa fa-exclamation-triangle me-2"></i>
                             You have reached your plan's private note limit (<?php echo $privateNoteLimit; ?> private notes).
                             <a href="plans.php" class="alert-link">Upgrade your plan</a> to create more private notes.
-                        </div>
-                    </div>
-                <?php endif; ?>
-                
-                <?php if (!$canShareNote): ?>
-                    <div class="col-12">
-                        <div class="alert alert-warning">
-                            <i class="fa fa-exclamation-triangle me-2"></i>
-                            You have reached your plan's share limit (<?php echo $shareLimit; ?> shared notes).
-                            <a href="plans.php" class="alert-link">Upgrade your plan</a> to share more notes.
                         </div>
                     </div>
                 <?php endif; ?>
@@ -1117,7 +1115,7 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                     <a href="editnote.php?id=${note.id}" class="btn btn-sm btn-outline-primary">
                                                         <i class="fa fa-edit"></i>
                                                     </a>
-                                                    ${note.user_id == <?php echo $_SESSION['id']; ?> ? `
+                                                    ${note.user_id == <?php echo $_SESSION['id']; ?> || '<?php echo $_SESSION['role']; ?>' === 'admin' ? `
                                                         <button class="btn btn-sm btn-outline-danger" onclick="deleteNote(${note.id})">
                                                             <i class="fa fa-trash"></i>
                                                         </button>
@@ -1229,9 +1227,11 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <a href="editnote.php?id=${note.id}" class="btn btn-sm btn-outline-primary">
                                             <i class="fa fa-edit"></i>
                                         </a>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteNote(${note.id})">
-                                            <i class="fa fa-trash"></i>
-                                        </button>
+                                        ${note.user_id == <?php echo $_SESSION['id']; ?> || '<?php echo $_SESSION['role']; ?>' === 'admin' ? `
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteNote(${note.id})">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        ` : ''}
                                     </div>
                                 </div>
                             </div>
@@ -1280,7 +1280,7 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <a href="editnote.php?id=${note.id}" class="btn btn-sm btn-outline-primary">
                                         <i class="fa fa-edit"></i>
                                     </a>
-                                    ${note.user_id == <?php echo $_SESSION['id']; ?> ? `
+                                    ${note.user_id == <?php echo $_SESSION['id']; ?> || '<?php echo $_SESSION['role']; ?>' === 'admin' ? `
                                         <button class="btn btn-sm btn-outline-danger" onclick="deleteNote(${note.id})">
                                             <i class="fa fa-trash"></i>
                                         </button>
@@ -1295,6 +1295,15 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Delete note
         function deleteNote(noteId) {
+            const note = notes.find(n => n.id === noteId);
+            if (!note) return;
+
+            if (note.user_id != <?php echo $_SESSION['id']; ?> && 
+                '<?php echo $_SESSION['role']; ?>' !== 'admin') {
+                alert('You do not have permission to delete this note');
+                return;
+            }
+
             if (confirm('Are you sure you want to delete this note?')) {
                 notes = notes.filter(n => n.id !== noteId);
                 localStorage.setItem('notes', JSON.stringify(notes));
@@ -1399,7 +1408,6 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         // Add plan limit checks to the UI
         const canCreateNote = <?php echo json_encode($canCreateNote); ?>;
         const canCreatePrivateNote = <?php echo json_encode($canCreatePrivateNote); ?>;
-        const canShareNote = <?php echo json_encode($canShareNote); ?>;
         
         // Update the "New Note" button state
         const newNoteBtn = document.querySelector('.btn-primary[onclick*="editnote.php"]');
@@ -1409,4 +1417,4 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
     </script>
 </body>
-</html> 
+</html>

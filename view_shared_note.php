@@ -9,17 +9,32 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
 include "DB_connection.php";
 
 $user_id = $_SESSION['id'];
+$is_admin = $_SESSION['role'] === 'admin';
 $note_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-// Fetch note details with share permissions
-$query = "SELECT n.*, u.full_name as author_name, ns.can_edit 
-          FROM notes n 
-          INNER JOIN users u ON n.user_id = u.id 
-          INNER JOIN note_shares ns ON n.id = ns.note_id 
-          WHERE n.id = ? AND ns.shared_with = ?";
+// Modified query for admin to see all sharing info
+$query = $is_admin 
+    ? "SELECT n.*, u.full_name as author_name,
+         ns.can_edit,
+         GROUP_CONCAT(
+           CONCAT(share_user.full_name, 
+           CASE WHEN ns.can_edit THEN ' (Can edit)' ELSE ' (View only)' END)
+           SEPARATOR ', '
+         ) as shared_with_list
+       FROM notes n 
+       INNER JOIN users u ON n.user_id = u.id 
+       LEFT JOIN note_shares ns ON n.id = ns.note_id 
+       LEFT JOIN users share_user ON ns.shared_with = share_user.id 
+       WHERE n.id = ? 
+       GROUP BY n.id, ns.can_edit"
+    : "SELECT n.*, u.full_name as author_name, ns.can_edit 
+       FROM notes n 
+       INNER JOIN users u ON n.user_id = u.id 
+       INNER JOIN note_shares ns ON n.id = ns.note_id 
+       WHERE n.id = ? AND ns.shared_with = ?";
 
 $stmt = $conn->prepare($query);
-$stmt->execute([$note_id, $user_id]);
+$stmt->execute($is_admin ? [$note_id] : [$note_id, $user_id]);
 $note = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // Redirect if note doesn't exist or user doesn't have access
@@ -79,6 +94,17 @@ if (!$note) {
                         <i class="fa fa-user me-2"></i>Created by <?= htmlspecialchars($note['author_name']) ?>
                         <br>
                         <i class="fa fa-calendar me-2"></i><?= date('F j, Y', strtotime($note['created_at'])) ?>
+                        <?php if ($is_admin && !empty($note['shared_with_list'])): ?>
+                            <br>
+                            <i class="fa fa-share-alt me-2"></i>Shared with: 
+                            <span class="text-primary"><?= htmlspecialchars($note['shared_with_list']) ?></span>
+                        <?php elseif (!$is_admin): ?>
+                            <br>
+                            <i class="fa fa-lock me-2"></i>Access level: 
+                            <span class="<?= $note['can_edit'] ? 'text-success' : 'text-info' ?>">
+                                <?= $note['can_edit'] ? 'Can edit' : 'View only' ?>
+                            </span>
+                        <?php endif; ?>
                     </p>
                 </div>
             </div>

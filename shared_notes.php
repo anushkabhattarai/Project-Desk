@@ -12,13 +12,14 @@ include "app/Model/Task.php";
 include "app/Model/User.php";
 
 $user_id = $_SESSION['id'];
+$is_admin = $_SESSION['role'] === 'admin';
 
 // Fetch shared notes with search and sorting
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $sort = isset($_GET['sort']) ? $_GET['sort'] : 'newest';
 
-$where_clause = "WHERE ns.shared_with = ?";
-$params = [$user_id];
+$where_clause = $is_admin ? "WHERE 1=1" : "WHERE ns.shared_with = ?";
+$params = $is_admin ? [] : [$user_id];
 
 if ($search) {
     $where_clause .= " AND (n.title LIKE ? OR n.content LIKE ?)";
@@ -33,10 +34,15 @@ $order_clause = match($sort) {
     default => 'ORDER BY ns.created_at DESC'
 };
 
-$query = "SELECT n.*, u.full_name as shared_by_name, ns.can_edit, ns.created_at as shared_date 
+$query = "SELECT n.*, 
+          u_sharer.full_name as shared_by_name, 
+          u_recipient.full_name as shared_with_name,
+          ns.can_edit, 
+          ns.created_at as shared_date 
           FROM notes n 
           INNER JOIN note_shares ns ON n.id = ns.note_id 
-          INNER JOIN users u ON ns.shared_by = u.id 
+          INNER JOIN users u_sharer ON ns.shared_by = u_sharer.id 
+          INNER JOIN users u_recipient ON ns.shared_with = u_recipient.id 
           $where_clause $order_clause";
 
 $stmt = $conn->prepare($query);
@@ -309,6 +315,12 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <span><i class="fa fa-calendar-o me-1"></i> 
                                             <?= date('M d, Y', strtotime($note['shared_date'])) ?>
                                         </span>
+                                        <?php if ($is_admin): ?>
+                                            <span class="text-info">
+                                                <i class="fa fa-user me-1"></i> 
+                                                Shared with: <?= htmlspecialchars($note['shared_with_name']) ?>
+                                            </span>
+                                        <?php endif; ?>
                                         <?php if ($note['can_edit']): ?>
                                             <span class="text-success">
                                                 <i class="fa fa-edit me-1"></i> Can edit

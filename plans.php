@@ -258,7 +258,7 @@ $title = "Select a Plan";
                                                 </li>
                                                 <li class="mb-2">
                                                     <i class="fa fa-check text-success me-2"></i>
-                                                    <span>Share with up to <?php echo $plan['share_limit']; ?> users</span>
+                                                    <span>Share with up to 5 people per note</span>
                                                 </li>
                                             <?php endif; ?>
                                             <li class="mb-2">
@@ -497,4 +497,4 @@ $title = "Select a Plan";
         });
     </script>
 </body>
-</html> 
+</html>

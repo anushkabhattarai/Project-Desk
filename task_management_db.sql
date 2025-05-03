@@ -86,6 +86,56 @@ CREATE TABLE `note_shares` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- Update or create the trigger for note sharing
+DROP TRIGGER IF EXISTS before_note_share_insert;
+
+DELIMITER //
+
+CREATE TRIGGER before_note_share_insert
+BEFORE INSERT ON note_shares
+FOR EACH ROW
+BEGIN
+    DECLARE user_has_subscription INT;
+    DECLARE share_count INT;
+    DECLARE is_unlimited BOOLEAN;
+    DECLARE per_note_limit INT DEFAULT 5; -- Basic plan limit per note
+    
+    -- Check if user has any active subscription
+    SELECT COUNT(*) INTO user_has_subscription
+    FROM subscriptions s
+    WHERE s.user_id = NEW.shared_by 
+    AND s.status = 'active' 
+    AND s.end_date >= CURRENT_DATE;
+    
+    IF user_has_subscription = 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'User needs an active subscription to share notes';
+    END IF;
+    
+    -- Get the share count for this specific note
+    SELECT COUNT(*) INTO share_count 
+    FROM note_shares 
+    WHERE note_id = NEW.note_id;
+    
+    -- Get user's plan type
+    SELECT p.is_unlimited INTO is_unlimited
+    FROM plans p 
+    INNER JOIN subscriptions s ON p.id = s.plan_id 
+    WHERE s.user_id = NEW.shared_by 
+    AND s.status = 'active' 
+    AND s.end_date >= CURRENT_DATE
+    ORDER BY s.created_at DESC 
+    LIMIT 1;
+    
+    -- If basic plan, enforce per-note limit
+    IF is_unlimited = 0 AND share_count >= per_note_limit THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Share limit reached for this note. Basic plan allows up to 5 shares per note.';
+    END IF;
+END //
+
+DELIMITER ;
+
 -- --------------------------------------------------------
 
 --
@@ -145,7 +195,6 @@ CREATE TABLE `plans` (
   `price` decimal(10,2) NOT NULL,
   `note_limit` int(11) DEFAULT NULL,
   `private_note_limit` int(11) DEFAULT NULL,
-  `share_limit` int(11) DEFAULT NULL,
   `is_unlimited` tinyint(1) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -154,88 +203,12 @@ CREATE TABLE `plans` (
 -- Dumping data for table `plans`
 --
 
-INSERT INTO `plans` (`id`, `name`, `description`, `price`, `note_limit`, `private_note_limit`, `share_limit`, `is_unlimited`, `created_at`) VALUES
-(1, 'Basic Plan', 'Basic plan with limited features. Share up to 5 notes.', 200.00, 10, 5, 5, 0, '2025-04-12 11:38:38'),
-(2, 'Premium Plan', 'Premium plan with unlimited features. Unlimited note sharing.', 500.00, NULL, NULL, NULL, 1, '2025-04-12 11:38:38');
+INSERT INTO `plans` (`id`, `name`, `description`, `price`, `note_limit`, `private_note_limit`, `is_unlimited`, `created_at`) VALUES
+(1, 'Basic Plan', 'Basic plan with limited features. Share up to 5 notes.', 200.00, 10, 5, 0, '2025-04-12 11:38:38'),
+(2, 'Premium Plan', 'Premium plan with unlimited features. Unlimited note sharing.', 500.00, NULL, NULL, 1, '2025-04-12 11:38:38');
 
--- Update plans table to have clearer sharing limits
-UPDATE plans SET 
-    description = 'Basic plan with limited features. Share up to 5 notes.',
-    note_limit = 10,
-    share_limit = 5,
-    is_unlimited = 0
-WHERE name = 'Basic Plan';
-
-UPDATE plans SET 
-    description = 'Premium plan with unlimited features. Unlimited note sharing.',
-    note_limit = NULL,
-    share_limit = NULL,
-    is_unlimited = 1
-WHERE name = 'Premium Plan';
-
--- Add trigger to enforce share limits based on plan
-DELIMITER //
-
-CREATE TRIGGER before_note_share_insert
-BEFORE INSERT ON note_shares
-FOR EACH ROW
-BEGIN
-    DECLARE user_share_count INT;
-    DECLARE user_share_limit INT;
-    DECLARE is_unlimited BOOLEAN;
-    
-    -- Get the user's current share count
-    SELECT COUNT(*) INTO user_share_count 
-    FROM note_shares 
-    WHERE shared_by = NEW.shared_by;
-    
-    -- Get the user's plan limits
-    SELECT p.share_limit, p.is_unlimited INTO user_share_limit, is_unlimited
-    FROM plans p 
-    INNER JOIN subscriptions s ON p.id = s.plan_id 
-    WHERE s.user_id = NEW.shared_by 
-    AND s.status = 'active' 
-    AND s.end_date >= CURRENT_DATE
-    ORDER BY s.created_at DESC 
-    LIMIT 1;
-    
-    -- If no active subscription, use Basic Plan limits
-    IF user_share_limit IS NULL THEN
-        SET user_share_limit = 5;
-        SET is_unlimited = 0;
-    END IF;
-    
-    -- Check if user has reached their share limit
-    IF NOT is_unlimited AND user_share_count >= user_share_limit THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Share limit reached for your current plan';
-    END IF;
-END;
-//
-
-DELIMITER ;
-
--- Add an index to improve performance of share limit checking
-CREATE INDEX idx_note_shares_shared_by ON note_shares(shared_by);
-
--- Add an index for active subscriptions
-CREATE INDEX idx_active_subscriptions ON subscriptions(user_id, status, end_date);
-
--- Add view to easily check user's sharing stats
-CREATE OR REPLACE VIEW user_sharing_stats AS
-SELECT 
-    u.id as user_id,
-    u.full_name,
-    COUNT(DISTINCT ns.note_id) as total_shares,
-    COALESCE(p.share_limit, 5) as share_limit,
-    COALESCE(p.is_unlimited, 0) as is_unlimited
-FROM users u
-LEFT JOIN note_shares ns ON u.id = ns.shared_by
-LEFT JOIN subscriptions s ON u.id = s.user_id 
-    AND s.status = 'active' 
-    AND s.end_date >= CURRENT_DATE
-LEFT JOIN plans p ON s.plan_id = p.id
-GROUP BY u.id, u.full_name, p.share_limit, p.is_unlimited;
+-- Update plans table to remove total share limit column
+ALTER TABLE plans DROP COLUMN share_limit;
 
 -- --------------------------------------------------------
 
@@ -565,7 +538,6 @@ ALTER TABLE `support_replies`
 --
 ALTER TABLE `support_tickets`
   ADD CONSTRAINT `support_tickets_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
--- Add after the existing tables but before the final COMMIT
 
 
 

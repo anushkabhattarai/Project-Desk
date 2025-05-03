@@ -62,7 +62,7 @@ if ($note_id > 0) {
     $shared_users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-// Fetch comments for the note
+// Fetch comments for the note and set initial count
 $comments = [];
 $comment_count = 0;
 if ($note_id > 0) {
@@ -76,11 +76,34 @@ if ($note_id > 0) {
     $result = $stmt->get_result();
     $comments = $result->fetch_all(MYSQLI_ASSOC);
     $comment_count = count($comments);
+
+    // Set initial comment count in the UI
+    echo "<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const commentCount = document.getElementById('comment-count');
+            if (commentCount) {
+                commentCount.textContent = '$comment_count';
+            }
+            
+            const commentsContainer = document.getElementById('comments-container');
+            if (commentsContainer) {
+                commentsContainer.innerHTML = `" . implode('', array_map(function($comment) {
+                    return "<div class='comment mb-3'>
+                        <div class='comment-header'>
+                            <span class='comment-author'>{$comment['author_name']}</span>
+                            <span class='comment-time'>" . date('M j, Y g:i A', strtotime($comment['created_at'])) . "</span>
+                        </div>
+                        <div class='comment-text'>{$comment['comment']}</div>
+                    </div>";
+                }, $comments)) . "`;
+            }
+        });
+    </script>";
 }
 
-// After database connection, add this to check share count
+// After database connection, modify the share limit check to be per-note
 if ($note_id > 0) {
-    // Get current share count for this note
+    // Get current share count for this specific note
     $stmt = $conn->prepare("SELECT COUNT(*) as current_shares FROM note_shares WHERE note_id = ?");
     $stmt->bind_param("i", $note_id);
     $stmt->execute();
@@ -88,7 +111,7 @@ if ($note_id > 0) {
 
     // Get user's plan type
     $stmt = $conn->prepare("
-        SELECT p.is_unlimited 
+        SELECT p.is_unlimited, p.name as plan_name
         FROM plans p 
         INNER JOIN subscriptions s ON p.id = s.plan_id 
         WHERE s.user_id = ? AND s.status = 'active' 
@@ -99,7 +122,7 @@ if ($note_id > 0) {
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $plan_result = $stmt->get_result()->fetch_assoc();
-    
+
     // Set share limit based on plan
     $is_premium = $plan_result && $plan_result['is_unlimited'];
     $share_limit_per_note = 5; // Basic plan limit per note
@@ -109,13 +132,28 @@ if ($note_id > 0) {
         $error_message = sprintf(
             '<div class="alert alert-warning">
                 <i class="fa fa-exclamation-triangle me-2"></i>
-                This note has reached its sharing limit (%d users) for Basic Plan.
+                This note has reached its sharing limit (%d users).
                 <a href="plans.php?highlight=premium" class="alert-link">Upgrade to Premium</a> for unlimited sharing per note.
             </div>',
             $share_limit_per_note
         );
     }
 }
+
+// After database connection, check if user has an active subscription
+$stmt = $conn->prepare("
+    SELECT p.is_unlimited, p.name as plan_name
+    FROM plans p 
+    INNER JOIN subscriptions s ON p.id = s.plan_id 
+    WHERE s.user_id = ? AND s.status = 'active' 
+    AND s.end_date >= CURRENT_DATE
+    ORDER BY s.created_at DESC 
+    LIMIT 1
+");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$user_plan = $stmt->get_result()->fetch_assoc();
+$has_subscription = !empty($user_plan);
 
 // Fetch users for sharing
 $stmt = $conn->prepare("SELECT id, full_name FROM users WHERE id != ?");
@@ -159,15 +197,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_note'])) {
 
 // Handle note sharing
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['share_note'])) {
-    // Get current share count for this note
-    $stmt = $conn->prepare("SELECT COUNT(*) as current_shares FROM note_shares WHERE note_id = ?");
-    $stmt->bind_param("i", $note_id);
-    $stmt->execute();
-    $current_shares = $stmt->get_result()->fetch_assoc()['current_shares'];
-    
-    // Get user's plan type
+    // First check if user has an active subscription
     $stmt = $conn->prepare("
-        SELECT p.is_unlimited 
+        SELECT p.is_unlimited, p.name as plan_name
         FROM plans p 
         INNER JOIN subscriptions s ON p.id = s.plan_id 
         WHERE s.user_id = ? AND s.status = 'active' 
@@ -177,24 +209,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['share_note'])) {
     ");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
-    $plan_result = $stmt->get_result()->fetch_assoc();
-    
-    // Check if user is on basic plan and has reached share limit for this note
-    $is_premium = $plan_result && $plan_result['is_unlimited'];
-    $share_limit_per_note = 5;
-    
-    if (!$is_premium && $current_shares >= $share_limit_per_note) {
-        $error_message = "This note has reached its sharing limit of {$share_limit_per_note} users for Basic Plan.";
-        
-        // If this is an AJAX request, return JSON response
+    $user_plan = $stmt->get_result()->fetch_assoc();
+
+    if (!$user_plan) {
+        $error_message = 'You need an active subscription to share notes. <a href="plans.php" class="alert-link">Subscribe to a plan</a> to enable sharing.';
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
             header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => $error_message]);
+            echo json_encode(['success' => false, 'message' => strip_tags($error_message)]);
             exit;
         }
         return;
     }
-    
+
+    // Get current share count for this note
+    $stmt = $conn->prepare("SELECT COUNT(*) as current_shares FROM note_shares WHERE note_id = ?");
+    $stmt->bind_param("i", $note_id);
+    $stmt->execute();
+    $current_shares = $stmt->get_result()->fetch_assoc()['current_shares'];
+
+    // Check share limits based on plan
+    $is_premium = $user_plan['is_unlimited'];
+    $share_limit_per_note = 5;
+
+    if (!$is_premium && $current_shares >= $share_limit_per_note) {
+        $error_message = sprintf(
+            'You have reached the sharing limit (%d users) for this note on the Basic Plan. <a href="plans.php?highlight=premium">Upgrade to Premium</a> for unlimited sharing.',
+            $share_limit_per_note
+        );
+        
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => strip_tags($error_message)]);
+            exit;
+        }
+        return;
+    }
+
     $share_with = (int)$_POST['share_with'];
     $can_edit = isset($_POST['can_edit']) ? 1 : 0;
     
@@ -287,6 +337,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_comment'])) {
         $stmt = $conn->prepare("INSERT INTO note_comments (note_id, user_id, comment) VALUES (?, ?, ?)");
         $stmt->bind_param("iis", $note_id, $user_id, $comment_text);
         if ($stmt->execute()) {
+            // Get the new total comment count
+            $stmt = $conn->prepare("SELECT COUNT(*) as count FROM note_comments WHERE note_id = ?");
+            $stmt->bind_param("i", $note_id);
+            $stmt->execute();
+            $new_count = $stmt->get_result()->fetch_assoc()['count'];
+            
             // Fetch the newly added comment with user details
             $stmt = $conn->prepare("SELECT c.*, u.full_name as author_name 
                                   FROM note_comments c 
@@ -295,12 +351,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_comment'])) {
             $stmt->execute();
             $new_comment = $stmt->get_result()->fetch_assoc();
             
-            // Return the new comment as JSON
             header('Content-Type: application/json');
             echo json_encode([
                 'success' => true,
                 'comment' => $new_comment,
-                'total_comments' => $comment_count + 1
+                'total_comments' => $new_count,
+                'html' => "<div class='comment mb-3'>
+                            <div class='comment-header'>
+                                <span class='comment-author'>{$new_comment['author_name']}</span>
+                                <span class='comment-time'>" . date('M j, Y g:i A', strtotime($new_comment['created_at'])) . "</span>
+                            </div>
+                            <div class='comment-text'>{$new_comment['comment']}</div>
+                          </div>"
             ]);
             exit;
         }
@@ -921,7 +983,7 @@ if (!isset($shared_users)) {
                     <i class="bi bi-save"></i>
                     Save
                 </button>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#shareModal" id="shareButton" <?php echo $note_id ? '' : 'disabled'; ?> title="<?php echo $note_id ? '' : 'Please save the note before sharing.'; ?>">
+                <button type="button" class="btn btn-primary" onclick="handleShareClick()" id="shareButton" <?php echo $note_id ? '' : 'disabled'; ?> title="<?php echo $note_id ? '' : 'Please save the note before sharing.'; ?>">
                     <i class="bi bi-share-fill"></i>
                     Share
                 </button>
@@ -1105,6 +1167,27 @@ if (!isset($shared_users)) {
         </div>
     </div>
 
+    <!-- Plan Upgrade Modal -->
+    <div class="modal fade" id="planUpgradeModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center px-4 py-4">
+                    <i class="fa fa-lock fa-3x text-warning mb-3"></i>
+                    <h4 class="mb-3">Subscription Required</h4>
+                    <p class="text-muted mb-4">
+                        You need an active subscription to share notes. Choose a plan that suits your needs and start sharing!
+                    </p>
+                    <a href="plans.php" class="btn btn-primary btn-lg px-5">
+                        View Plans
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function showToast(message, type = 'success', duration = 3000) {
@@ -1167,6 +1250,8 @@ if (!isset($shared_users)) {
             const statusSelect = document.getElementById('status');
             const noteForm = document.getElementById('noteForm');
             const shareForm = document.getElementById('shareForm');
+            const shareButton = document.getElementById('shareButton');
+            const hasSubscription = <?php echo $has_subscription ? 'true' : 'false' ?>;
 
             // Save functionality
             saveButton.addEventListener('click', async function() {
@@ -1195,7 +1280,6 @@ if (!isset($shared_users)) {
                         if (text.includes('Note saved successfully!')) {
                             showToast('Note saved successfully!', 'success');
                             // Enable share button after saving
-                            const shareButton = document.getElementById('shareButton');
                             if (shareButton) {
                                 shareButton.disabled = false;
                                 shareButton.title = '';
@@ -1257,6 +1341,18 @@ if (!isset($shared_users)) {
                         savingToast.remove();
                         showToast('Error sharing note. Please try again.', 'error');
                         console.error('Share error:', error);
+                    }
+                });
+            }
+
+            // Handle share button click for users without subscription
+            if (shareButton) {
+                shareButton.addEventListener('click', function(e) {
+                    if (!hasSubscription) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const modal = new bootstrap.Modal(document.getElementById('planUpgradeModal'));
+                        modal.show();
                     }
                 });
             }
@@ -1406,17 +1502,8 @@ if (!isset($shared_users)) {
                         // Clear comment input
                         commentText.value = '';
                         
-                        // Add new comment to DOM
-                        const commentElement = document.createElement('div');
-                        commentElement.className = 'comment';
-                        commentElement.innerHTML = `
-                            <div class="comment-header">
-                                <span class="comment-author">${data.comment.author_name}</span>
-                                <span class="comment-time">${new Date(data.comment.created_at).toLocaleString()}</span>
-                            </div>
-                            <div class="comment-text">${data.comment.comment}</div>
-                        `;
-                        commentsContainer.insertBefore(commentElement, commentsContainer.firstChild);
+                        // Add new comment HTML to container
+                        commentsContainer.insertAdjacentHTML('afterbegin', data.html);
                         
                         // Update comment count
                         commentCount.textContent = data.total_comments;
@@ -1430,6 +1517,17 @@ if (!isset($shared_users)) {
                 }
             });
         });
+
+        function handleShareClick() {
+            const hasSubscription = <?php echo $has_subscription ? 'true' : 'false' ?>;
+            if (!hasSubscription) {
+                const modal = new bootstrap.Modal(document.getElementById('planUpgradeModal'));
+                modal.show();
+                return;
+            }
+            const shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
+            shareModal.show();
+        }
     </script>
 </body>
 </html>
