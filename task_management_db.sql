@@ -388,6 +388,24 @@ INSERT INTO `users` (`id`, `full_name`, `username`, `email`, `phone`, `password`
 (10, 'Hemant Gupta', 'Hemant', 'b.anushka10@gmail.com', NULL, '$2y$10$ZDJLAMEDaG4FapKEGmS1sujiO/.P3Lyq4g.Y.rVrpWJMvYgPhLG8u', 'employee', '2025-04-19 14:24:20', NULL),
 (11, 'Darshan Shrestha', 'Daru', 'darshan@mail.com', NULL, '$2y$10$b5OAT.56TQ4bBVqWiAOHxuXjGFzGFip2zJUNv..lKYXI9Z.K/KJUy', 'employee', '2025-04-20 06:53:35', NULL);
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `private_notes`
+--
+
+CREATE TABLE `private_notes` (
+  `note_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `content` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`note_id`),
+  KEY `user_id` (`user_id`),
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 --
 -- Indexes for dumped tables
 --
@@ -547,8 +565,8 @@ ALTER TABLE `support_replies`
 --
 ALTER TABLE `support_tickets`
   ADD CONSTRAINT `support_tickets_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
-COMMIT;
+-- Add after the existing tables but before the final COMMIT
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+
+

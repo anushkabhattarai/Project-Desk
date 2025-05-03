@@ -73,21 +73,32 @@ try {
 }
 
 // Check if user already has an active subscription
-$stmt = $conn->prepare("SELECT * FROM subscriptions WHERE user_id = :user_id AND status = 'active' AND end_date >= CURRENT_DATE");
+$stmt = $conn->prepare("SELECT s.*, p.name as plan_name, p.price as plan_price 
+                       FROM subscriptions s 
+                       INNER JOIN plans p ON s.plan_id = p.id 
+                       WHERE s.user_id = :user_id AND s.status = 'active' 
+                       AND s.end_date >= CURRENT_DATE");
 $stmt->bindParam(':user_id', $_SESSION['id']);
 $stmt->execute();
-$subscription = $stmt->fetch(PDO::FETCH_ASSOC);
-
-// If user has an active subscription, redirect to notes.php
-if ($subscription) {
-    header("Location: notes.php");
-    exit;
-}
+$current_subscription = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // Fetch available plans
 $stmt = $conn->prepare("SELECT * FROM plans ORDER BY price ASC");
 $stmt->execute();
 $plans = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Add current plan info to the page context
+$current_plan_info = '';
+if ($current_subscription) {
+    $current_plan_info = sprintf(
+        '<div class="alert alert-info mb-4">
+            <i class="fa fa-info-circle me-2"></i>
+            You are currently subscribed to the <strong>%s</strong> plan. 
+            You can upgrade to a higher plan at any time.
+        </div>',
+        htmlspecialchars($current_subscription['plan_name'])
+    );
+}
 
 // Handle plan selection
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_plan'])) {
@@ -206,6 +217,8 @@ $title = "Select a Plan";
                         <?php echo $payment_message; ?>
                     <?php endif; ?>
                     
+                    <?php echo $current_plan_info; ?>
+                    
                     <div class="row g-4">
                         <?php foreach ($plans as $plan): ?>
                             <div class="col-md-6">
@@ -213,6 +226,12 @@ $title = "Select a Plan";
                                     echo (isset($_GET['highlight']) && $_GET['highlight'] === 'premium' && strtolower($plan['name']) === 'premium plan') ? 'highlight' : ''; 
                                 ?>">
                                     <div class="card-body p-4">
+                                        <?php if ($current_subscription && $plan['price'] <= $current_subscription['plan_price']): ?>
+                                            <div class="position-absolute top-0 end-0 m-3">
+                                                <span class="badge bg-secondary">Current Plan</span>
+                                            </div>
+                                        <?php endif; ?>
+                                        
                                         <div class="text-center mb-4">
                                             <h3 class="card-title fw-bold"><?php echo htmlspecialchars($plan['name']); ?></h3>
                                             <div class="my-3">
@@ -249,12 +268,27 @@ $title = "Select a Plan";
                                         </ul>
                                         
                                         <div class="text-center">
-                                            <button class="btn btn-primary btn-lg w-100 payment-button" 
-                                                    data-plan-id="<?php echo $plan['id']; ?>"
-                                                    data-plan-name="<?php echo htmlspecialchars($plan['name']); ?>"
-                                                    data-amount="<?php echo $plan['price']; ?>">
-                                                Select Plan
-                                            </button>
+                                            <?php if ($current_subscription): ?>
+                                                <?php if ($plan['price'] <= $current_subscription['plan_price']): ?>
+                                                    <button class="btn btn-secondary btn-lg w-100" disabled>
+                                                        Current Plan
+                                                    </button>
+                                                <?php else: ?>
+                                                    <button class="btn btn-primary btn-lg w-100 payment-button" 
+                                                            data-plan-id="<?php echo $plan['id']; ?>"
+                                                            data-plan-name="<?php echo htmlspecialchars($plan['name']); ?>"
+                                                            data-amount="<?php echo $plan['price']; ?>">
+                                                        Upgrade Plan
+                                                    </button>
+                                                <?php endif; ?>
+                                            <?php else: ?>
+                                                <button class="btn btn-primary btn-lg w-100 payment-button" 
+                                                        data-plan-id="<?php echo $plan['id']; ?>"
+                                                        data-plan-name="<?php echo htmlspecialchars($plan['name']); ?>"
+                                                        data-amount="<?php echo $plan['price']; ?>">
+                                                    Select Plan
+                                                </button>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>

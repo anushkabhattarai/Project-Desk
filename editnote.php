@@ -78,78 +78,6 @@ if ($note_id > 0) {
     $comment_count = count($comments);
 }
 
-// After database connection, add these functions
-function getUserPlanLimits($conn, $userId) {
-    $stmt = $conn->prepare("
-        SELECT p.note_limit, p.private_note_limit, p.share_limit, p.is_unlimited 
-        FROM plans p 
-        INNER JOIN subscriptions s ON p.id = s.plan_id 
-        WHERE s.user_id = ? AND s.status = 'active' 
-        AND s.end_date >= CURRENT_DATE
-        ORDER BY s.created_at DESC 
-        LIMIT 1
-    ");
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $plan = $result->fetch_assoc();
-    
-    // If no active subscription, return basic plan limits
-    if (!$plan) {
-        return [
-            'note_limit' => 10,
-            'private_note_limit' => 0,
-            'share_limit' => 5,  // Basic plan can share up to 5 notes
-            'is_unlimited' => false
-        ];
-    }
-    
-    return $plan;
-}
-
-function countUserNotes($conn, $userId) {
-    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM notes WHERE user_id = ?");
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    return $stmt->get_result()->fetch_assoc()['count'];
-}
-
-function countUserPrivateNotes($conn, $userId) {
-    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM notes WHERE user_id = ? AND is_private = 1");
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    return $stmt->get_result()->fetch_assoc()['count'];
-}
-
-function countUserSharedNotes($conn, $userId) {
-    $stmt = $conn->prepare("SELECT COUNT(DISTINCT note_id) as count FROM note_shares WHERE shared_by = ?");
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    return $stmt->get_result()->fetch_assoc()['count'];
-}
-
-// Get user's current plan limits
-$planLimits = getUserPlanLimits($conn, $user_id);
-$currentNotes = countUserNotes($conn, $user_id);
-$currentPrivateNotes = countUserPrivateNotes($conn, $user_id);
-$currentSharedNotes = countUserSharedNotes($conn, $user_id);
-
-// Check if user has reached any limits
-$noteLimit = $planLimits['note_limit'];
-$privateNoteLimit = $planLimits['private_note_limit'];
-$shareLimit = $planLimits['share_limit'];
-
-$canCreateNote = $planLimits['is_unlimited'] || $currentNotes < $noteLimit;
-$canCreatePrivateNote = $planLimits['is_unlimited'] || $currentPrivateNotes < $privateNoteLimit;
-$canShareNote = $planLimits['is_unlimited'] || $currentSharedNotes < $shareLimit;
-
-// If creating a new note and user has reached limit, redirect to notes page
-if (!$note_id && !$canCreateNote) {
-    $_SESSION['error_message'] = "You have reached your plan's note limit of {$noteLimit} notes. Please upgrade your plan to create more notes.";
-    header('Location: notes.php');
-    exit();
-}
-
 // After database connection, add this to check share count
 if ($note_id > 0) {
     // Get current share count for this note
@@ -158,9 +86,9 @@ if ($note_id > 0) {
     $stmt->execute();
     $current_shares = $stmt->get_result()->fetch_assoc()['current_shares'];
 
-    // Get user's plan limit
+    // Get user's plan type
     $stmt = $conn->prepare("
-        SELECT p.share_limit, p.is_unlimited 
+        SELECT p.is_unlimited 
         FROM plans p 
         INNER JOIN subscriptions s ON p.id = s.plan_id 
         WHERE s.user_id = ? AND s.status = 'active' 
@@ -172,9 +100,28 @@ if ($note_id > 0) {
     $stmt->execute();
     $plan_result = $stmt->get_result()->fetch_assoc();
     
-    $share_limit = $plan_result ? ($plan_result['is_unlimited'] ? null : $plan_result['share_limit']) : 5;
-    $has_reached_limit = !is_null($share_limit) && $current_shares >= $share_limit;
+    // Set share limit based on plan
+    $is_premium = $plan_result && $plan_result['is_unlimited'];
+    $share_limit_per_note = 5; // Basic plan limit per note
+    $share_limit_reached = !$is_premium && $current_shares >= $share_limit_per_note;
+
+    if ($share_limit_reached) {
+        $error_message = sprintf(
+            '<div class="alert alert-warning">
+                <i class="fa fa-exclamation-triangle me-2"></i>
+                This note has reached its sharing limit (%d users) for Basic Plan.
+                <a href="plans.php?highlight=premium" class="alert-link">Upgrade to Premium</a> for unlimited sharing per note.
+            </div>',
+            $share_limit_per_note
+        );
+    }
 }
+
+// Fetch users for sharing
+$stmt = $conn->prepare("SELECT id, full_name FROM users WHERE id != ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // Handle note save/update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_note'])) {
@@ -187,105 +134,148 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_note'])) {
     if (empty($title)) {
         $error_message = "Title is required";
     } else {
-        // Check note limit if creating a new note
-        if (!$note_id && !$canCreateNote) {
-            $error_message = "You have reached your plan's note limit of {$noteLimit} notes. Please upgrade your plan to create more notes.";
+        if ($note_id > 0) {
+            // Update existing note
+            $stmt = $conn->prepare("UPDATE notes SET title = ?, content = ?, status = ?, pinned = ?, is_private = ? WHERE id = ? AND user_id = ?");
+            $stmt->bind_param("sssiiii", $title, $content, $status, $pinned, $is_private, $note_id, $user_id);
         } else {
-            // Check private note limit if trying to create a private note
-            if ($is_private && !$canCreatePrivateNote && (!$note || !$note['is_private'])) {
-                $error_message = "You have reached your plan's private note limit. Please upgrade to create more private notes.";
-            } else {
-                if ($note_id > 0) {
-                    // Update existing note
-                    $stmt = $conn->prepare("UPDATE notes SET title = ?, content = ?, status = ?, pinned = ?, is_private = ? WHERE id = ? AND user_id = ?");
-                    $stmt->bind_param("sssiiii", $title, $content, $status, $pinned, $is_private, $note_id, $user_id);
-                } else {
-                    // Create new note
-                    $stmt = $conn->prepare("INSERT INTO notes (title, content, user_id, status, pinned, is_private) VALUES (?, ?, ?, ?, ?, ?)");
-                    $stmt->bind_param("ssissi", $title, $content, $user_id, $status, $pinned, $is_private);
-                }
-                
-                if ($stmt->execute()) {
-                    $success_message = "Note saved successfully!";
-                    if (!$note_id) {
-                        $note_id = $conn->insert_id;
-                        header("Location: editnote.php?id=" . $note_id);
-                        exit();
-                    }
-                } else {
-                    $error_message = "Error saving note: " . $conn->error;
-                }
+            // Create new note
+            $stmt = $conn->prepare("INSERT INTO notes (title, content, user_id, status, pinned, is_private) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("ssissi", $title, $content, $user_id, $status, $pinned, $is_private);
+        }
+        
+        if ($stmt->execute()) {
+            $success_message = "Note saved successfully!";
+            if (!$note_id) {
+                $note_id = $conn->insert_id;
+                header("Location: editnote.php?id=" . $note_id);
+                exit();
             }
+        } else {
+            $error_message = "Error saving note: " . $conn->error;
         }
     }
 }
 
 // Handle note sharing
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['share_note'])) {
-    if (!$canShareNote) {
-        $error_message = "You have reached your plan's share limit of 5 notes. Please upgrade to share more notes.";
-    } else {
-        $share_with = (int)$_POST['share_with'];
-        $can_edit = isset($_POST['can_edit']) ? 1 : 0;
+    // Get current share count for this note
+    $stmt = $conn->prepare("SELECT COUNT(*) as current_shares FROM note_shares WHERE note_id = ?");
+    $stmt->bind_param("i", $note_id);
+    $stmt->execute();
+    $current_shares = $stmt->get_result()->fetch_assoc()['current_shares'];
+    
+    // Get user's plan type
+    $stmt = $conn->prepare("
+        SELECT p.is_unlimited 
+        FROM plans p 
+        INNER JOIN subscriptions s ON p.id = s.plan_id 
+        WHERE s.user_id = ? AND s.status = 'active' 
+        AND s.end_date >= CURRENT_DATE
+        ORDER BY s.created_at DESC 
+        LIMIT 1
+    ");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $plan_result = $stmt->get_result()->fetch_assoc();
+    
+    // Check if user is on basic plan and has reached share limit for this note
+    $is_premium = $plan_result && $plan_result['is_unlimited'];
+    $share_limit_per_note = 5;
+    
+    if (!$is_premium && $current_shares >= $share_limit_per_note) {
+        $error_message = "This note has reached its sharing limit of {$share_limit_per_note} users for Basic Plan.";
         
-        // Check if share already exists
-        $stmt = $conn->prepare("SELECT id FROM note_shares WHERE note_id = ? AND shared_with = ?");
-        $stmt->bind_param("ii", $note_id, $share_with);
-        $stmt->execute();
-        $existing_share = $stmt->get_result()->fetch_assoc();
+        // If this is an AJAX request, return JSON response
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => $error_message]);
+            exit;
+        }
+        return;
+    }
+    
+    $share_with = (int)$_POST['share_with'];
+    $can_edit = isset($_POST['can_edit']) ? 1 : 0;
+    
+    // Check if share already exists
+    $stmt = $conn->prepare("SELECT id FROM note_shares WHERE note_id = ? AND shared_with = ?");
+    $stmt->bind_param("ii", $note_id, $share_with);
+    $stmt->execute();
+    $existing_share = $stmt->get_result()->fetch_assoc();
+    
+    if (!$existing_share) {
+        // Begin transaction
+        $conn->begin_transaction();
         
-        if (!$existing_share) {
-            // Begin transaction
-            $conn->begin_transaction();
+        try {
+            // Insert the share record
+            $stmt = $conn->prepare("INSERT INTO note_shares (note_id, shared_by, shared_with, can_edit) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("iiii", $note_id, $user_id, $share_with, $can_edit);
             
-            try {
-                // Insert the share record
-                $stmt = $conn->prepare("INSERT INTO note_shares (note_id, shared_by, shared_with, can_edit) VALUES (?, ?, ?, ?)");
-                $stmt->bind_param("iiii", $note_id, $user_id, $share_with, $can_edit);
-                
-                if (!$stmt->execute()) {
-                    throw new Exception("Failed to share note");
-                }
-                
-                // Create notification
-                $note_title = $note['title'];
-                $message = "A note titled '$note_title' has been shared with you" . ($can_edit ? " with edit permissions." : ".");
-                $stmt = $conn->prepare("INSERT INTO notifications (message, recipient, type, date) VALUES (?, ?, 'Note Shared', CURRENT_DATE)");
-                $stmt->bind_param("si", $message, $share_with);
-                
-                if (!$stmt->execute()) {
-                    throw new Exception("Failed to create notification");
-                }
-                
-                // Commit transaction
-                $conn->commit();
-                $success_message = "Note shared successfully!";
-                
-                // Refresh share count and shared users list
-                $stmt = $conn->prepare("SELECT COUNT(*) as share_count FROM note_shares WHERE note_id = ?");
-                $stmt->bind_param("i", $note_id);
-                $stmt->execute();
-                $share_result = $stmt->get_result();
-                $share_count = $share_result->fetch_assoc()['share_count'];
-                
-                $stmt = $conn->prepare("
-                    SELECT u.full_name, ns.can_edit, ns.created_at 
-                    FROM note_shares ns 
-                    JOIN users u ON ns.shared_with = u.id 
-                    WHERE ns.note_id = ? 
-                    ORDER BY ns.created_at DESC
-                ");
-                $stmt->bind_param("i", $note_id);
-                $stmt->execute();
-                $shared_users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-                
-            } catch (Exception $e) {
-                // Rollback transaction on error
-                $conn->rollback();
-                $error_message = $e->getMessage();
+            if (!$stmt->execute()) {
+                throw new Exception("Failed to share note");
             }
-        } else {
-            $error_message = "Note is already shared with this user";
+            
+            // Create notification
+            $note_title = $note['title'];
+            $message = "A note titled '$note_title' has been shared with you" . ($can_edit ? " with edit permissions." : ".");
+            $stmt = $conn->prepare("INSERT INTO notifications (message, recipient, type, date) VALUES (?, ?, 'Note Shared', CURRENT_DATE)");
+            $stmt->bind_param("si", $message, $share_with);
+            
+            if (!$stmt->execute()) {
+                throw new Exception("Failed to create notification");
+            }
+            
+            // Commit transaction
+            $conn->commit();
+            $success_message = "Note shared successfully!";
+            
+            // If this is an AJAX request, return JSON response
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => true, 'message' => $success_message]);
+                exit;
+            }
+            
+            // Refresh share count and shared users list
+            $stmt = $conn->prepare("SELECT COUNT(*) as share_count FROM note_shares WHERE note_id = ?");
+            $stmt->bind_param("i", $note_id);
+            $stmt->execute();
+            $share_result = $stmt->get_result();
+            $share_count = $share_result->fetch_assoc()['share_count'];
+            
+            $stmt = $conn->prepare("
+                SELECT u.full_name, ns.can_edit, ns.created_at 
+                FROM note_shares ns 
+                JOIN users u ON ns.shared_with = u.id 
+                WHERE ns.note_id = ? 
+                ORDER BY ns.created_at DESC
+            ");
+            $stmt->bind_param("i", $note_id);
+            $stmt->execute();
+            $shared_users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+            
+        } catch (Exception $e) {
+            // Rollback transaction on error
+            $conn->rollback();
+            $error_message = $e->getMessage();
+            
+            // If this is an AJAX request, return JSON response
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => $error_message]);
+                exit;
+            }
+        }
+    } else {
+        $error_message = "Note is already shared with this user";
+        
+        // If this is an AJAX request, return JSON response
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => $error_message]);
+            exit;
         }
     }
 }
@@ -320,11 +310,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_comment'])) {
     exit;
 }
 
-// Fetch users for sharing
-$stmt = $conn->prepare("SELECT id, full_name FROM users WHERE id != ?");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+// Immediately before the share modal HTML, ensure all variables are defined
+if (!isset($share_limit_reached)) {
+    $share_limit_reached = false;
+}
+if (!isset($is_premium)) {
+    $is_premium = false;
+}
+if (!isset($share_limit_per_note)) {
+    $share_limit_per_note = 5;
+}
+if (!isset($share_count)) {
+    $share_count = 0;
+}
+if (!isset($shared_users)) {
+    $shared_users = [];
+}
 ?>
 
 <!DOCTYPE html>
@@ -920,7 +921,7 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                     <i class="bi bi-save"></i>
                     Save
                 </button>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#shareModal">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#shareModal" id="shareButton" <?php echo $note_id ? '' : 'disabled'; ?> title="<?php echo $note_id ? '' : 'Please save the note before sharing.'; ?>">
                     <i class="bi bi-share-fill"></i>
                     Share
                 </button>
@@ -1034,7 +1035,13 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                         <div class="share-stats mb-3">
                             <div class="current-shares">
                                 <i class="bi bi-people-fill text-primary"></i>
-                                <span><?php echo $share_count; ?> people have access</span>
+                                <span>
+                                    <?php if ($is_premium): ?>
+                                        <?php echo $share_count; ?> people have access
+                                    <?php else: ?>
+                                        <?php echo $share_count; ?> of <?php echo $share_limit_per_note; ?> people have access
+                                    <?php endif; ?>
+                                </span>
                             </div>
                             <div class="shared-users-list mt-2">
                                 <?php foreach ($shared_users as $shared_user): ?>
@@ -1053,11 +1060,11 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                         </div>
                     <?php endif; ?>
 
-                    <?php if (!$canShareNote): ?>
+                    <?php if ($share_limit_reached): ?>
                         <div class="alert alert-warning">
                             <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            You have reached your plan's share limit of 5 notes. 
-                            <a href="plans.php" class="alert-link">Upgrade your plan</a> to share more notes.
+                            This note has reached its sharing limit of <?php echo $share_limit_per_note; ?> users for Basic Plan. 
+                            <a href="plans.php" class="alert-link">Upgrade to Premium</a> for unlimited sharing per note.
                         </div>
                     <?php else: ?>
                         <form method="POST" id="shareForm">
@@ -1066,7 +1073,11 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                                 <div class="share-limit-info mb-2">
                                     <small class="text-muted">
                                         <i class="bi bi-info-circle"></i>
-                                        Basic Plan allows sharing with up to 5 people
+                                        <?php if ($is_premium): ?>
+                                            Premium Plan: Share with unlimited people
+                                        <?php else: ?>
+                                            Basic Plan: Share with up to <?php echo $share_limit_per_note; ?> people per note
+                                        <?php endif; ?>
                                     </small>
                                 </div>
                                 <select name="share_with" class="form-select" required>
@@ -1089,33 +1100,6 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                             </button>
                         </form>
                     <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Share Limit Modal -->
-    <div class="modal fade" id="shareLimitModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-body p-4 text-center">
-                    <div class="share-limit-icon mb-3">
-                        <i class="bi bi-lock-fill"></i>
-                    </div>
-                    <h5 class="modal-title mb-3">Sharing Limit Reached</h5>
-                    <p class="text-muted mb-4">
-                        You've reached the sharing limit for the Basic Plan. 
-                        To share with more users, please upgrade to the Premium Plan.
-                    </p>
-                    <div class="d-grid gap-2">
-                        <a href="plans.php?highlight=premium" class="btn btn-primary">
-                            <i class="bi bi-arrow-up-circle me-2"></i>
-                            Upgrade to Premium
-                        </a>
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">
-                            Maybe Later
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -1177,32 +1161,26 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            const saveButton = document.getElementById('saveButton');
+            const titleInput = document.getElementById('title');
             const editor = document.getElementById('editor');
-            const title = document.getElementById('title');
-            
-            // Store original content for change detection
-            editor.setAttribute('data-original-content', editor.innerHTML);
-            title.setAttribute('data-original-value', title.value);
+            const statusSelect = document.getElementById('status');
+            const noteForm = document.getElementById('noteForm');
+            const shareForm = document.getElementById('shareForm');
 
-            // Save button click handler
-            document.getElementById('saveButton').addEventListener('click', async function() {
+            // Save functionality
+            saveButton.addEventListener('click', async function() {
                 // Show saving toast
                 const savingToast = showToast('Saving your note...', 'saving');
                 
                 try {
-                    // Get current values
-                    const titleValue = document.getElementById('title').value;
-                    const contentValue = editor.innerHTML;
-                    const statusValue = document.getElementById('status').value;
-                    
                     // Update form values
-                    document.getElementById('formTitle').value = titleValue;
-                    document.getElementById('formContent').value = contentValue;
-                    document.getElementById('formStatus').value = statusValue;
+                    document.getElementById('formTitle').value = titleInput.value;
+                    document.getElementById('formContent').value = editor.innerHTML;
+                    document.getElementById('formStatus').value = statusSelect.value;
                     
                     // Submit the form using fetch
-                    const form = document.getElementById('noteForm');
-                    const formData = new FormData(form);
+                    const formData = new FormData(noteForm);
                     
                     const response = await fetch(window.location.href, {
                         method: 'POST',
@@ -1213,10 +1191,18 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                     savingToast.remove();
                     
                     if (response.ok) {
-                        showToast('Note saved successfully!', 'success');
-                        // Update original content to prevent unnecessary warnings
-                        editor.setAttribute('data-original-content', editor.innerHTML);
-                        title.setAttribute('data-original-value', title.value);
+                        const text = await response.text();
+                        if (text.includes('Note saved successfully!')) {
+                            showToast('Note saved successfully!', 'success');
+                            // Enable share button after saving
+                            const shareButton = document.getElementById('shareButton');
+                            if (shareButton) {
+                                shareButton.disabled = false;
+                                shareButton.title = '';
+                            }
+                        } else {
+                            throw new Error('Failed to save note');
+                        }
                     } else {
                         throw new Error('Failed to save note');
                     }
@@ -1227,73 +1213,115 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                 }
             });
 
-            // Update content when typing
-            editor.addEventListener('input', function() {
-                document.getElementById('formContent').value = this.innerHTML;
-            });
-
-            // Initialize content
-            document.getElementById('formContent').value = editor.innerHTML;
+            // Share functionality
+            if (shareForm) {
+                shareForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    // Show saving toast
+                    const savingToast = showToast('Sharing note...', 'saving');
+                    
+                    try {
+                        const formData = new FormData(this);
+                        formData.append('share_note', '1');
+                        
+                        const response = await fetch(window.location.href, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        
+                        const data = await response.json();
+                        
+                        // Remove saving toast
+                        savingToast.remove();
+                        
+                        if (data.success) {
+                            showToast(data.message || 'Note shared successfully!', 'success');
+                            // Close the modal
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('shareModal'));
+                            if (modal) {
+                                modal.hide();
+                            }
+                            // Reload the page to update the shared users list
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
+                        } else {
+                            showToast(data.message || 'Error sharing note', 'error');
+                        }
+                    } catch (error) {
+                        // Remove saving toast
+                        savingToast.remove();
+                        showToast('Error sharing note. Please try again.', 'error');
+                        console.error('Share error:', error);
+                    }
+                });
+            }
         });
 
         // Custom Editor Implementation
         document.addEventListener('DOMContentLoaded', function() {
             const editor = document.getElementById('editor');
-            const contentInput = document.getElementById('content');
-            const toolbar = document.querySelector('.btn-toolbar');
-
-            // Initialize editor content for form submission
-            document.querySelector('form').addEventListener('submit', function() {
-                contentInput.value = editor.innerHTML;
-            });
+            const toolbarButtons = document.querySelectorAll('.toolbar-button');
 
             // Handle toolbar button clicks
-            toolbar.addEventListener('click', function(e) {
-                const button = e.target.closest('.btn');
-                if (!button) return;
-
-                e.preventDefault();
-                const command = button.dataset.command;
-
-                // Handle different commands
-                switch(command) {
-                    case 'insertImage':
-                        const input = document.createElement('input');
-                        input.type = 'file';
-                        input.accept = 'image/*';
-                        input.onchange = function(e) {
-                            const file = e.target.files[0];
-                            if (file) {
-                                const reader = new FileReader();
-                                reader.onload = function(e) {
-                                    document.execCommand('insertImage', false, e.target.result);
-                                };
-                                reader.readAsDataURL(file);
+            toolbarButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const command = this.dataset.command;
+                    
+                    // Focus the editor first
+                    editor.focus();
+                    
+                    switch(command) {
+                        case 'insertImage':
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.onchange = function(e) {
+                                const file = e.target.files[0];
+                                if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = function(e) {
+                                        document.execCommand('insertImage', false, e.target.result);
+                                    };
+                                    reader.readAsDataURL(file);
+                                }
+                            };
+                            input.click();
+                            break;
+                            
+                        case 'undo':
+                            document.execCommand('undo', false, null);
+                            break;
+                            
+                        case 'redo':
+                            document.execCommand('redo', false, null);
+                            break;
+                            
+                        default:
+                            document.execCommand(command, false, null);
+                            // Toggle active state for formatting buttons
+                            if (!['insertImage', 'undo', 'redo'].includes(command)) {
+                                this.classList.toggle('active');
                             }
-                        };
-                        input.click();
-                        break;
-
-                    default:
-                        document.execCommand(command, false, null);
-                        break;
-                }
-
-                // Update button states
-                updateToolbarState();
+                            break;
+                    }
+                    
+                    // Update toolbar state after command
+                    updateToolbarState();
+                });
             });
 
-            // Update toolbar state based on current selection
+            // Update toolbar state based on selection
             function updateToolbarState() {
-                toolbar.querySelectorAll('.btn[data-command]').forEach(button => {
+                toolbarButtons.forEach(button => {
                     const command = button.dataset.command;
+                    if (['insertImage', 'undo', 'redo'].includes(command)) return;
                     
-                    // Skip certain commands that don't have states
-                    if (['insertImage', 'undo', 'redo'].includes(command)) {
-                        return;
-                    }
-
-                    // Check if the command is active
                     if (document.queryCommandState(command)) {
                         button.classList.add('active');
                     } else {
@@ -1302,7 +1330,7 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                 });
             }
 
-            // Update toolbar state when selection changes
+            // Update toolbar state on selection change
             editor.addEventListener('keyup', updateToolbarState);
             editor.addEventListener('mouseup', updateToolbarState);
             editor.addEventListener('input', updateToolbarState);
@@ -1314,46 +1342,7 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                 document.execCommand('insertText', false, text);
             });
 
-            // Initialize toolbar state
-            updateToolbarState();
-
-            // Add undo/redo keyboard shortcuts
-            document.addEventListener('keydown', function(e) {
-                if (e.ctrlKey || e.metaKey) {
-                    if (e.key === 'z' && !e.shiftKey) {
-                        e.preventDefault();
-                        document.execCommand('undo', false, null);
-                    } else if ((e.key === 'z' && e.shiftKey) || e.key === 'y') {
-                        e.preventDefault();
-                        document.execCommand('redo', false, null);
-                    }
-                }
-            });
-
-            // Make editor focused when clicking anywhere in the content area
-            editor.addEventListener('click', function(e) {
-                if (e.target === editor) {
-                    const range = document.createRange();
-                    const sel = window.getSelection();
-                    range.setStart(editor, 0);
-                    range.collapse(true);
-                    sel.removeAllRanges();
-                    sel.addRange(range);
-                }
-            });
-
-            // Add visual feedback for active buttons
-            const buttons = toolbar.querySelectorAll('.btn-light');
-            buttons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const command = this.dataset.command;
-                    if (!['undo', 'redo', 'insertImage'].includes(command)) {
-                        this.classList.toggle('active');
-                    }
-                });
-            });
-
-            // Handle keyboard shortcuts for common formatting
+            // Add keyboard shortcuts
             editor.addEventListener('keydown', function(e) {
                 if (e.ctrlKey || e.metaKey) {
                     switch(e.key.toLowerCase()) {
@@ -1372,125 +1361,73 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                             document.execCommand('underline', false, null);
                             updateToolbarState();
                             break;
+                        case 'z':
+                            e.preventDefault();
+                            if (e.shiftKey) {
+                                document.execCommand('redo', false, null);
+                            } else {
+                                document.execCommand('undo', false, null);
+                            }
+                            break;
                     }
                 }
             });
 
-            // Save selection state before blur
-            let savedSelection = null;
-            editor.addEventListener('blur', function() {
-                savedSelection = saveSelection();
-            });
-
-            editor.addEventListener('focus', function() {
-                if (savedSelection) {
-                    restoreSelection(savedSelection);
-                    savedSelection = null;
-                }
-            });
-
-            // Helper functions for selection management
-            function saveSelection() {
-                if (window.getSelection) {
-                    const sel = window.getSelection();
-                    if (sel.getRangeAt && sel.rangeCount) {
-                        return sel.getRangeAt(0);
-                    }
-                }
-                return null;
-            }
-
-            function restoreSelection(range) {
-                if (range) {
-                    if (window.getSelection) {
-                        const sel = window.getSelection();
-                        sel.removeAllRanges();
-                        sel.addRange(range);
-                    }
-                }
-            }
+            // Initialize toolbar state
+            updateToolbarState();
         });
 
-        // Update comment handling code
-        document.getElementById('add-comment').addEventListener('click', function(e) {
-            e.preventDefault();
-            const commentText = document.getElementById('comment-text').value.trim();
-            if (commentText) {
-                const formData = new FormData();
-                formData.append('add_comment', '1');
-                formData.append('comment_text', commentText);
+        // Comments functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const addCommentButton = document.getElementById('add-comment');
+            const commentText = document.getElementById('comment-text');
+            const commentsContainer = document.getElementById('comments-container');
+            const commentCount = document.getElementById('comment-count');
 
-                fetch(window.location.href, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
+            addCommentButton.addEventListener('click', async function(e) {
+                e.preventDefault();
+                const text = commentText.value.trim();
+                
+                if (!text) return;
+
+                try {
+                    const formData = new FormData();
+                    formData.append('add_comment', '1');
+                    formData.append('comment_text', text);
+
+                    const response = await fetch(window.location.href, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+                    
                     if (data.success) {
-                        document.getElementById('comment-text').value = '';
-                        addCommentToDOM(data.comment);
-                        updateCommentCount(data.total_comments);
+                        // Clear comment input
+                        commentText.value = '';
+                        
+                        // Add new comment to DOM
+                        const commentElement = document.createElement('div');
+                        commentElement.className = 'comment';
+                        commentElement.innerHTML = `
+                            <div class="comment-header">
+                                <span class="comment-author">${data.comment.author_name}</span>
+                                <span class="comment-time">${new Date(data.comment.created_at).toLocaleString()}</span>
+                            </div>
+                            <div class="comment-text">${data.comment.comment}</div>
+                        `;
+                        commentsContainer.insertBefore(commentElement, commentsContainer.firstChild);
+                        
+                        // Update comment count
+                        commentCount.textContent = data.total_comments;
+                        
+                        showToast('Comment added successfully!', 'success');
+                    } else {
+                        throw new Error('Failed to add comment');
                     }
-                });
-            }
-        });
-
-        function addCommentToDOM(comment) {
-            const container = document.getElementById('comments-container');
-            const commentElement = document.createElement('div');
-            commentElement.className = 'comment';
-            commentElement.innerHTML = `
-                <div class="comment-header">
-                    <span class="comment-author">${comment.author_name}</span>
-                    <span class="comment-time">${new Date(comment.created_at).toLocaleString()}</span>
-                </div>
-                <div class="comment-text">${comment.comment}</div>
-            `;
-            container.insertBefore(commentElement, container.firstChild);
-        }
-
-        function updateCommentCount(count) {
-            document.getElementById('comment-count').textContent = count;
-        }
-
-        // Initialize existing comments
-        <?php foreach ($comments as $comment): ?>
-            addCommentToDOM(<?php echo json_encode($comment); ?>);
-        <?php endforeach; ?>
-        updateCommentCount(<?php echo $comment_count; ?>);
-
-        // Update share form submission
-        document.getElementById('shareForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            <?php if ($has_reached_limit): ?>
-            // Show share limit modal if limit reached
-            const shareLimitModal = new bootstrap.Modal(document.getElementById('shareLimitModal'));
-            shareLimitModal.show();
-            return;
-            <?php endif; ?>
-            
-            const formData = new FormData(this);
-            formData.append('share_note', '1');
-            
-            fetch(window.location.href, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.text())
-            .then(html => {
-                if (html.includes('Share limit reached for your current plan')) {
-                    // Show share limit modal if limit reached during submission
-                    const shareLimitModal = new bootstrap.Modal(document.getElementById('shareLimitModal'));
-                    shareLimitModal.show();
-                } else {
-                    // Refresh the page to show updated share count
-                    location.reload();
+                } catch (error) {
+                    showToast('Error adding comment. Please try again.', 'error');
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showToast('Error sharing note. Please try again.', 'error');
             });
         });
     </script>
