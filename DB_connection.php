@@ -1,14 +1,14 @@
-<?php  
+<?php
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "task_management_db";
 
 try {
-	$sName = "localhost";
-	$uName = "root";
-	$pass = "";
-	$db_name = "task_management_db";
-
-	$conn = new PDO("mysql:host=$sName;dbname=$db_name", $uName, $pass);
-	$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 } catch(PDOException $e) {
-	echo "Connection failed: " . $e->getMessage();
-	die();
+    echo "Connection failed: " . $e->getMessage();
+    exit;
 }

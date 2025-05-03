@@ -46,7 +46,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="shared-notes.php" class="nav-link rounded-3 py-2 px-3 d-flex align-items-center">
+                    <a href="shared_notes.php" class="nav-link rounded-3 py-2 px-3 d-flex align-items-center">
                         <i class="fa fa-share-alt me-3 text-opacity-75" aria-hidden="true"></i>
                         <span>Shared Notes</span>
                     </a>
