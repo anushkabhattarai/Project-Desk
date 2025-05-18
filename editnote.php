@@ -62,7 +62,7 @@ if ($note_id > 0) {
     $shared_users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-// Fetch comments for the note and set initial count
+// Initial comment loading block
 $comments = [];
 $comment_count = 0;
 if ($note_id > 0) {
@@ -76,29 +76,6 @@ if ($note_id > 0) {
     $result = $stmt->get_result();
     $comments = $result->fetch_all(MYSQLI_ASSOC);
     $comment_count = count($comments);
-
-    // Set initial comment count in the UI
-    echo "<script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const commentCount = document.getElementById('comment-count');
-            if (commentCount) {
-                commentCount.textContent = '$comment_count';
-            }
-            
-            const commentsContainer = document.getElementById('comments-container');
-            if (commentsContainer) {
-                commentsContainer.innerHTML = `" . implode('', array_map(function($comment) {
-                    return "<div class='comment mb-3'>
-                        <div class='comment-header'>
-                            <span class='comment-author'>{$comment['author_name']}</span>
-                            <span class='comment-time'>" . date('M j, Y g:i A', strtotime($comment['created_at'])) . "</span>
-                        </div>
-                        <div class='comment-text'>{$comment['comment']}</div>
-                    </div>";
-                }, $comments)) . "`;
-            }
-        });
-    </script>";
 }
 
 // After database connection, modify the share limit check to be per-note
@@ -330,46 +307,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['share_note'])) {
     }
 }
 
-// Handle comment submission
+// Handle comment submission - AJAX endpoint
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_comment'])) {
+    header('Content-Type: application/json');
+    
     $comment_text = trim($_POST['comment_text']);
-    if (!empty($comment_text)) {
-        $stmt = $conn->prepare("INSERT INTO note_comments (note_id, user_id, comment) VALUES (?, ?, ?)");
-        $stmt->bind_param("iis", $note_id, $user_id, $comment_text);
-        if ($stmt->execute()) {
-            // Get the new total comment count
+    if (!empty($comment_text) && $note_id > 0) {
+        try {
+            // Begin transaction
+            $conn->begin_transaction();
+
+            // Insert comment
+            $stmt = $conn->prepare("INSERT INTO note_comments (note_id, user_id, comment) VALUES (?, ?, ?)");
+            $stmt->bind_param("iis", $note_id, $user_id, $comment_text);
+            
+            if (!$stmt->execute()) {
+                throw new Exception("Failed to insert comment");
+            }
+            
+            $comment_id = $stmt->insert_id;
+
+            // Get comment details with user info
+            $stmt = $conn->prepare("
+                SELECT c.*, u.full_name as author_name 
+                FROM note_comments c 
+                JOIN users u ON c.user_id = u.id 
+                WHERE c.id = ?
+            ");
+            $stmt->bind_param("i", $comment_id);
+            $stmt->execute();
+            $new_comment = $stmt->get_result()->fetch_assoc();
+
+            // Get updated comment count
             $stmt = $conn->prepare("SELECT COUNT(*) as count FROM note_comments WHERE note_id = ?");
             $stmt->bind_param("i", $note_id);
             $stmt->execute();
             $new_count = $stmt->get_result()->fetch_assoc()['count'];
-            
-            // Fetch the newly added comment with user details
-            $stmt = $conn->prepare("SELECT c.*, u.full_name as author_name 
-                                  FROM note_comments c 
-                                  JOIN users u ON c.user_id = u.id 
-                                  WHERE c.id = LAST_INSERT_ID()");
-            $stmt->execute();
-            $new_comment = $stmt->get_result()->fetch_assoc();
-            
-            header('Content-Type: application/json');
+
+            // Commit transaction
+            $conn->commit();
+
             echo json_encode([
                 'success' => true,
                 'comment' => $new_comment,
                 'total_comments' => $new_count,
                 'html' => "<div class='comment mb-3'>
                             <div class='comment-header'>
-                                <span class='comment-author'>{$new_comment['author_name']}</span>
+                                <span class='comment-author'>" . htmlspecialchars($new_comment['author_name']) . "</span>
                                 <span class='comment-time'>" . date('M j, Y g:i A', strtotime($new_comment['created_at'])) . "</span>
                             </div>
-                            <div class='comment-text'>{$new_comment['comment']}</div>
+                            <div class='comment-text'>" . htmlspecialchars($new_comment['comment']) . "</div>
                           </div>"
             ]);
             exit;
+        } catch (Exception $e) {
+            $conn->rollback();
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+            exit;
         }
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Invalid comment data']);
+        exit;
     }
-    header('Content-Type: application/json');
-    echo json_encode(['success' => false]);
-    exit;
 }
 
 // Immediately before the share modal HTML, ensure all variables are defined
@@ -1480,42 +1479,74 @@ if (!isset($shared_users)) {
             const commentsContainer = document.getElementById('comments-container');
             const commentCount = document.getElementById('comment-count');
 
-            addCommentButton.addEventListener('click', async function(e) {
-                e.preventDefault();
-                const text = commentText.value.trim();
-                
-                if (!text) return;
-
-                try {
-                    const formData = new FormData();
-                    formData.append('add_comment', '1');
-                    formData.append('comment_text', text);
-
-                    const response = await fetch(window.location.href, {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    const data = await response.json();
+            if (addCommentButton && commentText) {
+                addCommentButton.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    const text = commentText.value.trim();
                     
-                    if (data.success) {
-                        // Clear comment input
-                        commentText.value = '';
-                        
-                        // Add new comment HTML to container
-                        commentsContainer.insertAdjacentHTML('afterbegin', data.html);
-                        
-                        // Update comment count
-                        commentCount.textContent = data.total_comments;
-                        
-                        showToast('Comment added successfully!', 'success');
-                    } else {
-                        throw new Error('Failed to add comment');
+                    if (!text) {
+                        showToast('Please enter a comment', 'error');
+                        return;
                     }
-                } catch (error) {
-                    showToast('Error adding comment. Please try again.', 'error');
-                }
-            });
+
+                    try {
+                        const formData = new FormData();
+                        formData.append('add_comment', '1');
+                        formData.append('comment_text', text);
+
+                        const response = await fetch(window.location.href, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        });
+
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            // Clear comment input
+                            commentText.value = '';
+                            
+                            // Add new comment HTML to container
+                            if (commentsContainer) {
+                                commentsContainer.insertAdjacentHTML('afterbegin', data.html);
+                            }
+                            
+                            // Update comment count
+                            if (commentCount) {
+                                commentCount.textContent = data.total_comments;
+                            }
+                            
+                            showToast('Comment added successfully!', 'success');
+                        } else {
+                            throw new Error(data.message || 'Failed to add comment');
+                        }
+                    } catch (error) {
+                        console.error('Comment error:', error);
+                        showToast(error.message || 'Error adding comment. Please try again.', 'error');
+                    }
+                });
+            }
+
+            // Initialize comments
+            const commentCountElement = document.getElementById('comment-count');
+            if (commentCountElement) {
+                commentCountElement.textContent = '<?php echo $comment_count; ?>';
+            }
+            
+            const commentsContainerElement = document.getElementById('comments-container');
+            if (commentsContainerElement) {
+                commentsContainerElement.innerHTML = `<?php echo implode('', array_map(function($comment) {
+                    return "<div class='comment mb-3'>
+                        <div class='comment-header'>
+                            <span class='comment-author'>" . htmlspecialchars($comment['author_name']) . "</span>
+                            <span class='comment-time'>" . date('M j, Y g:i A', strtotime($comment['created_at'])) . "</span>
+                        </div>
+                        <div class='comment-text'>" . htmlspecialchars($comment['comment']) . "</div>
+                    </div>";
+                }, $comments)); ?>`;
+            }
         });
 
         function handleShareClick() {

@@ -1,4 +1,4 @@
-<nav class="bg-white shadow-sm border-end" style="width: 250px; min-height: 100vh; position: fixed; left: 0; top: 0; z-index: 999; padding-top: 70px; transition: width 0.3s ease; display: flex; flex-direction: column;">
+<nav class="bg-white shadow-sm border-end" style="width: 250px; height: calc(100vh - 60px); position: fixed; left: 0; top: 60px; z-index: 999; display: flex; flex-direction: column;">
     <!-- User Profile Section -->
     <div class="p-4 text-center border-bottom">
         <div class="position-relative d-inline-block mb-3">
@@ -198,6 +198,23 @@
         notesCollapse.addEventListener('hide.bs.collapse', function () {
             notesChevron.style.transform = 'rotate(0deg)';
         });
+
+        // Add smooth scroll to navigation links
+        document.querySelectorAll('#navList a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const navContainer = document.querySelector('.nav-scroll-container');
+                const targetPosition = this.offsetTop;
+                navContainer.scrollTo({
+                    top: targetPosition - 100,
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add toggle functionality
+        function toggleNav() {
+            document.querySelector('nav').classList.toggle('show');
+        }
     });
 </script>
 
@@ -275,8 +292,9 @@
         transition: transform 0.3s ease;
     }
 
-    /* Add these new styles */
+    /* Enhanced scrollbar and navigation styles */
     .nav-scroll-container {
+        height: 100%;
         scrollbar-width: thin;
         scrollbar-color: rgba(0,0,0,0.2) transparent;
     }
@@ -292,6 +310,7 @@
     .nav-scroll-container::-webkit-scrollbar-thumb {
         background-color: rgba(0,0,0,0.2);
         border-radius: 20px;
+        transition: background-color 0.3s;
     }
 
     .nav-scroll-container::-webkit-scrollbar-thumb:hover {
