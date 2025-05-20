@@ -1,4 +1,4 @@
-<header class="bg-white border-bottom p-0 m-0" style="height: 60px; position: relative; z-index: 1031;">
+<header class="bg-white border-bottom p-0 m-0" style="height: 60px; position: fixed; top: 0; right: 0; left: 0; z-index: 1031; width: 100vw;">
 	<div class="container-fluid h-100">
 		<div class="row h-100 align-items-center">
 			<!-- Left side with logo -->
@@ -10,6 +10,36 @@
 				</div>
 			</div>
 			
+			 <!-- Center section for premium upgrade -->
+			<div class="col-auto">
+				<?php
+				if ($_SESSION['role'] !== 'admin') { // Only show for non-admin users
+					try {
+						$userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : $_SESSION['id'];
+						$planQuery = "SELECT p.name, p.is_unlimited 
+									FROM subscriptions s 
+									JOIN plans p ON s.plan_id = p.id 
+									WHERE s.user_id = ? 
+									AND s.status = 'active' 
+									AND CURRENT_DATE BETWEEN s.start_date AND s.end_date";
+						
+						$stmt = $conn->prepare($planQuery);
+						$stmt->execute([$userId]);
+						$userPlan = $stmt->fetch();
+
+						if (!$userPlan || ($userPlan && $userPlan['is_unlimited'] == 0)) {
+							echo '<a href="plans.php?highlight=premium" class="btn btn-light btn-sm d-flex align-items-center text-decoration-none">
+									<img src="img/premium.png" alt="Premium" style="width: 24px; height: 24px; margin-right: 8px;">
+									<span class="text-muted" style="font-size: 0.85rem;">Upgrade to Premium</span>
+								  </a>';
+						}
+					} catch (Exception $e) {
+						error_log("Plan check error: " . $e->getMessage());
+					}
+				}
+				?>
+			</div>
+
 			<!-- Right side with notifications and profile -->
 			<div class="col-auto">
 				<div class="d-flex align-items-center">
@@ -46,6 +76,9 @@
 						<ul class="dropdown-menu dropdown-menu-end mt-1" aria-labelledby="userDropdown">
 							<li><a class="dropdown-item" href="edit_profile.php">
 								<i class="fa fa-user me-2 text-primary"></i> Profile
+							</a></li>
+							<li><a class="dropdown-item" href="user-payment-history.php">
+								<i class="fa fa-history me-2 text-info"></i> Payment History
 							</a></li>
 							<li><hr class="dropdown-divider"></li>
 							<li><a class="dropdown-item" href="logout.php">
@@ -101,6 +134,29 @@
 
 <!-- Only necessary CSS for responsive behavior -->
 <style>
+	header {
+		position: fixed !important;
+		width: 100vw !important;
+		right: 0 !important;
+		padding-right: 0 !important;
+		margin-right: 0 !important;
+		z-index: 1040 !important; /* Increase z-index */
+	}
+
+	/* Add dropdown styles */
+	.dropdown-menu {
+		z-index: 1045 !important;
+		margin-top: 10px !important;
+		box-shadow: 0 4px 16px rgba(0,0,0,0.1) !important;
+	}
+
+	#notificationBar {
+		position: fixed !important;
+		top: 60px !important;
+		right: 20px !important;
+		max-height: calc(100vh - 100px) !important;
+	}
+
 	nav {
 		transition: width 0.3s ease;
 	}

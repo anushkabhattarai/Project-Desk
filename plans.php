@@ -298,7 +298,7 @@ $title = "Select a Plan";
                     
                     <div class="text-center mt-5">
                         <p class="text-muted">All plans include a 30-day subscription period</p>
-                        <p class="text-muted">Need help? <a href="#">Contact support</a></p>
+                        <p class="text-muted">Need help? <a href="contact-support.php">Contact support</a></p>
                     </div>
                 </div>
             </div>

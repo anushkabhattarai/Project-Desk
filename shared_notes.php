@@ -62,7 +62,7 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <style>
         .main-content {
             margin-left: 250px;
-            margin-top: 20px; /* Reduced from 70px */
+            margin-top: 60px; /* Reduced from 70px */
             padding: 15px 20px; /* Adjusted padding */
             transition: margin-left 0.3s ease;
         }

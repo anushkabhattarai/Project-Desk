@@ -872,7 +872,7 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <?php include "inc/nav.php" ?>
     
     <!-- Main content area -->
-    <main style="margin-left: 250px; padding-top: 0;">
+    <main style="margin-left: 250px; margin-top: 60px;">
         <div class="container-fluid px-4 pt-2">
             <?php if ($_SESSION['role'] === 'admin'): ?>
                 <div class="alert alert-info m-3">

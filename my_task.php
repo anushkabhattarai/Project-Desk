@@ -30,21 +30,28 @@ ini_set('display_errors', 1);
             background: #f8fafc;
             height: 100vh;
             margin: 0;
+            padding-top: 60px;
+            overflow-x: hidden; /* Prevent horizontal scroll */
         }
 
         .kanban-container {
-            height: calc(100vh - 120px);
-            padding: 1.5rem;
+            height: calc(100vh - 60px);
+            padding: 0.5rem 1.5rem;
+            background: white;
+            margin-top: -1rem; /* Move up to remove gap */
+            position: relative;
+            z-index: 1; /* Lower z-index */
         }
 
         .kanban-board {
             display: flex;
             gap: 2.5rem;
             height: 100%;
-            padding: 2rem;
+            padding: 1rem 2rem;
             overflow-x: auto;
             scroll-behavior: smooth;
             -webkit-overflow-scrolling: touch;
+            background: white;
         }
         
         .kanban-column {
@@ -202,15 +209,37 @@ ini_set('display_errors', 1);
 
         main {
             margin-left: 250px;
-            background: #f8fafc;
+            width: calc(100vw - 250px);
+            max-width: 100vw;
+            overflow-x: hidden;
+            background: white;
             transition: margin-left 0.3s ease;
+            position: relative;
+            z-index: 1; /* Lower z-index */
+        }
+
+        header {
+            margin-left: 250px;
+            width: calc(100vw - 250px) !important;
+            right: 0 !important;
+        }
+
+        @media (max-width: 991.98px) {
+            header {
+                margin-left: 0;
+                width: 100vw !important;
+            }
+            main {
+                margin-left: 0;
+                width: 100vw;
+            }
         }
 
         .page-header {
             background: white;
-            padding: 1.5rem;
+            padding: 1rem 1.5rem;
             border-bottom: 1px solid rgba(0,0,0,0.05);
-            margin-bottom: 1rem;
+            margin-bottom: 0; /* Remove bottom margin */
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
 
@@ -238,7 +267,7 @@ ini_set('display_errors', 1);
 </head>
 <body class="bg-light">
     <input type="checkbox" id="checkbox">
-    <?php include "inc/header.php" ?>
+    <?php include "inc/header.php" ?> <!-- Add header include -->
     <?php include "inc/nav.php" ?>
     
     <main>
@@ -386,182 +415,34 @@ ini_set('display_errors', 1);
         </div>
     </main>
 
+    <!-- Add jQuery before Bootstrap -->
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/common.js"></script>
     <script type="text/javascript">
         var active = document.querySelector("#navList li:nth-child(2)");
         active.classList.add("active");
+        
+        // Load notifications
+        $(document).ready(function(){
+            function loadNotifications() {
+                $.get("app/notification-count.php", function(count) {
+                    if(count.trim() !== '') {
+                        $("#notificationNum").html(count);
+                        $("#notificationNum").show();
+                    } else {
+                        $("#notificationNum").hide();
+                    }
+                });
+                
+                $.get("app/notification.php", function(data) {
+                    $("#notifications").html(data || '<li class="dropdown-item text-center py-3"><span class="text-secondary">No notifications</span></li>');
+                });
+            }
+            
+            loadNotifications();
+            setInterval(loadNotifications, 30000);
+        });
     </script>
 </body>
 </html>
-
-<style>
-
-
-    .kanban-container {
-        height: calc(100vh - 100px);
-        padding: 1rem;
-    }
-
-    .kanban-board {
-        display: flex;
-        gap: 2.5rem;  /* Increased from 1.5rem */
-        height: 100%;
-        padding: 2rem;  /* Added padding around the board */
-        overflow-x: auto;
-    }
-    
-    .kanban-column {
-        background: white;
-        border-radius: 16px;
-        min-width: 340px;  /* Slightly increased from 320px */
-        width: 340px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-        border: none;
-        margin: 0.5rem 0;  /* Added vertical margin */
-    }
-
-    /* Add smooth scrolling to the board */
-    .kanban-board {
-        scroll-behavior: smooth;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 2rem;
-    }
-
-    /* Enhance scrollbar appearance */
-    .kanban-board::-webkit-scrollbar {
-        height: 8px;
-    }
-
-    .kanban-board::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 4px;
-    }
-
-    .kanban-board::-webkit-scrollbar-thumb {
-        background: #cdcdcd;
-        border-radius: 4px;
-    }
-
-    .kanban-board::-webkit-scrollbar-thumb:hover {
-        background: #ababab;
-    }
-        
-    .column-header {
-        padding: 1rem;
-        border-bottom: 2px solid;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: white;
-    }
-
-    .column-pending .column-header { border-bottom-color: #ffc107; }
-    .column-progress .column-header { border-bottom-color: #0dcaf0; }
-    .column-completed .column-header { border-bottom-color: #198754; }
-
-    .column-content {
-        padding: 1rem;
-        height: calc(100% - 60px);
-        overflow-y: auto;
-    }
-
-    .kanban-card {
-        background: white;
-        border-radius: 8px;
-        padding: 1rem;
-        margin-bottom: 0.75rem;
-        border: 1px solid #edf2f7;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-    }
-
-    .task-date {
-        font-size: 0.75rem;
-        color: #64748b;
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: #f8fafc;
-        border: 1px solid #edf2f7;
-    }
-
-    .task-title {
-        font-weight: 600;
-        margin: 0.75rem 0;
-        color: #1e293b;
-        font-size: 0.95rem;
-    }
-
-    .task-description {
-        font-size: 0.85rem;
-        color: #64748b;
-        margin-bottom: 1rem;
-        line-height: 1.5;
-    }
-
-    /* Task count badges */
-    .task-count {
-        font-size: 0.8rem;
-        font-weight: 600;
-        padding: 0.2rem 0.75rem;
-        border-radius: 20px;
-    }
-
-    .column-pending .task-count { 
-        background: #fff8e1; 
-        color: #b17800; 
-    }
-    
-    .column-progress .task-count { 
-        background: #e1f8fb; 
-        color: #0987a0; 
-    }
-    
-    .column-completed .task-count { 
-        background: #e1f5ea; 
-        color: #0f5132; 
-    }
-
-    /* View button styles */
-    .task-footer .btn {
-        padding: 0.4rem 1rem;
-        font-size: 0.85rem;
-        border-radius: 6px;
-        font-weight: 500;
-        transition: all 0.2s;
-    }
-
-    .column-pending .task-footer .btn {
-        color: #b17800;
-        background: #fff8e1;
-    }
-
-    .column-progress .task-footer .btn {
-        color: #0987a0;
-        background: #e1f8fb;
-    }
-
-    .column-completed .task-footer .btn {
-        color: #0f5132;
-        background: #e1f5ea;
-    }
-
-    .task-footer .btn:hover {
-        transform: translateY(-1px);
-    }
-
-    main {
-        margin-left: 250px;
-        background: white;
-    }
-
-    
-</style>
-
-<div class="task-footer">
-    <a href="edit-task-employee.php?id=<?=$task['id']?>" class="btn">
-        <i class="fa fa-eye"></i>
-        <span>View Details</span>
-    </a>
-</div>

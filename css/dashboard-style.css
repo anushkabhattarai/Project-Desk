@@ -177,4 +177,5 @@
     padding: 0.5rem;
     background-color: #ffffff; 
     animation: fadeIn 0.5s ease forwards;
-} 
+    /* removed margin-top */
+}

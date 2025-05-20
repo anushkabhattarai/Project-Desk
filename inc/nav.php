@@ -33,7 +33,31 @@
                     
                     <!-- Notes Section -->
                     <li class="nav-item mt-2">
-                        <div class="text-uppercase text-muted small fw-semibold ms-3 mb-2" style="font-size: 0.7rem;">Notes</div>
+                        <div class="text-uppercase text-muted small fw-semibold ms-3 mb-2 d-flex align-items-center justify-content-between">
+                            <span style="font-size: 0.7rem;">Notes</span>
+                            <?php
+                            try {
+                                // Simpler query to check user's plan
+                                $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : $_SESSION['id'];
+                                $planQuery = "SELECT p.name FROM subscriptions s 
+                                            JOIN plans p ON s.plan_id = p.id 
+                                            WHERE s.user_id = ? 
+                                            AND s.status = 'active' 
+                                            AND CURRENT_DATE BETWEEN s.start_date AND s.end_date";
+                                
+                                $stmt = $conn->prepare($planQuery);
+                                $stmt->execute([$userId]);
+                                
+                                if($plan = $stmt->fetch()) {
+                                    if($plan['name'] === 'Basic Plan') {
+                                        echo '<img src="/Project_Desk/img/basic.png" alt="Basic Plan" style="width: 30px; height: 30px; margin-left: 10px;">';
+                                    }
+                                }
+                            } catch (Exception $e) {
+                                error_log("Plan check error: " . $e->getMessage());
+                            }
+                            ?>
+                        </div>
                     </li>
                     <li class="nav-item">
                         <a href="notes.php" class="nav-link rounded-3 py-2 px-3 d-flex align-items-center">
@@ -111,10 +135,57 @@
                             <span style="font-size: 0.85rem;">Manage Users</span>
                         </a>
                     </li>
+
+                    <!-- Subscriptions Section -->
+                    <li class="nav-item mt-2">
+                        <div class="text-uppercase text-muted small fw-semibold ms-3 mb-2" style="font-size: 0.7rem;">Subscriptions</div>
+                    </li>
+                    <li class="nav-item">
+                        <a href="manage-subscriptions.php" class="nav-link rounded-3 py-2 px-3 d-flex align-items-center">
+                            <i class="fa fa-credit-card me-3 text-opacity-75" aria-hidden="true"></i>
+                            <span style="font-size: 0.85rem;">Active Subscriptions</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="manage-plans.php" class="nav-link rounded-3 py-2 px-3 d-flex align-items-center">
+                            <i class="fa fa-cog me-3 text-opacity-75" aria-hidden="true"></i>
+                            <span style="font-size: 0.85rem;">Manage Plans</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="payment-history.php" class="nav-link rounded-3 py-2 px-3 d-flex align-items-center">
+                            <i class="fa fa-history me-3 text-opacity-75" aria-hidden="true"></i>
+                            <span style="font-size: 0.85rem;">Payment History</span>
+                        </a>
+                    </li>
                     
                     <!-- Notes Section -->
                     <li class="nav-item mt-2">
-                        <div class="text-uppercase text-muted small fw-semibold ms-3 mb-2" style="font-size: 0.7rem;">Notes</div>
+                        <div class="text-uppercase text-muted small fw-semibold ms-3 mb-2 d-flex align-items-center justify-content-between">
+                            <span style="font-size: 0.7rem;">Notes</span>
+                            <?php
+                            try {
+                                // Simpler query to check user's plan
+                                $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : $_SESSION['id'];
+                                $planQuery = "SELECT p.name FROM subscriptions s 
+                                            JOIN plans p ON s.plan_id = p.id 
+                                            WHERE s.user_id = ? 
+                                            AND s.status = 'active' 
+                                            AND CURRENT_DATE BETWEEN s.start_date AND s.end_date";
+                                
+                                $stmt = $conn->prepare($planQuery);
+                                $stmt->execute([$userId]);
+                                
+                                if($plan = $stmt->fetch()) {
+                                    if($plan['name'] === 'Basic Plan') {
+                                        echo '<img src="/Project_Desk/img/basic.png" alt="Basic Plan" style="width: 30px; height: 30px; margin-left: 10px;">';
+                                    }
+                                }
+                            } catch (Exception $e) {
+                                error_log("Plan check error: " . $e->getMessage());
+                            }
+                            ?>
+                        </div>
                     </li>
                     <li class="nav-item">
                         <a href="notes.php" class="nav-link rounded-3 py-2 px-3 d-flex align-items-center">

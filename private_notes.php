@@ -89,10 +89,10 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <style>
         main {
             margin-left: 250px;
-            margin-top: 20px;
+            margin-top: 60px; /* Changed from 20px */
             background: #f8fafc;
             min-height: calc(100vh - 80px);
-            padding: 0 20px;  /* Changed from padding: 20px */
+            padding: 0 20px;
             transition: margin-left 0.3s ease;
         }
 

@@ -349,7 +349,8 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `full_name`, `username`, `email`, `phone`, `password`, `role`, `created_at`, `profile_pic`) VALUES
+INSERT INTO `users` (
+  , `profile_pic`) VALUES
 (1, 'anushka bhattarai', 'Admin', NULL, NULL, '$2y$10$UCwAzUVooHRP29gtnv5RSOzJwaJMtiyEpWw3YIgBnnV1/nnSHjd3.', 'admin', '2024-08-28 07:10:04', NULL),
 (2, 'Elias A.', 'elias', NULL, NULL, '$2y$10$CiV/f.jO5vIsSi0Fp1Xe7ubWG9v8uKfC.VfzQr/sjb5/gypWNdlBW', 'employee', '2024-08-28 07:10:40', NULL),
 (3, 'John', 'john', NULL, NULL, '$2y$10$CiV/f.jO5vIsSi0Fp1Xe7ubWG9v8uKfC.VfzQr/sjb5/gypWNdlBW', 'employee', '2024-08-29 17:11:21', NULL),
@@ -386,13 +387,8 @@ CREATE TABLE `private_notes` (
 -- Table structure for table `password_history`
 --
 
-CREATE TABLE IF NOT EXISTS password_history (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
 
 --
 -- Indexes for dumped tables

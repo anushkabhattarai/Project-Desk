@@ -5,6 +5,9 @@ if (isset($_SESSION['role']) && isset($_SESSION['id'])) {
     include "Model/Notification.php";
 
     $notifications = get_all_my_notifications($conn, $_SESSION['id']);
+    if ($notifications != 0) {
+        $notifications = array_reverse($notifications);
+    }
     
     // Header section
     ?>

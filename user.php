@@ -107,9 +107,9 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
 	<?php include "inc/header.php" ?>
 	<?php include "inc/nav.php" ?>
 	
-	<main style="margin-left: 250px;">
+	<main style="margin-left: 250px; padding-top: 60px;">
 		<div class="container-fluid p-4">
-			<!-- Header with title and add button -->
+			<!-- Header with title -->
 			<div class="d-flex justify-content-between align-items-center mb-4">
 				<div>
 					<h4 class="fw-bold mb-1">User Management</h4>
@@ -121,9 +121,6 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
 						<?php } ?>
 					</p>
 				</div>
-				<a href="add-user.php" class="btn btn-primary">
-					<i class="fa fa-plus me-2"></i>Add User
-				</a>
 			</div>
 			
 			<!-- Filters and search bar -->
@@ -237,10 +234,6 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
 									<p class="text-muted mb-3">Try changing your search criteria</p>
 									<a href="user.php" class="btn btn-outline-primary">
 										<i class="fa fa-refresh me-2"></i>Reset Filters
-									</a>
-								<?php } else { ?>
-									<a href="add-user.php" class="btn btn-primary">
-										<i class="fa fa-plus me-2"></i>Add First User
 									</a>
 								<?php } ?>
 							</div>
