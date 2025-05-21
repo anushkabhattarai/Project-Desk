@@ -13,21 +13,31 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) ) {
         
         if ($user_id) {
             // For specific user
-            $sql = "SELECT * FROM tasks WHERE assigned_to = ? AND due_date > CURDATE() AND due_date <= ? AND status != 'completed' ORDER BY due_date ASC";
+            $sql = "SELECT t.* FROM tasks t 
+                    INNER JOIN task_assignments ta ON t.id = ta.task_id 
+                    WHERE ta.user_id = ? 
+                    AND t.due_date > CURDATE() 
+                    AND t.due_date <= ? 
+                    AND t.status != 'completed' 
+                    ORDER BY t.due_date ASC";
             $stmt = $conn->prepare($sql);
             $stmt->execute([$user_id, $futureDate]);
         } else {
             // For admin (all tasks)
-            $sql = "SELECT t.*, u.full_name FROM tasks t LEFT JOIN users u ON t.assigned_to = u.id WHERE t.due_date > CURDATE() AND t.due_date <= ? AND t.status != 'completed' ORDER BY t.due_date ASC";
+            $sql = "SELECT DISTINCT t.*, GROUP_CONCAT(u.full_name) as assigned_users 
+                    FROM tasks t 
+                    LEFT JOIN task_assignments ta ON t.id = ta.task_id 
+                    LEFT JOIN users u ON ta.user_id = u.id 
+                    WHERE t.due_date > CURDATE() 
+                    AND t.due_date <= ? 
+                    AND t.status != 'completed' 
+                    GROUP BY t.id 
+                    ORDER BY t.due_date ASC";
             $stmt = $conn->prepare($sql);
             $stmt->execute([$futureDate]);
         }
         
-        if($stmt->rowCount() > 0) {
-            return $stmt->fetchAll();
-        } else {
-            return 0;
-        }
+        return $stmt->rowCount() > 0 ? $stmt->fetchAll() : 0;
     }
 
     // Function to get newly assigned tasks (within last 48 hours)
@@ -36,21 +46,27 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) ) {
         
         if ($user_id) {
             // For specific user
-            $sql = "SELECT * FROM tasks WHERE assigned_to = ? AND created_at >= ? ORDER BY created_at DESC";
+            $sql = "SELECT t.* FROM tasks t 
+                    INNER JOIN task_assignments ta ON t.id = ta.task_id 
+                    WHERE ta.user_id = ? 
+                    AND ta.created_at >= ? 
+                    ORDER BY ta.created_at DESC";
             $stmt = $conn->prepare($sql);
             $stmt->execute([$user_id, $recentTime]);
         } else {
             // For admin (all recent tasks)
-            $sql = "SELECT t.*, u.full_name FROM tasks t LEFT JOIN users u ON t.assigned_to = u.id WHERE t.created_at >= ? ORDER BY t.created_at DESC";
+            $sql = "SELECT DISTINCT t.*, GROUP_CONCAT(u.full_name) as assigned_users 
+                    FROM tasks t 
+                    LEFT JOIN task_assignments ta ON t.id = ta.task_id 
+                    LEFT JOIN users u ON ta.user_id = u.id 
+                    WHERE ta.created_at >= ? 
+                    GROUP BY t.id 
+                    ORDER BY ta.created_at DESC";
             $stmt = $conn->prepare($sql);
             $stmt->execute([$recentTime]);
         }
         
-        if($stmt->rowCount() > 0) {
-            return $stmt->fetchAll();
-        } else {
-            return 0;
-        }
+        return $stmt->rowCount() > 0 ? $stmt->fetchAll() : 0;
     }
 
 	if ($_SESSION['role'] == "admin") {

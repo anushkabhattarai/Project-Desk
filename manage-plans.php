@@ -6,15 +6,29 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == '
     // Handle form submission
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['update_plan'])) {
-            $plan_id = $_POST['plan_id'];
-            $price = $_POST['price'];
-            $description = $_POST['description'];
-            $note_limit = $_POST['note_limit'] ?: null;
-            $private_note_limit = $_POST['private_note_limit'] ?: null;
+            $plan_id = $_POST['plan_id'] ?? '';
+            $price = $_POST['price'] ?? 0;
+            $description = $_POST['description'] ?? '';
+            
+            // Handle optional fields for non-unlimited plans
+            $stmt = $conn->prepare("SELECT is_unlimited FROM plans WHERE id = ?");
+            $stmt->execute([$plan_id]);
+            $plan = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$plan['is_unlimited']) {
+                $note_limit = !empty($_POST['note_limit']) ? $_POST['note_limit'] : null;
+                $private_note_limit = !empty($_POST['private_note_limit']) ? $_POST['private_note_limit'] : null;
+                
+                $sql = "UPDATE plans SET price = ?, description = ?, note_limit = ?, private_note_limit = ? WHERE id = ?";
+                $params = [$price, $description, $note_limit, $private_note_limit, $plan_id];
+            } else {
+                $sql = "UPDATE plans SET price = ?, description = ? WHERE id = ?";
+                $params = [$price, $description, $plan_id];
+            }
 
             try {
-                $stmt = $conn->prepare("UPDATE plans SET price = ?, description = ?, note_limit = ?, private_note_limit = ? WHERE id = ?");
-                $stmt->execute([$price, $description, $note_limit, $private_note_limit, $plan_id]);
+                $stmt = $conn->prepare($sql);
+                $stmt->execute($params);
                 $success = "Plan updated successfully!";
             } catch (Exception $e) {
                 $error = "Error updating plan: " . $e->getMessage();

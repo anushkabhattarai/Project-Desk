@@ -24,6 +24,8 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
 	<title>Edit Task</title>
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+	<link rel="stylesheet" href="css/style.css">
 </head>
 <body class="bg-white">
 	<input type="checkbox" id="checkbox">
@@ -86,19 +88,21 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
 								</div>
 
 								<div class="col-md-6 mb-3">
-									<label for="assigned_to" class="form-label">Assigned to</label>
-									<select class="form-select" 
+									<label for="assigned_to" class="form-label">Assign to Users</label>
+									<select class="form-control select2-users" 
 											id="assigned_to" 
-											name="assigned_to" 
+											name="assigned_to[]" 
+											multiple
 											required>
-										<option value="0">Select employee</option>
-										<?php if ($users != 0) { 
+										<?php 
+										if ($users != 0) {
+											$assigned_users = get_task_assignee_ids($conn, $task['id']);
 											foreach ($users as $user) {
-												if ($task['assigned_to'] == $user['id']) { ?>
-													<option selected value="<?=$user['id']?>"><?=$user['full_name']?></option>
-												<?php } else { ?>
-													<option value="<?=$user['id']?>"><?=$user['full_name']?></option>
-										<?php } } } ?>
+												$selected = in_array($user['id'], $assigned_users) ? 'selected' : '';
+												echo "<option value='{$user['id']}' {$selected}>{$user['full_name']}</option>";
+											}
+										} 
+										?>
 									</select>
 								</div>
 
@@ -130,7 +134,22 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
 	</main>
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 	<script type="text/javascript">
+		$(document).ready(function() {
+			$('.select2-users').select2({
+				placeholder: 'Search and select users...',
+				allowClear: true,
+				width: '100%',
+				theme: 'classic',
+				dropdownParent: $('.card-body'),
+				containerCssClass: 'form-control p-0',
+				dropdownCssClass: 'select2-dropdown',
+				selectionCssClass: 'select2-selection'
+			});
+		});
+
 		var active = document.querySelector("#navList li:nth-child(4)");
 		active.classList.add("active");
 	</script>

@@ -153,6 +153,17 @@
 			color: #764ba2;
 		}
 
+		.back-link {
+			color: #1a73e8;
+			font-size: 0.875rem;
+			text-decoration: none;
+			font-weight: 500;
+		}
+
+		.back-link:hover {
+			color: #1557b0;
+		}
+
 		@media (max-width: 768px) {
 			.split-container {
 				flex-direction: column;
@@ -244,6 +255,10 @@
 				<div class="text-center">
 					<span class="text-muted">Don't have an account?</span>
 					<a href="signup.php" class="login-link ms-2">Sign up</a>
+				</div>
+
+				<div class="text-center mt-3">
+					<a href="index.php" class="back-link"><i class="fas fa-arrow-left me-1"></i> Back to home</a>
 				</div>
 			</form>
 		</div>

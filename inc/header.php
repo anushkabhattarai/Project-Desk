@@ -64,6 +64,9 @@ $_SESSION['full_name'] = $_SESSION['full_name'] ?? $_SESSION['username'];
 							<li><a class="dropdown-item" href="edit_profile.php">
 								<i class="fa fa-user me-2 text-primary"></i> Profile
 							</a></li>
+							<li><a class="dropdown-item" href="user-payment-history.php">
+								<i class="fa fa-history me-2 text-info"></i> Payment History
+							</a></li>
 							<li><hr class="dropdown-divider"></li>
 							<li><a class="dropdown-item" href="logout.php">
 								<i class="fa fa-sign-out me-2 text-danger"></i> Logout

@@ -10,6 +10,12 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
 include "DB_connection.php";
 include "app/Model/Task.php";
 include "app/Model/User.php";
+include "app/helpers/subscription_check.php";
+
+// Check for active subscription
+if ($_SESSION['role'] !== 'admin' && !hasActiveSubscription($conn, $_SESSION['id'])) {
+    redirectToPlans('premium');
+}
 
 $user_id = $_SESSION['id'];
 $is_admin = $_SESSION['role'] === 'admin';

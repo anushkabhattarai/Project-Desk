@@ -10,6 +10,12 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
 include "DB_connection.php";
 include "app/Model/Task.php";
 include "app/Model/User.php";
+include "app/helpers/subscription_check.php";
+
+// Check for active subscription
+if ($_SESSION['role'] !== 'admin' && !hasActiveSubscription($conn, $_SESSION['id'])) {
+    redirectToPlans('premium');
+}
 
 // Handle CRUD operations
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {

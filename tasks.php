@@ -189,11 +189,15 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
 											</td>
 											<td>
 												<?php 
-													foreach ($users as $user) {
-														if($user['id'] == $task['assigned_to']){
-															echo $user['full_name'];
-														}
-													}
+													 $assignees = get_task_assignees($conn, $task['id']);
+													 if ($assignees !== 0) {
+														 $names = array_map(function($user) {
+															 return "<span class='badge bg-light text-dark'>{$user['full_name']}</span>";
+														 }, $assignees);
+														 echo implode(" ", $names);
+													 } else {
+														 echo "<span class='text-muted'>Unassigned</span>";
+													 }
 												?>
 											</td>
 											<td>

@@ -469,11 +469,12 @@ $title = "Select a Plan";
             const paymentStatus = urlParams.get('payment_status');
             
             if (paymentStatus === 'success') {
-                // Show success message and redirect to notes page
+                // Show enhanced success message
                 const successAlert = document.createElement('div');
                 successAlert.className = 'alert alert-success alert-dismissible fade show';
                 successAlert.innerHTML = `
                     <strong>Payment Successful!</strong> Your subscription has been activated.
+                    You now have access to Private Notes and Shared Notes features.
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 `;
                 

@@ -53,7 +53,7 @@ if ($note_id > 0) {
 
     // Get list of users who have access
     $stmt = $conn->prepare("
-        SELECT u.full_name, ns.can_edit, ns.created_at 
+        SELECT ns.id as share_id, u.full_name, ns.can_edit, ns.created_at 
         FROM note_shares ns 
         JOIN users u ON ns.shared_with = u.id 
         WHERE ns.note_id = ? 
@@ -134,7 +134,7 @@ $user_plan = $stmt->fetch(PDO::FETCH_ASSOC);
 $has_subscription = !empty($user_plan);
 
 // Fetch users for sharing
-$stmt = $conn->prepare("SELECT id, full_name FROM users WHERE id != ?");
+$stmt = $conn->prepare("SELECT id, full_name, username FROM users WHERE id != ?");
 $stmt->bindParam(1, $user_id, PDO::PARAM_INT);
 $stmt->execute();
 $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -203,6 +203,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_comment'])) {
     header('Content-Type: application/json');
     
     $comment_text = trim($_POST['comment_text']);
+    // Process mentions in the comment
+    $mentioned_users = [];
+    preg_match_all('/@\[([^\]]+)\]\((\d+)\)/', $comment_text, $matches);
+    if (!empty($matches[2])) {
+        $mentioned_users = array_unique($matches[2]);
+    }
+    
     if (!empty($comment_text) && $note_id > 0) {
         try {
             // Begin transaction
@@ -219,6 +226,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_comment'])) {
             }
             
             $comment_id = $conn->lastInsertId();
+
+            // Add notifications for mentioned users
+            if (!empty($mentioned_users)) {
+                $notify_stmt = $conn->prepare("
+                    INSERT INTO notifications (recipient, message, type, date) 
+                    VALUES (:recipient, :message, 'mention', CURRENT_DATE)
+                ");
+                
+                foreach ($mentioned_users as $mentioned_id) {
+                    $message = $_SESSION['username'] . " mentioned you in a comment on note '" . $note['title'] . "'";
+                    $notify_stmt->execute([
+                        ':recipient' => $mentioned_id,
+                        ':message' => $message
+                    ]);
+                }
+            }
 
             // Get comment details with user info
             $stmt = $conn->prepare("
@@ -303,6 +326,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['share_note'])) {
     } catch (PDOException $e) {
         error_log("Share error: " . $e->getMessage());
         $response['message'] = "Error sharing note: " . $e->getMessage();
+    }
+    
+    echo json_encode($response);
+    exit;
+}
+
+// Add this new PHP handler near other POST handlers
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_permission'])) {
+    header('Content-Type: application/json');
+    $response = ['success' => false, 'message' => ''];
+    
+    $share_id = isset($_POST['share_id']) ? (int)$_POST['share_id'] : 0;
+    $can_edit = isset($_POST['can_edit']) ? 1 : 0;
+    
+    try {
+        // Update share permissions
+        $stmt = $conn->prepare("UPDATE note_shares SET can_edit = ? WHERE id = ? AND note_id = ?");
+        $stmt->bindParam(1, $can_edit, PDO::PARAM_INT);
+        $stmt->bindParam(2, $share_id, PDO::PARAM_INT);
+        $stmt->bindParam(3, $note_id, PDO::PARAM_INT);
+        
+        if ($stmt->execute()) {
+            $response['success'] = true;
+            $response['message'] = "Permissions updated successfully!";
+        }
+    } catch (PDOException $e) {
+        $response['message'] = "Error updating permissions: " . $e->getMessage();
     }
     
     echo json_encode($response);
@@ -478,6 +528,45 @@ if (!isset($shared_users)) {
             outline: none;
         }
 
+        /* Author Info Styles */
+        .note-author {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-light);
+        }
+
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .author-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .author-name {
+            font-weight: 500;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+
+        .note-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
         /* Comments Section */
         .comments-section {
             background: white;
@@ -594,6 +683,40 @@ if (!isset($shared_users)) {
 
         .btn-primary i {
             font-size: 1.1em;
+        }
+
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            background: transparent;
+        }
+
+        .btn-outline-primary:hover {
+            color: white;
+            background: var(--primary-color);
+        }
+
+        .btn-outline-secondary {
+            color: var(--text-muted);
+            border-color: var(--border-color);
+            background: transparent;
+            opacity: 0.7;
+        }
+
+        .btn-outline-secondary:hover {
+            cursor: not-allowed;
+        }
+
+        .btn-outline-secondary:not([disabled]) {
+            opacity: 1;
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .btn-outline-secondary:not([disabled]):hover {
+            background: var(--primary-color);
+            color: white;
         }
 
         .action-buttons {
@@ -880,6 +1003,195 @@ if (!isset($shared_users)) {
             font-size: 0.95rem;
             line-height: 1.5;
         }
+
+        /* User Search Styles */
+        .user-search-container {
+            position: relative;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: var(--shadow-md);
+        }
+
+        .search-results.active {
+            display: block;
+        }
+
+        .search-result-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .search-result-item:hover {
+            background: var(--bg-light);
+        }
+
+        .search-result-item:not(:last-child) {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .user-name {
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .user-username {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        /* Members Modal Styles */
+        .members-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .member-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .member-info {
+            flex-grow: 1;
+        }
+
+        .member-actions {
+            margin-left: auto;
+        }
+
+        .toggle-permission {
+            white-space: nowrap;
+            font-size: 0.875rem;
+        }
+
+        .member-item:hover {
+            background: var(--bg-light);
+        }
+
+        .member-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .member-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .member-name {
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .member-role {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        /* Mention Styles */
+        .mention-popup {
+            position: absolute;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow-md);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            min-width: 200px;
+            display: none;
+        }
+
+        .mention-item {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .mention-item:hover {
+            background: var(--bg-light);
+        }
+
+        .mention {
+            color: var(--primary-color);
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .mention-popup {
+            min-width: 250px;
+            max-width: 300px;
+            padding: 0.5rem;
+        }
+
+        .mention-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            cursor: pointer;
+            border-radius: 0.375rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .mention-user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mention-name {
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .mention-username {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .mention-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            background-color: var(--bg-light);
+            color: var(--primary-color);
+            border-radius: 1rem;
+            font-weight: 500;
+        }
+
+        .mention-item:hover {
+            background-color: var(--bg-light);
+        }
+
+        .mention-item.no-results {
+            color: var(--text-muted);
+            justify-content: center;
+            cursor: default;
+        }
     </style>
 </head>
 <body>
@@ -911,6 +1223,14 @@ if (!isset($shared_users)) {
                    placeholder="Untitled note" 
                    value="<?php echo isset($note) ? htmlspecialchars($note['title']) : ''; ?>">
             <div class="action-buttons">
+                <button type="button" class="btn btn-outline-secondary" onclick="showMembers()" <?php echo $note_id ? '' : 'disabled'; ?> title="<?php echo $note_id ? '' : 'Save the note first to manage members'; ?>">
+                    <i class="bi bi-people-fill"></i>
+                    Members
+                    <?php if (isset($share_count) && $share_count > 0): ?>
+                    <span class="badge bg-primary ms-1"><?php echo $share_count + 1; ?></span>
+                    <?php endif; ?>
+                </button>
+                
                 <select class="status-select" id="status" name="status">
                     <option value="not-started" <?php echo (isset($note) && $note['status'] == 'not-started') ? 'selected' : ''; ?>>Not Started</option>
                     <option value="pending" <?php echo (isset($note) && $note['status'] == 'pending') ? 'selected' : ''; ?>>In Progress</option>
@@ -932,6 +1252,21 @@ if (!isset($shared_users)) {
     <div class="main-content">
         <!-- Editor Section -->
         <div class="editor-section">
+            <?php if (isset($note) && isset($note['author_name'])): ?>
+            <div class="note-author">
+                <div class="author-avatar">
+                    <?php 
+                    $author_initial = strtoupper(substr($note['author_name'], 0, 1));
+                    echo htmlspecialchars($author_initial); 
+                    ?>
+                </div>
+                <div class="author-info">
+                    <span class="author-name"><?php echo htmlspecialchars($note['author_name']); ?></span>
+                    <span class="note-date"><?php echo date('M j, Y', strtotime($note['created_at'])); ?></span>
+                </div>
+            </div>
+            <?php endif; ?>
+            
             <div class="editor-toolbar">
                 <div class="toolbar-group">
                     <button type="button" class="toolbar-button" data-command="undo" title="Undo">
@@ -1080,14 +1415,15 @@ if (!isset($shared_users)) {
                                         <?php endif; ?>
                                     </small>
                                 </div>
-                                <select name="share_with" class="form-select" required>
-                                    <option value="">Select user</option>
-                                    <?php foreach ($users as $user): ?>
-                                        <option value="<?php echo $user['id']; ?>">
-                                            <?php echo htmlspecialchars($user['full_name']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <div class="user-search-container">
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="userSearch" 
+                                           placeholder="Type username to share with..."
+                                           autocomplete="off">
+                                    <input type="hidden" name="share_with" id="selectedUserId">
+                                    <div id="searchResults" class="search-results"></div>
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <div class="form-check">
@@ -1095,11 +1431,64 @@ if (!isset($shared_users)) {
                                     <label class="form-check-label" for="can_edit">Allow editing</label>
                                 </div>
                             </div>
-                            <button type="submit" name="share_note" class="btn btn-primary w-100">
+                            <button type="submit" name="share_note" class="btn btn-primary w-100" id="shareSubmitBtn" disabled>
                                 Share Note
                             </button>
                         </form>
                     <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Members Modal -->
+    <div class="modal fade" id="membersModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-people-fill"></i>
+                        Note Members
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="members-list">
+                        <!-- Owner -->
+                        <div class="member-item">
+                            <div class="member-avatar">
+                                <?php echo strtoupper(substr($note['author_name'], 0, 1)); ?>
+                            </div>
+                            <div class="member-info">
+                                <span class="member-name"><?php echo htmlspecialchars($note['author_name']); ?></span>
+                                <span class="member-role">Owner</span>
+                            </div>
+                        </div>
+                        <!-- Shared Users -->
+                        <?php foreach ($shared_users as $user): ?>
+                        <div class="member-item">
+                            <div class="member-avatar">
+                                <?php echo strtoupper(substr($user['full_name'], 0, 1)); ?>
+                            </div>
+                            <div class="member-info flex-grow-1">
+                                <span class="member-name"><?php echo htmlspecialchars($user['full_name']); ?></span>
+                                <span class="member-role" id="role-<?php echo $user['share_id']; ?>">
+                                    <?php echo $user['can_edit'] ? 'Can edit' : 'Can view'; ?>
+                                </span>
+                            </div>
+                            <?php if ($note['user_id'] == $user_id): ?>
+                            <div class="member-actions">
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-primary toggle-permission" 
+                                        data-share-id="<?php echo $user['share_id']; ?>"
+                                        data-current-permission="<?php echo $user['can_edit']; ?>">
+                                    <?php echo $user['can_edit'] ? 'Set to view only' : 'Allow editing'; ?>
+                                </button>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1218,15 +1607,27 @@ if (!isset($shared_users)) {
                     if (data.success) {
                         showToast(data.message, 'success');
                         
-                        // If there's a redirect URL, navigate to it
+                        // If there's a redirect URL, update the members button before redirecting
                         if (data.redirect) {
-                            window.location.href = data.redirect;
-                        }
-                        
-                        // Enable share button after saving
-                        if (shareButton) {
-                            shareButton.disabled = false;
-                            shareButton.title = '';
+                            // Enable the members button and update its style
+                            const membersBtn = document.querySelector('.btn-outline-secondary[disabled]');
+                            if (membersBtn) {
+                                membersBtn.classList.remove('btn-outline-secondary');
+                                membersBtn.classList.add('btn-outline-primary');
+                                membersBtn.disabled = false;
+                                membersBtn.title = '';
+                            }
+                            
+                            // Enable share button
+                            if (shareButton) {
+                                shareButton.disabled = false;
+                                shareButton.title = '';
+                            }
+                            
+                            // Redirect after a short delay to show the success message
+                            setTimeout(() => {
+                                window.location.href = data.redirect;
+                            }, 1000);
                         }
                     } else {
                         throw new Error(data.message || 'Failed to save note');
@@ -1500,6 +1901,224 @@ if (!isset($shared_users)) {
             }
             const shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
             shareModal.show();
+        }
+
+        // User Search Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const userSearch = document.getElementById('userSearch');
+            const searchResults = document.getElementById('searchResults');
+            const selectedUserId = document.getElementById('selectedUserId');
+            const shareSubmitBtn = document.getElementById('shareSubmitBtn');
+            let searchTimeout;
+
+            userSearch.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const searchTerm = this.value.trim();
+
+                if (searchTerm.length < 1) {
+                    searchResults.innerHTML = '';
+                    searchResults.classList.remove('active');
+                    selectedUserId.value = '';
+                    shareSubmitBtn.disabled = true;
+                    return;
+                }
+
+                searchTimeout = setTimeout(() => {
+                    fetch(`search_users.php?term=${encodeURIComponent(searchTerm)}`)
+                        .then(response => response.json())
+                        .then(users => {
+                            searchResults.innerHTML = '';
+                            if (users.length > 0) {
+                                users.forEach(user => {
+                                    const div = document.createElement('div');
+                                    div.className = 'search-result-item';
+                                    div.innerHTML = `
+                                        <div class="user-name">${user.full_name}</div>
+                                        <div class="user-username">@${user.username}</div>
+                                    `;
+                                    div.addEventListener('click', () => {
+                                        userSearch.value = user.username;
+                                        selectedUserId.value = user.id;
+                                        searchResults.classList.remove('active');
+                                        shareSubmitBtn.disabled = false;
+                                    });
+                                    searchResults.appendChild(div);
+                                });
+                                searchResults.classList.add('active');
+                            } else {
+                                searchResults.innerHTML = '<div class="search-result-item">No users found</div>';
+                                searchResults.classList.add('active');
+                            }
+                        });
+                }, 300);
+            });
+
+            // Close search results when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!userSearch.contains(e.target) && !searchResults.contains(e.target)) {
+                    searchResults.classList.remove('active');
+                }
+            });
+        });
+
+        function showMembers() {
+            const modal = new bootstrap.Modal(document.getElementById('membersModal'));
+            modal.show();
+        }
+
+        // Add this new function to handle permission updates
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.toggle-permission').forEach(button => {
+                button.addEventListener('click', async function() {
+                    const shareId = this.dataset.shareId;
+                    const currentPermission = this.dataset.currentPermission === '1';
+                    const newPermission = !currentPermission;
+                    
+                    try {
+                        const formData = new FormData();
+                        formData.append('update_permission', '1');
+                        formData.append('share_id', shareId);
+                        formData.append('can_edit', newPermission ? '1' : '0');
+                        
+                        const response = await fetch(window.location.href, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            // Update button text and data attribute
+                            this.textContent = newPermission ? 'Set to view only' : 'Allow editing';
+                            this.dataset.currentPermission = newPermission ? '1' : '0';
+                            
+                            // Update role text
+                            const roleSpan = document.getElementById(`role-${shareId}`);
+                            if (roleSpan) {
+                                roleSpan.textContent = newPermission ? 'Can edit' : 'Can view';
+                            }
+                            
+                            showToast('Permissions updated successfully!', 'success');
+                        } else {
+                            throw new Error(data.message || 'Failed to update permissions');
+                        }
+                    } catch (error) {
+                        showToast(error.message || 'Error updating permissions', 'error');
+                    }
+                });
+            });
+        });
+
+        // Mention functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const commentText = document.getElementById('comment-text');
+            const mentionPopup = document.createElement('div');
+            mentionPopup.className = 'mention-popup';
+            commentText.parentNode.appendChild(mentionPopup);
+            
+            let mentionSearch = '';
+            let mentionStartIndex = -1;
+            
+            commentText.addEventListener('input', async function(e) {
+                const text = this.value;
+                const caretPos = this.selectionStart;
+                
+                // Find @ symbol before caret
+                let i = caretPos - 1;
+                while (i >= 0 && text[i] !== ' ' && text[i] !== '\n') {
+                    if (text[i] === '@') {
+                        mentionStartIndex = i;
+                        mentionSearch = text.substring(i + 1, caretPos);
+                        
+                        // Position popup below the @mention
+                        const coordinates = getCaretCoordinates(this, mentionStartIndex);
+                        mentionPopup.style.left = coordinates.left + 'px';
+                        mentionPopup.style.top = (coordinates.top + 20) + 'px';
+                        mentionPopup.style.display = 'block';
+                        
+                        try {
+                            const response = await fetch(`get_mentions.php?term=${encodeURIComponent(mentionSearch)}&note_id=${<?php echo $note_id; ?>}`);
+                            const users = await response.json();
+                            
+                            if (users.length > 0) {
+                                mentionPopup.innerHTML = users.map(user => `
+                                    <div class="mention-item" data-user-id="${user.id}" data-username="${user.username}">
+                                        <div class="mention-user-info">
+                                            <div class="mention-name">${user.full_name}</div>
+                                            <div class="mention-username">@${user.username}</div>
+                                        </div>
+                                    </div>
+                                `).join('');
+                                mentionPopup.classList.add('active');
+                            } else {
+                                mentionPopup.innerHTML = '<div class="mention-item no-results">No users found</div>';
+                            }
+                        } catch (error) {
+                            console.error('Error fetching mentions:', error);
+                        }
+                        return;
+                    }
+                    i--;
+                }
+                
+                if (mentionStartIndex === -1 || caretPos <= mentionStartIndex) {
+                    mentionPopup.style.display = 'none';
+                    mentionPopup.classList.remove('active');
+                    mentionSearch = '';
+                }
+            });
+
+            mentionPopup.addEventListener('click', function(e) {
+                const mentionItem = e.target.closest('.mention-item');
+                if (!mentionItem || !mentionItem.dataset.userId) return;
+                
+                const text = commentText.value;
+                const newText = text.substring(0, mentionStartIndex) +
+                               `@[${mentionItem.dataset.username}](${mentionItem.dataset.userId})` +
+                               text.substring(commentText.selectionStart);
+                               
+                commentText.value = newText;
+                mentionPopup.style.display = 'none';
+                mentionSearch = '';
+                mentionStartIndex = -1;
+                commentText.focus();
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (!mentionPopup.contains(e.target) && e.target !== commentText) {
+                    mentionPopup.style.display = 'none';
+                }
+            });
+        });
+
+        // Helper function to get caret coordinates
+        function getCaretCoordinates(element, position) {
+            const div = document.createElement('div');
+            const style = div.style;
+            const computed = window.getComputedStyle(element);
+            
+            style.whiteSpace = 'pre-wrap';
+            style.wordWrap = 'break-word';
+            style.position = 'absolute';
+            style.visibility = 'hidden';
+            
+            // Copy styles that affect text dimensions
+            ['fontFamily', 'fontSize', 'fontWeight', 'paddingLeft', 'paddingTop', 
+             'paddingRight', 'paddingBottom', 'width'].forEach(prop => {
+                style[prop] = computed[prop];
+            });
+            
+            div.textContent = element.value.substring(0, position);
+            document.body.appendChild(div);
+            
+            const rect = element.getBoundingClientRect();
+            const coordinates = {
+                top: rect.top + div.offsetHeight - element.scrollTop,
+                left: rect.left + div.offsetWidth - element.scrollLeft
+            };
+            
+            document.body.removeChild(div);
+            return coordinates;
         }
     </script>
 </body>

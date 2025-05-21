@@ -13,6 +13,7 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 	<link rel="stylesheet" href="css/style.css">
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 </head>
 <body class="bg-white">
 	<input type="checkbox" id="checkbox">
@@ -74,12 +75,12 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
 								</div>
 
 								<div class="col-md-6 mb-3">
-									<label for="assigned_to" class="form-label">Assigned to</label>
-									<select class="form-select" 
+									<label for="assigned_to" class="form-label">Assign to Users</label>
+									<select class="form-control select2-users" 
 											id="assigned_to" 
-											name="assigned_to" 
+											name="assigned_to[]" 
+											multiple
 											required>
-										<option value="0">Select employee</option>
 										<?php if ($users != 0) { 
 											foreach ($users as $user) { ?>
 												<option value="<?=$user['id']?>"><?=$user['full_name']?></option>
@@ -114,9 +115,25 @@ if (isset($_SESSION['role']) && isset($_SESSION['id']) && $_SESSION['role'] == "
 	</main>
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 	<script type="text/javascript">
 		var active = document.querySelector("#navList li:nth-child(3)");
 		active.classList.add("active");
+
+		$(document).ready(function() {
+			$('.select2-users').select2({
+				placeholder: 'Search and select users...',
+				allowClear: true,
+				width: '100%',
+				tags: false,
+				theme: 'classic',
+				dropdownParent: $('.card-body'),
+				containerCssClass: 'form-control p-0',
+				dropdownCssClass: 'select2-dropdown',
+				selectionCssClass: 'select2-selection'
+			});
+		});
 	</script>
 </body>
 </html>

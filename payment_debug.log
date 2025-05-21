@@ -3596,3 +3596,198 @@ Error:
 [2025-05-20 18:09:11] Creating subscription: User ID: 18, Plan ID: 2, Trans ID: vFNoUoF8d4MbFegZPGXHzK
 [2025-05-20 18:09:11] Subscription created and admin notifications sent!
 [2025-05-20 18:09:11] REDIRECTING TO NOTES PAGE NOW
+2025-05-21 13:41:19 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost:8080\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost:8080\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_19_1747827679_682dbbdf900d8",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Ranjana Pokhrel",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Ranjana",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"19\",\"order_id\":\"ORDER_19_1747827679_682dbbdf900d8\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-05-21 13:41:20 - Response:
+Status: 200
+Body: {"pidx":"9Cr22W9DFcJExEzkPUmmEF","payment_url":"https://test-pay.khalti.com/?pidx=9Cr22W9DFcJExEzkPUmmEF","expires_at":"2025-05-21T17:56:18.655215+05:45","expires_in":1800}
+Error: 
+
+2025-05-21 13:41:32 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost:8080\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost:8080\/Project_Desk",
+    "amount": "60000",
+    "purchase_order_id": "ORDER_19_1747827692_682dbbeca5930",
+    "purchase_order_name": "Premium Plan",
+    "customer_info": {
+        "name": "Ranjana Pokhrel",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 60000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "2",
+            "name": "Premium Plan",
+            "total_price": 60000,
+            "quantity": 1,
+            "unit_price": 60000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Ranjana",
+    "merchant_extra": "{\"plan_id\":\"2\",\"user_id\":\"19\",\"order_id\":\"ORDER_19_1747827692_682dbbeca5930\",\"plan_name\":\"Premium Plan\",\"amount\":60000}"
+}
+
+2025-05-21 13:41:33 - Response:
+Status: 200
+Body: {"pidx":"DApauJBFWvMv843ia55VwJ","payment_url":"https://test-pay.khalti.com/?pidx=DApauJBFWvMv843ia55VwJ","expires_at":"2025-05-21T17:56:31.617321+05:45","expires_in":1800}
+Error: 
+
+[2025-05-21 13:41:50] =============== NEW PAYMENT CALLBACK ===============
+[2025-05-21 13:41:50] FULL URL: /Project_Desk/process_payment.php?pidx=DApauJBFWvMv843ia55VwJ&transaction_id=QJSiPVnnn6za8kRuxZr52L&tidx=QJSiPVnnn6za8kRuxZr52L&txnId=QJSiPVnnn6za8kRuxZr52L&amount=60000&total_amount=60000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_19_1747827692_682dbbeca5930&purchase_order_name=Premium+Plan&merchant_name=Project+Desk&merchant_username=Ranjana&merchant_extra=%7B%22plan_id%22%3A%222%22%2C%22user_id%22%3A%2219%22%2C%22order_id%22%3A%22ORDER_19_1747827692_682dbbeca5930%22%2C%22plan_name%22%3A%22Premium+Plan%22%2C%22amount%22%3A60000%7D
+[2025-05-21 13:41:50] All URL parameters validated successfully
+[2025-05-21 13:41:50] Payment ID (pidx): DApauJBFWvMv843ia55VwJ
+[2025-05-21 13:41:50] Transaction ID: QJSiPVnnn6za8kRuxZr52L
+[2025-05-21 13:41:50] Amount: 60000
+[2025-05-21 13:41:50] Status: Completed
+[2025-05-21 13:41:50] Decoded merchant_extra: Array
+(
+    [plan_id] => 2
+    [user_id] => 19
+    [order_id] => ORDER_19_1747827692_682dbbeca5930
+    [plan_name] => Premium Plan
+    [amount] => 60000
+)
+
+[2025-05-21 13:41:50] Merchant extra field plan_id: 2
+[2025-05-21 13:41:50] Merchant extra field user_id: 19
+[2025-05-21 13:41:50] Merchant extra field order_id: ORDER_19_1747827692_682dbbeca5930
+[2025-05-21 13:41:50] Merchant extra field plan_name: Premium Plan
+[2025-05-21 13:41:50] Merchant extra field amount: 60000
+[2025-05-21 13:41:50] PIDX received: DApauJBFWvMv843ia55VwJ
+[2025-05-21 13:41:50] Verifying payment with Khalti lookup API
+[2025-05-21 13:41:50] Khalti lookup response: {"pidx":"DApauJBFWvMv843ia55VwJ","total_amount":60000,"status":"Completed","transaction_id":"QJSiPVnnn6za8kRuxZr52L","fee":1800,"refunded":false}
+[2025-05-21 13:41:50] Khalti lookup status code: 200
+[2025-05-21 13:41:50] Payment lookup status: Completed
+[2025-05-21 13:41:50] Payment verification successful. Status: Completed
+[2025-05-21 13:41:50] Verified payment details: Transaction ID: QJSiPVnnn6za8kRuxZr52L, Amount: 60000
+[2025-05-21 13:41:50] Merchant extra data: Array
+(
+    [plan_id] => 2
+    [user_id] => 19
+    [order_id] => ORDER_19_1747827692_682dbbeca5930
+    [plan_name] => Premium Plan
+    [amount] => 60000
+)
+
+[2025-05-21 13:41:50] Got plan ID from merchant_extra: 2
+[2025-05-21 13:41:50] Database connection successful
+[2025-05-21 13:41:50] Creating subscription: User ID: 19, Plan ID: 2, Trans ID: QJSiPVnnn6za8kRuxZr52L
+[2025-05-21 13:41:50] Subscription created and admin notifications sent!
+[2025-05-21 13:41:50] REDIRECTING TO NOTES PAGE NOW
+2025-05-21 13:49:32 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost:8080\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost:8080\/Project_Desk",
+    "amount": "20000",
+    "purchase_order_id": "ORDER_20_1747828172_682dbdcc0ebba",
+    "purchase_order_name": "Basic Plan",
+    "customer_info": {
+        "name": "Shubham Bhattarai",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 20000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "1",
+            "name": "Basic Plan",
+            "total_price": 20000,
+            "quantity": 1,
+            "unit_price": 20000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Shubham",
+    "merchant_extra": "{\"plan_id\":\"1\",\"user_id\":\"20\",\"order_id\":\"ORDER_20_1747828172_682dbdcc0ebba\",\"plan_name\":\"Basic Plan\",\"amount\":20000}"
+}
+
+2025-05-21 13:49:32 - Response:
+Status: 200
+Body: {"pidx":"eTrJsXqVMMTNGAxoZj5ULb","payment_url":"https://test-pay.khalti.com/?pidx=eTrJsXqVMMTNGAxoZj5ULb","expires_at":"2025-05-21T18:04:31.103498+05:45","expires_in":1800}
+Error: 
+
+[2025-05-21 13:49:46] =============== NEW PAYMENT CALLBACK ===============
+[2025-05-21 13:49:46] FULL URL: /Project_Desk/process_payment.php?pidx=eTrJsXqVMMTNGAxoZj5ULb&transaction_id=rxBdDbaL3pVnvY77PiXpu5&tidx=rxBdDbaL3pVnvY77PiXpu5&txnId=rxBdDbaL3pVnvY77PiXpu5&amount=20000&total_amount=20000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_20_1747828172_682dbdcc0ebba&purchase_order_name=Basic+Plan&merchant_name=Project+Desk&merchant_username=Shubham&merchant_extra=%7B%22plan_id%22%3A%221%22%2C%22user_id%22%3A%2220%22%2C%22order_id%22%3A%22ORDER_20_1747828172_682dbdcc0ebba%22%2C%22plan_name%22%3A%22Basic+Plan%22%2C%22amount%22%3A20000%7D
+[2025-05-21 13:49:46] All URL parameters validated successfully
+[2025-05-21 13:49:46] Payment ID (pidx): eTrJsXqVMMTNGAxoZj5ULb
+[2025-05-21 13:49:46] Transaction ID: rxBdDbaL3pVnvY77PiXpu5
+[2025-05-21 13:49:46] Amount: 20000
+[2025-05-21 13:49:46] Status: Completed
+[2025-05-21 13:49:46] Decoded merchant_extra: Array
+(
+    [plan_id] => 1
+    [user_id] => 20
+    [order_id] => ORDER_20_1747828172_682dbdcc0ebba
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-05-21 13:49:46] Merchant extra field plan_id: 1
+[2025-05-21 13:49:46] Merchant extra field user_id: 20
+[2025-05-21 13:49:46] Merchant extra field order_id: ORDER_20_1747828172_682dbdcc0ebba
+[2025-05-21 13:49:46] Merchant extra field plan_name: Basic Plan
+[2025-05-21 13:49:46] Merchant extra field amount: 20000
+[2025-05-21 13:49:46] PIDX received: eTrJsXqVMMTNGAxoZj5ULb
+[2025-05-21 13:49:46] Verifying payment with Khalti lookup API
+[2025-05-21 13:49:46] Khalti lookup response: {"pidx":"eTrJsXqVMMTNGAxoZj5ULb","total_amount":20000,"status":"Completed","transaction_id":"rxBdDbaL3pVnvY77PiXpu5","fee":600,"refunded":false}
+[2025-05-21 13:49:46] Khalti lookup status code: 200
+[2025-05-21 13:49:46] Payment lookup status: Completed
+[2025-05-21 13:49:46] Payment verification successful. Status: Completed
+[2025-05-21 13:49:46] Verified payment details: Transaction ID: rxBdDbaL3pVnvY77PiXpu5, Amount: 20000
+[2025-05-21 13:49:46] Merchant extra data: Array
+(
+    [plan_id] => 1
+    [user_id] => 20
+    [order_id] => ORDER_20_1747828172_682dbdcc0ebba
+    [plan_name] => Basic Plan
+    [amount] => 20000
+)
+
+[2025-05-21 13:49:46] Got plan ID from merchant_extra: 1
+[2025-05-21 13:49:46] Database connection successful
+[2025-05-21 13:49:46] Creating subscription: User ID: 20, Plan ID: 1, Trans ID: rxBdDbaL3pVnvY77PiXpu5
+[2025-05-21 13:49:46] Subscription created and admin notifications sent!
+[2025-05-21 13:49:46] REDIRECTING TO NOTES PAGE NOW

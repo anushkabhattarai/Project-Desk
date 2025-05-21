@@ -20,28 +20,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    // Check if username or email already exists
-    $stmt = $conn->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
-    $stmt->bind_param("ss", $username, $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    try {
+        // Check if username or email already exists
+        $stmt = $conn->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
+        $stmt->execute([$username, $email]);
+        
+        if ($stmt->rowCount() > 0) {
+            header("Location: ../signup.php?error=" . urlencode("Username or email already exists"));
+            exit();
+        }
 
-    if ($result->num_rows > 0) {
-        header("Location: ../signup.php?error=" . urlencode("Username or email already exists"));
-        exit();
-    }
+        // Hash the password
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-    // Hash the password
-    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+        // Insert new user into database
+        $stmt = $conn->prepare("INSERT INTO users (full_name, username, email, password, role) VALUES (?, ?, ?, ?, 'employee')");
+        $stmt->execute([$full_name, $username, $email, $hashed_password]);
 
-    // Insert new user into database
-    $stmt = $conn->prepare("INSERT INTO users (full_name, username, email, password, role) VALUES (?, ?, ?, ?, 'employee')");
-    $stmt->bind_param("ssss", $full_name, $username, $email, $hashed_password);
-
-    if ($stmt->execute()) {
         header("Location: ../login.php?success=" . urlencode("Account created successfully. Please login."));
         exit();
-    } else {
+        
+    } catch(PDOException $e) {
         header("Location: ../signup.php?error=" . urlencode("Error creating account. Please try again."));
         exit();
     }
@@ -49,4 +48,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header("Location: ../signup.php");
     exit();
 }
-?> 
+?>
