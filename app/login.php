@@ -36,29 +36,22 @@ if (isset($_POST['user_name']) && isset($_POST['password'])) {
 
             if ($user_name === $usernameDb) {
                 if (password_verify($password, $passwordDb)) {
-                    if ($role == "admin") {
-                        $_SESSION['role'] = $role;
-                        $_SESSION['id'] = $id;
-                        $_SESSION['user_id'] = $id;
-                        $_SESSION['username'] = $usernameDb;
-                        $_SESSION['full_name'] = $full_name; // Add full_name to session
-                        $_SESSION['welcomed'] = true;
-                        header("Location: ../tasks.php");
-                        exit();
-                    }else if ($role == 'employee') {
-                        $_SESSION['role'] = $role;
-                        $_SESSION['id'] = $id;
-                        $_SESSION['user_id'] = $id;
-                        $_SESSION['username'] = $usernameDb;
-                        $_SESSION['full_name'] = $full_name; // Add full_name to session
-                        $_SESSION['welcomed'] = true;
-                        header("Location: ../my_task.php");
-                        exit();
-                    }else {
-                        $em = "Unknown error occurred";
-                        header("Location: ../login.php?error=$em");
-                        exit();
+                    // Check if user has security questions set up
+                    $checkQuestions = $conn->prepare("SELECT COUNT(*) FROM security_questions WHERE user_id = ?");
+                    $checkQuestions->execute([$user['id']]);
+                    $hasQuestions = $checkQuestions->fetchColumn() > 0;
+
+                    $_SESSION['id'] = $user['id'];
+                    $_SESSION['role'] = $user['role'];
+                    $_SESSION['username'] = $user['username'];
+                    $_SESSION['name'] = $user['full_name'];
+
+                    if (!$hasQuestions) {
+                        header("Location: ../setup-security.php");
+                    } else {
+                        header("Location: ../index.php");
                     }
+                    exit;
                 }else {
                     $em = "Incorrect username or password";
                     header("Location: ../login.php?error=$em");

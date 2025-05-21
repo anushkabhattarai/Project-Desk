@@ -6,79 +6,92 @@
     <title>Sign Up | Project Desk</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
     <style>
         body {
+            background: #f8f9fa;
             min-height: 100vh;
-            margin: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .container {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            min-height: calc(100vh - 4rem);
         }
-
+        .gradient-container {
+            background: linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 420px; /* Reduced from 480px */
+            margin: auto;
+        }
         .signup-form {
             width: 100%;
-            max-width: 400px;
+            max-width: 340px; /* Reduced from 380px */
+            margin: 0 auto;
+            padding: 0.5rem;
+        }
+        .user-icon {
+            font-size: 1.5rem;
+            color: #1a73e8;
+            margin-bottom: 1rem;
+        }
+        h3 {
+            color: #202124;
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            color: #5f6368;
+            font-size: 0.875rem;
+            margin-bottom: 2rem;
+        }
+        .form-control {
+            border: 1px solid #dadce0;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
         }
-
-        .form-control {
-            border-radius: 8px;
-            padding: 12px;
-            border: 1px solid #e0e0e0;
-            transition: all 0.3s ease;
-        }
-
         .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            border-color: #1a73e8;
+            box-shadow: none;
         }
-
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #1a73e8;
             border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-weight: 500;
+            margin-top: 1rem;
         }
-
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            background: #1557b0;
         }
-
-        .input-group-text {
-            background: transparent;
-            border-right: none;
-        }
-
-        .form-control {
-            border-left: none;
-        }
-
-        .input-group:focus-within {
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-            border-radius: 8px;
-        }
-
         .login-link {
-            color: #667eea;
+            color: #1a73e8;
+            font-size: 0.875rem;
             text-decoration: none;
             font-weight: 500;
-            transition: color 0.3s ease;
         }
-
         .login-link:hover {
-            color: #764ba2;
+            color: #1557b0;
         }
-
+        .back-link {
+            color: #1a73e8;
+            font-size: 0.875rem;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .back-link:hover {
+            color: #1557b0;
+        }
         .success-popup {
             position: fixed;
             top: 20px;
@@ -104,74 +117,88 @@
         }
 
         @media (max-width: 576px) {
-            .signup-form {
-                padding: 1.5rem;
+            .gradient-container {
+                padding: 1.25rem; /* Slightly reduced padding for mobile */
+                max-width: 90%;   /* Added responsive width */
             }
         }
     </style>
 </head>
 <body>
-    <form method="POST" action="app/signup.php" class="signup-form" id="signupForm">
-        <h3 class="text-center mb-4">Create Account</h3>
+    <div class="container">
+        <div class="gradient-container">
+            <div class="signup-form">
+                <div class="text-center">
+                    <i class="fas fa-user-plus user-icon"></i>
+                    <h3>Create Account</h3>
+                    <p class="subtitle">Join Project Desk to manage your projects</p>
+                </div>
 
-        <?php if (isset($_GET['error'])) {?>
-            <div class="alert alert-danger" role="alert">
-                <i class="fas fa-exclamation-circle"></i> <?php echo stripcslashes($_GET['error']); ?>
-            </div>
-        <?php } ?>
+                <?php if (isset($_GET['error'])) {?>
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-circle"></i> <?php echo stripcslashes($_GET['error']); ?>
+                    </div>
+                <?php } ?>
 
-        <?php if (isset($_GET['success'])) {?>
-            <div class="alert alert-success" role="alert">
-                <i class="fas fa-check-circle"></i> <?php echo stripcslashes($_GET['success']); ?>
-            </div>
-        <?php } ?>
+                <?php if (isset($_GET['success'])) {?>
+                    <div class="alert alert-success" role="alert">
+                        <i class="fas fa-check-circle"></i> <?php echo stripcslashes($_GET['success']); ?>
+                    </div>
+                <?php } ?>
 
-        <div class="mb-3">
-            <label for="full_name" class="form-label">Full Name</label>
-            <div class="input-group">
-                <span class="input-group-text"><i class="fas fa-user"></i></span>
-                <input type="text" class="form-control" name="full_name" id="full_name" placeholder="Enter your full name" required>
+                <form method="POST" action="app/signup.php" id="signupForm">
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label">Full Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            <input type="text" class="form-control" name="full_name" id="full_name" placeholder="Enter your full name" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-at"></i></span>
+                            <input type="text" class="form-control" name="username" id="username" placeholder="Choose a username" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                            <input type="email" class="form-control" name="email" id="email" placeholder="Enter your email" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                            <input type="password" class="form-control" name="password" id="password" placeholder="Create a password" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 d-flex justify-content-between align-items-center">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="showPassword">
+                            <label class="form-check-label" for="showPassword">Show password</label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mb-4" id="submitBtn">Sign Up</button>
+                    
+                    <div class="text-center">
+                        <span class="text-muted">Already have an account?</span>
+                        <a href="login.php" class="login-link ms-2">Login</a>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="index.php" class="back-link"><i class="fas fa-arrow-left me-1"></i> Back to home</a>
+                    </div>
+                </form>
             </div>
         </div>
-
-        <div class="mb-3">
-            <label for="username" class="form-label">Username</label>
-            <div class="input-group">
-                <span class="input-group-text"><i class="fas fa-at"></i></span>
-                <input type="text" class="form-control" name="username" id="username" placeholder="Choose a username" required>
-            </div>
-        </div>
-
-        <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <div class="input-group">
-                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                <input type="email" class="form-control" name="email" id="email" placeholder="Enter your email" required>
-            </div>
-        </div>
-
-        <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <div class="input-group">
-                <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                <input type="password" class="form-control" name="password" id="password" placeholder="Create a password" required>
-            </div>
-        </div>
-
-        <div class="mb-4 d-flex justify-content-between align-items-center">
-            <div class="form-check">
-                <input type="checkbox" class="form-check-input" id="showPassword">
-                <label class="form-check-label" for="showPassword">Show password</label>
-            </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary w-100 mb-4" id="submitBtn">Sign Up</button>
-        
-        <div class="text-center">
-            <span class="text-muted">Already have an account?</span>
-            <a href="login.php" class="login-link ms-2">Login</a>
-        </div>
-    </form>
+    </div>
 
     <div class="success-popup" id="successPopup">
         <i class="fas fa-check-circle"></i>
@@ -194,4 +221,4 @@
         <?php } ?>
     </script>
 </body>
-</html> 
+</html>

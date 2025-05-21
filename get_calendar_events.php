@@ -9,20 +9,25 @@ $view = $_GET['view'] ?? 'task';
 $events = [];
 
 if ($view === 'task') {
-    // Get all tasks for the user using PDO
-    $taskQuery = "SELECT * FROM tasks WHERE assigned_to = :userId";
+    // Get all tasks assigned to the user using PDO
+    $taskQuery = "SELECT t.*, ta.user_id as assigned_to 
+                  FROM tasks t 
+                  INNER JOIN task_assignments ta ON t.id = ta.task_id 
+                  WHERE ta.user_id = :userId";
     $stmt = $conn->prepare($taskQuery);
     $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
     $stmt->execute();
     
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        // Use due_date if available, otherwise use created_at
-        $eventDate = $row['due_date'] ?: date('Y-m-d', strtotime($row['created_at']));
+        $eventTitle = $row['title'];
+        if ($row['due_date']) {
+            $eventTitle .= ' - Due: ' . date('Y-m-d', strtotime($row['due_date']));
+        }
         
         $events[] = [
             'id' => 't_' . $row['id'],
-            'title' => $row['title'],
-            'start' => $eventDate,
+            'title' => $eventTitle,
+            'start' => date('Y-m-d', strtotime($row['created_at'])), // Always use created_at as event date
             'type' => 'task',
             'description' => $row['description'],
             'status' => $row['status'],

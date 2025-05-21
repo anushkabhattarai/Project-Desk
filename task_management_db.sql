@@ -420,19 +420,25 @@ CREATE TABLE `private_notes` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `password_history`
+-- Table structure for table `security_questions`
 --
+
+CREATE TABLE `security_questions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `question` varchar(255) NOT NULL,
+  `answer` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Sample data for Samprada
+INSERT INTO `security_questions` (`user_id`, `question`, `answer`) VALUES 
+(7, 'What is the name of your first school?', 'Herald College'),
+(7, 'What is your favorite food?', 'Momo');
 
 
 
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `notes`
---
 ALTER TABLE `notes`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`);
