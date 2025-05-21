@@ -389,3 +389,151 @@ body.sidebar-collapsed .main-content {
         margin-left: 0;
     }
 }
+
+/* Payment Timeline Styles */
+.payment-timeline {
+    position: relative;
+    padding: 40px 0;
+    margin: 0 20px;
+}
+
+.payment-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50px;
+    height: 4px;
+    background: #e9ecef;
+    border-radius: 4px;
+}
+
+.timeline-progress {
+    position: absolute;
+    left: 0;
+    top: 50px;
+    height: 4px;
+    background: #0d6efd;
+    border-radius: 4px;
+    z-index: 1;
+    width: 0;
+    transition: width 1s ease;
+}
+
+.timeline-items {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+}
+
+.timeline-item {
+    flex: 1;
+    text-align: center;
+    padding: 0 10px;
+    position: relative;
+    min-width: 150px;
+}
+
+.timeline-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid #0d6efd;
+    position: absolute;
+    left: 50%;
+    top: 40px;
+    transform: translateX(-50%);
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+.timeline-content {
+    margin-top: 80px;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.timeline-date {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-bottom: 8px;
+}
+
+.timeline-card {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.timeline-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+}
+
+.timeline-item.active .timeline-dot {
+    background: #0d6efd;
+    border-color: #fff;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.2);
+}
+
+.timeline-item.active .timeline-content {
+    opacity: 1;
+}
+
+.timeline-amount {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #0d6efd;
+    margin-bottom: 8px;
+}
+
+.timeline-plan {
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.timeline-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+    .timeline-items {
+        flex-direction: column;
+    }
+    
+    .timeline-item {
+        margin-bottom: 40px;
+    }
+    
+    .timeline-content {
+        margin-top: 20px;
+    }
+    
+    .payment-timeline::before {
+        left: 20px;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        height: 100%;
+    }
+    
+    .timeline-progress {
+        left: 20px;
+        top: 0;
+        width: 4px;
+        height: 0;
+    }
+    
+    .timeline-dot {
+        left: 22px;
+        top: 0;
+    }
+}

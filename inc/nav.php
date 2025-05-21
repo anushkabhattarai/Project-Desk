@@ -1,3 +1,19 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Check if user is logged in, if not redirect to login
+if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
+    header("Location: login.php");
+    exit();
+}
+
+// Set default values for session variables if not set
+$_SESSION['username'] = $_SESSION['username'] ?? 'User';
+$_SESSION['role'] = $_SESSION['role'] ?? 'employee';
+?>
+
 <nav class="bg-white shadow-sm border-end" style="width: 250px; height: calc(100vh - 60px); position: fixed; left: 0; top: 60px; z-index: 999; display: flex; flex-direction: column;">
     <!-- User Profile Section -->
     <div class="p-4 text-center border-bottom">
@@ -25,6 +41,12 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="calendar.php" class="nav-link rounded-3 py-2 px-3 d-flex align-items-center">
+                            <i class="fa fa-calendar me-3 text-opacity-75" aria-hidden="true"></i>
+                            <span>Calendar</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="my_task.php" class="nav-link rounded-3 py-2 px-3 d-flex align-items-center">
                             <i class="fa fa-tasks me-3 text-opacity-75" aria-hidden="true"></i>
                             <span>My Tasks</span>
@@ -37,21 +59,20 @@
                             <span style="font-size: 0.7rem;">Notes</span>
                             <?php
                             try {
-                                // Simpler query to check user's plan
-                                $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : $_SESSION['id'];
+                                $userId = $_SESSION['id'];
                                 $planQuery = "SELECT p.name FROM subscriptions s 
-                                            JOIN plans p ON s.plan_id = p.id 
-                                            WHERE s.user_id = ? 
-                                            AND s.status = 'active' 
-                                            AND CURRENT_DATE BETWEEN s.start_date AND s.end_date";
+                                              JOIN plans p ON s.plan_id = p.id 
+                                              WHERE s.user_id = :userId 
+                                              AND s.status = 'active' 
+                                              AND CURRENT_DATE BETWEEN s.start_date AND s.end_date";
                                 
                                 $stmt = $conn->prepare($planQuery);
-                                $stmt->execute([$userId]);
-                                
-                                if($plan = $stmt->fetch()) {
-                                    if($plan['name'] === 'Basic Plan') {
-                                        echo '<img src="/Project_Desk/img/basic.png" alt="Basic Plan" style="width: 30px; height: 30px; margin-left: 10px;">';
-                                    }
+                                $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
+                                $stmt->execute();
+                                $plan = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                                if($plan && $plan['name'] === 'Basic Plan') {
+                                    echo '<img src="/Project_Desk/img/basic.png" alt="Basic Plan" style="width: 30px; height: 30px; margin-left: 10px;">';
                                 }
                             } catch (Exception $e) {
                                 error_log("Plan check error: " . $e->getMessage());
@@ -124,6 +145,12 @@
                             <span>Dashboard</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="calendar.php" class="nav-link rounded-3 py-2 px-3 d-flex align-items-center">
+                            <i class="fa fa-calendar me-3 text-opacity-75" aria-hidden="true"></i>
+                            <span>Calendar</span>
+                        </a>
+                    </li>
                     
                     <!-- Users Section -->
                     <li class="nav-item mt-2">
@@ -165,21 +192,20 @@
                             <span style="font-size: 0.7rem;">Notes</span>
                             <?php
                             try {
-                                // Simpler query to check user's plan
-                                $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : $_SESSION['id'];
+                                $userId = $_SESSION['id'];
                                 $planQuery = "SELECT p.name FROM subscriptions s 
-                                            JOIN plans p ON s.plan_id = p.id 
-                                            WHERE s.user_id = ? 
-                                            AND s.status = 'active' 
-                                            AND CURRENT_DATE BETWEEN s.start_date AND s.end_date";
+                                              JOIN plans p ON s.plan_id = p.id 
+                                              WHERE s.user_id = :userId 
+                                              AND s.status = 'active' 
+                                              AND CURRENT_DATE BETWEEN s.start_date AND s.end_date";
                                 
                                 $stmt = $conn->prepare($planQuery);
-                                $stmt->execute([$userId]);
-                                
-                                if($plan = $stmt->fetch()) {
-                                    if($plan['name'] === 'Basic Plan') {
-                                        echo '<img src="/Project_Desk/img/basic.png" alt="Basic Plan" style="width: 30px; height: 30px; margin-left: 10px;">';
-                                    }
+                                $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
+                                $stmt->execute();
+                                $plan = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                                if($plan && $plan['name'] === 'Basic Plan') {
+                                    echo '<img src="/Project_Desk/img/basic.png" alt="Basic Plan" style="width: 30px; height: 30px; margin-left: 10px;">';
                                 }
                             } catch (Exception $e) {
                                 error_log("Plan check error: " . $e->getMessage());

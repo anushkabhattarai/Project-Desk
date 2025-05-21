@@ -81,6 +81,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     exit;
 }
 
+// Handle AJAX requests for note deletion
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'deleteNote') {
+    header('Content-Type: application/json');
+    $response = ['success' => false, 'message' => ''];
+    
+    if (isset($_POST['noteId'])) {
+        $noteId = intval($_POST['noteId']);
+        
+        try {
+            // Check if user owns the note or is admin
+            $sql = "SELECT id FROM notes WHERE id = :id AND (user_id = :user_id OR :is_admin = 1)";
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(':id', $noteId);
+            $stmt->bindParam(':user_id', $_SESSION['id']);
+            $isAdmin = ($_SESSION['role'] === 'admin') ? 1 : 0;
+            $stmt->bindParam(':is_admin', $isAdmin);
+            $stmt->execute();
+            
+            if ($stmt->rowCount() > 0) {
+                // Delete the note
+                $deleteSql = "DELETE FROM notes WHERE id = :id";
+                $deleteStmt = $conn->prepare($deleteSql);
+                $deleteStmt->bindParam(':id', $noteId);
+                
+                if ($deleteStmt->execute()) {
+                    $response['success'] = true;
+                    $response['message'] = 'Note deleted successfully';
+                }
+            } else {
+                $response['message'] = 'You do not have permission to delete this note';
+            }
+        } catch (PDOException $e) {
+            $response['message'] = 'Error deleting note';
+            error_log("Note deletion error: " . $e->getMessage());
+        }
+    } else {
+        $response['message'] = 'Invalid request parameters';
+    }
+    
+    echo json_encode($response);
+    exit;
+}
+
 // Function to get user's current plan limits
 function getUserPlanLimits($conn, $userId) {
     $stmt = $conn->prepare("
@@ -1298,33 +1341,48 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             const note = notes.find(n => n.id === noteId);
             if (!note) return;
 
-            if (note.user_id != <?php echo $_SESSION['id']; ?> && 
-                '<?php echo $_SESSION['role']; ?>' !== 'admin') {
-                alert('You do not have permission to delete this note');
-                return;
-            }
-
             if (confirm('Are you sure you want to delete this note?')) {
-                notes = notes.filter(n => n.id !== noteId);
-                localStorage.setItem('notes', JSON.stringify(notes));
-                renderNotes();
-                
-                // Show a temporary success message
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'alert alert-success alert-dismissible fade show';
-                messageDiv.innerHTML = `
-                    Note deleted successfully!
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                `;
-                
-                // Insert at the top of the container
-                const container = document.querySelector('.container-fluid');
-                container.insertBefore(messageDiv, container.firstChild);
-                
-                // Remove the alert after 3 seconds
-                setTimeout(() => {
-                    messageDiv.remove();
-                }, 3000);
+                // Make AJAX call to delete the note
+                fetch('notes.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        action: 'deleteNote',
+                        noteId: noteId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove note from local array
+                        notes = notes.filter(n => n.id !== noteId);
+                        
+                        // Re-render the notes
+                        renderNotes();
+                        
+                        // Show success message
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3';
+                        messageDiv.innerHTML = `
+                            ${data.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        `;
+                        document.body.appendChild(messageDiv);
+                        
+                        // Remove the message after 3 seconds
+                        setTimeout(() => {
+                            messageDiv.remove();
+                        }, 3000);
+                    } else {
+                        alert(data.message || 'Failed to delete note');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting the note');
+                });
             }
         }
 

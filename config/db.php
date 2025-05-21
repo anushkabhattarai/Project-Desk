@@ -1,16 +1,15 @@
 <?php
-$host = 'localhost';
-$dbname = 'task_management_db';
-$username = 'root';
-$password = '';
-
 try {
-    $conn = new mysqli($host, $username, $password, $dbname);
-    
-    if ($conn->connect_error) {
-        throw new Exception("Connection failed: " . $conn->connect_error);
-    }
-} catch (Exception $e) {
-    die("Database connection failed: " . $e->getMessage());
+    $host = "localhost";
+    $username = "root";
+    $password = "";
+    $database = "task_management_db";
+
+    $conn = new PDO("mysql:host=$host;dbname=$database", $username, $password);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    echo "Connection failed: " . $e->getMessage();
+    exit();
 }
-?> 
+?>

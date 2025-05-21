@@ -1,3 +1,22 @@
+<?php
+// Initialize session if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Check if user is logged in
+if (!isset($_SESSION['id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+// Initialize session variables if not set
+$_SESSION['role'] = $_SESSION['role'] ?? 'employee';
+$_SESSION['username'] = $_SESSION['username'] ?? 'User';
+$_SESSION['id'] = $_SESSION['id'] ?? null;
+$_SESSION['full_name'] = $_SESSION['full_name'] ?? $_SESSION['username'];
+?>
+
 <header class="bg-white border-bottom p-0 m-0" style="height: 60px; position: fixed; top: 0; right: 0; left: 0; z-index: 1031; width: 100vw;">
 	<div class="container-fluid h-100">
 		<div class="row h-100 align-items-center">
@@ -10,36 +29,6 @@
 				</div>
 			</div>
 			
-			 <!-- Center section for premium upgrade -->
-			<div class="col-auto">
-				<?php
-				if ($_SESSION['role'] !== 'admin') { // Only show for non-admin users
-					try {
-						$userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : $_SESSION['id'];
-						$planQuery = "SELECT p.name, p.is_unlimited 
-									FROM subscriptions s 
-									JOIN plans p ON s.plan_id = p.id 
-									WHERE s.user_id = ? 
-									AND s.status = 'active' 
-									AND CURRENT_DATE BETWEEN s.start_date AND s.end_date";
-						
-						$stmt = $conn->prepare($planQuery);
-						$stmt->execute([$userId]);
-						$userPlan = $stmt->fetch();
-
-						if (!$userPlan || ($userPlan && $userPlan['is_unlimited'] == 0)) {
-							echo '<a href="plans.php?highlight=premium" class="btn btn-light btn-sm d-flex align-items-center text-decoration-none">
-									<img src="img/premium.png" alt="Premium" style="width: 24px; height: 24px; margin-right: 8px;">
-									<span class="text-muted" style="font-size: 0.85rem;">Upgrade to Premium</span>
-								  </a>';
-						}
-					} catch (Exception $e) {
-						error_log("Plan check error: " . $e->getMessage());
-					}
-				}
-				?>
-			</div>
-
 			<!-- Right side with notifications and profile -->
 			<div class="col-auto">
 				<div class="d-flex align-items-center">
@@ -62,23 +51,18 @@
 					<div class="dropdown">
 						<button class="btn dropdown-toggle p-0 d-flex align-items-center" 
 								type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-							<img src="<?php echo $_SESSION['role'] == 'admin' ? 'img/admin.png' : 'img/user.png'; ?>" 
+							<img src="<?php echo isset($_SESSION['role']) && $_SESSION['role'] == 'admin' ? 'img/admin.png' : 'img/user.png'; ?>" 
 								 class="rounded-circle" 
 								 width="32" 
 								 height="32" 
 								 alt="Profile">
 							<span class="d-none d-sm-inline-block ms-2 text-dark small">
-								<?php 
-									echo isset($_SESSION['full_name']) ? $_SESSION['full_name'] : $_SESSION['username']; 
-								?>
+								<?php echo isset($_SESSION['full_name']) ? htmlspecialchars($_SESSION['full_name']) : htmlspecialchars($_SESSION['username']); ?>
 							</span>
 						</button>
 						<ul class="dropdown-menu dropdown-menu-end mt-1" aria-labelledby="userDropdown">
 							<li><a class="dropdown-item" href="edit_profile.php">
 								<i class="fa fa-user me-2 text-primary"></i> Profile
-							</a></li>
-							<li><a class="dropdown-item" href="user-payment-history.php">
-								<i class="fa fa-history me-2 text-info"></i> Payment History
 							</a></li>
 							<li><hr class="dropdown-divider"></li>
 							<li><a class="dropdown-item" href="logout.php">

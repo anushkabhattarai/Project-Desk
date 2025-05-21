@@ -13,13 +13,14 @@ $username = "root";
 $password = "";
 $database = "task_management_db";
 
-$conn = new mysqli($host, $username, $password, $database);
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+try {
+    $conn = new PDO("mysql:host=$host;dbname=$database", $username, $password);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch(PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
 }
 
-$user_id = $_SESSION['id']; // Changed from user_id to id to match your session
+$user_id = $_SESSION['id'];
 $note_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $success_message = '';
 $error_message = '';
@@ -32,10 +33,11 @@ if ($note_id > 0) {
                            JOIN users u ON n.user_id = u.id 
                            WHERE n.id = ? AND (n.user_id = ? OR 
                            EXISTS (SELECT 1 FROM note_shares WHERE note_id = n.id AND shared_with = ?))");
-    $stmt->bind_param("iii", $note_id, $user_id, $user_id);
+    $stmt->bindParam(1, $note_id, PDO::PARAM_INT);
+    $stmt->bindParam(2, $user_id, PDO::PARAM_INT);
+    $stmt->bindParam(3, $user_id, PDO::PARAM_INT);
     $stmt->execute();
-    $result = $stmt->get_result();
-    $note = $result->fetch_assoc();
+    $note = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$note) {
         header('Location: notes.php');
@@ -44,10 +46,10 @@ if ($note_id > 0) {
 
     // Count how many people have access to this note
     $stmt = $conn->prepare("SELECT COUNT(*) as share_count FROM note_shares WHERE note_id = ?");
-    $stmt->bind_param("i", $note_id);
+    $stmt->bindParam(1, $note_id, PDO::PARAM_INT);
     $stmt->execute();
-    $share_result = $stmt->get_result();
-    $share_count = $share_result->fetch_assoc()['share_count'];
+    $share_result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $share_count = $share_result['share_count'];
 
     // Get list of users who have access
     $stmt = $conn->prepare("
@@ -57,9 +59,9 @@ if ($note_id > 0) {
         WHERE ns.note_id = ? 
         ORDER BY ns.created_at DESC
     ");
-    $stmt->bind_param("i", $note_id);
+    $stmt->bindParam(1, $note_id, PDO::PARAM_INT);
     $stmt->execute();
-    $shared_users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $shared_users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 // Initial comment loading block
@@ -71,10 +73,9 @@ if ($note_id > 0) {
                            JOIN users u ON c.user_id = u.id 
                            WHERE c.note_id = ? 
                            ORDER BY c.created_at DESC");
-    $stmt->bind_param("i", $note_id);
+    $stmt->bindParam(1, $note_id, PDO::PARAM_INT);
     $stmt->execute();
-    $result = $stmt->get_result();
-    $comments = $result->fetch_all(MYSQLI_ASSOC);
+    $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $comment_count = count($comments);
 }
 
@@ -82,9 +83,9 @@ if ($note_id > 0) {
 if ($note_id > 0) {
     // Get current share count for this specific note
     $stmt = $conn->prepare("SELECT COUNT(*) as current_shares FROM note_shares WHERE note_id = ?");
-    $stmt->bind_param("i", $note_id);
+    $stmt->bindParam(1, $note_id, PDO::PARAM_INT);
     $stmt->execute();
-    $current_shares = $stmt->get_result()->fetch_assoc()['current_shares'];
+    $current_shares = $stmt->fetch(PDO::FETCH_ASSOC)['current_shares'];
 
     // Get user's plan type
     $stmt = $conn->prepare("
@@ -96,9 +97,9 @@ if ($note_id > 0) {
         ORDER BY s.created_at DESC 
         LIMIT 1
     ");
-    $stmt->bind_param("i", $user_id);
+    $stmt->bindParam(1, $user_id, PDO::PARAM_INT);
     $stmt->execute();
-    $plan_result = $stmt->get_result()->fetch_assoc();
+    $plan_result = $stmt->fetch(PDO::FETCH_ASSOC);
 
     // Set share limit based on plan
     $is_premium = $plan_result && $plan_result['is_unlimited'];
@@ -127,184 +128,74 @@ $stmt = $conn->prepare("
     ORDER BY s.created_at DESC 
     LIMIT 1
 ");
-$stmt->bind_param("i", $user_id);
+$stmt->bindParam(1, $user_id, PDO::PARAM_INT);
 $stmt->execute();
-$user_plan = $stmt->get_result()->fetch_assoc();
+$user_plan = $stmt->fetch(PDO::FETCH_ASSOC);
 $has_subscription = !empty($user_plan);
 
 // Fetch users for sharing
 $stmt = $conn->prepare("SELECT id, full_name FROM users WHERE id != ?");
-$stmt->bind_param("i", $user_id);
+$stmt->bindParam(1, $user_id, PDO::PARAM_INT);
 $stmt->execute();
-$users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Handle note save/update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_note'])) {
+    header('Content-Type: application/json');
+    $response = ['success' => false, 'message' => '', 'redirect' => null];
+    
     $title = trim($_POST['title']);
     $content = $_POST['content'];
     $status = $_POST['status'];
     $pinned = isset($_POST['pinned']) ? 1 : 0;
     $is_private = isset($_POST['is_private']) ? 1 : 0;
+    $edit_id = isset($_POST['edit_id']) ? intval($_POST['edit_id']) : 0;
     
     if (empty($title)) {
-        $error_message = "Title is required";
-    } else {
-        if ($note_id > 0) {
+        $response['message'] = "Title is required";
+        echo json_encode($response);
+        exit;
+    }
+
+    try {
+        if ($edit_id > 0) {
             // Update existing note
             $stmt = $conn->prepare("UPDATE notes SET title = ?, content = ?, status = ?, pinned = ?, is_private = ? WHERE id = ? AND user_id = ?");
-            $stmt->bind_param("sssiiii", $title, $content, $status, $pinned, $is_private, $note_id, $user_id);
+            $stmt->bindParam(1, $title, PDO::PARAM_STR);
+            $stmt->bindParam(2, $content, PDO::PARAM_STR);
+            $stmt->bindParam(3, $status, PDO::PARAM_STR);
+            $stmt->bindParam(4, $pinned, PDO::PARAM_INT);
+            $stmt->bindParam(5, $is_private, PDO::PARAM_INT);
+            $stmt->bindParam(6, $edit_id, PDO::PARAM_INT);
+            $stmt->bindParam(7, $user_id, PDO::PARAM_INT);
+            
+            if ($stmt->execute()) {
+                $response['success'] = true;
+                $response['message'] = "Note updated successfully!";
+            }
         } else {
             // Create new note
             $stmt = $conn->prepare("INSERT INTO notes (title, content, user_id, status, pinned, is_private) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("ssissi", $title, $content, $user_id, $status, $pinned, $is_private);
-        }
-        
-        if ($stmt->execute()) {
-            $success_message = "Note saved successfully!";
-            if (!$note_id) {
-                $note_id = $conn->insert_id;
-                header("Location: editnote.php?id=" . $note_id);
-                exit();
+            $stmt->bindParam(1, $title, PDO::PARAM_STR);
+            $stmt->bindParam(2, $content, PDO::PARAM_STR);
+            $stmt->bindParam(3, $user_id, PDO::PARAM_INT);
+            $stmt->bindParam(4, $status, PDO::PARAM_STR);
+            $stmt->bindParam(5, $pinned, PDO::PARAM_INT);
+            $stmt->bindParam(6, $is_private, PDO::PARAM_INT);
+            
+            if ($stmt->execute()) {
+                $new_note_id = $conn->lastInsertId();
+                $response['success'] = true;
+                $response['message'] = "Note created successfully!";
+                $response['redirect'] = "editnote.php?id=" . $new_note_id;
             }
-        } else {
-            $error_message = "Error saving note: " . $conn->error;
         }
+    } catch (PDOException $e) {
+        $response['message'] = "Error saving note: " . $e->getMessage();
     }
-}
-
-// Handle note sharing
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['share_note'])) {
-    // First check if user has an active subscription
-    $stmt = $conn->prepare("
-        SELECT p.is_unlimited, p.name as plan_name
-        FROM plans p 
-        INNER JOIN subscriptions s ON p.id = s.plan_id 
-        WHERE s.user_id = ? AND s.status = 'active' 
-        AND s.end_date >= CURRENT_DATE
-        ORDER BY s.created_at DESC 
-        LIMIT 1
-    ");
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $user_plan = $stmt->get_result()->fetch_assoc();
-
-    if (!$user_plan) {
-        $error_message = 'You need an active subscription to share notes. <a href="plans.php" class="alert-link">Subscribe to a plan</a> to enable sharing.';
-        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => strip_tags($error_message)]);
-            exit;
-        }
-        return;
-    }
-
-    // Get current share count for this note
-    $stmt = $conn->prepare("SELECT COUNT(*) as current_shares FROM note_shares WHERE note_id = ?");
-    $stmt->bind_param("i", $note_id);
-    $stmt->execute();
-    $current_shares = $stmt->get_result()->fetch_assoc()['current_shares'];
-
-    // Check share limits based on plan
-    $is_premium = $user_plan['is_unlimited'];
-    $share_limit_per_note = 5;
-
-    if (!$is_premium && $current_shares >= $share_limit_per_note) {
-        $error_message = sprintf(
-            'You have reached the sharing limit (%d users) for this note on the Basic Plan. <a href="plans.php?highlight=premium">Upgrade to Premium</a> for unlimited sharing.',
-            $share_limit_per_note
-        );
-        
-        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => strip_tags($error_message)]);
-            exit;
-        }
-        return;
-    }
-
-    $share_with = (int)$_POST['share_with'];
-    $can_edit = isset($_POST['can_edit']) ? 1 : 0;
     
-    // Check if share already exists
-    $stmt = $conn->prepare("SELECT id FROM note_shares WHERE note_id = ? AND shared_with = ?");
-    $stmt->bind_param("ii", $note_id, $share_with);
-    $stmt->execute();
-    $existing_share = $stmt->get_result()->fetch_assoc();
-    
-    if (!$existing_share) {
-        // Begin transaction
-        $conn->begin_transaction();
-        
-        try {
-            // Insert the share record
-            $stmt = $conn->prepare("INSERT INTO note_shares (note_id, shared_by, shared_with, can_edit) VALUES (?, ?, ?, ?)");
-            $stmt->bind_param("iiii", $note_id, $user_id, $share_with, $can_edit);
-            
-            if (!$stmt->execute()) {
-                throw new Exception("Failed to share note");
-            }
-            
-            // Create notification
-            $note_title = $note['title'];
-            $message = "A note titled '$note_title' has been shared with you" . ($can_edit ? " with edit permissions." : ".");
-            $stmt = $conn->prepare("INSERT INTO notifications (message, recipient, type, date) VALUES (?, ?, 'Note Shared', CURRENT_DATE)");
-            $stmt->bind_param("si", $message, $share_with);
-            
-            if (!$stmt->execute()) {
-                throw new Exception("Failed to create notification");
-            }
-            
-            // Commit transaction
-            $conn->commit();
-            $success_message = "Note shared successfully!";
-            
-            // If this is an AJAX request, return JSON response
-            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-                header('Content-Type: application/json');
-                echo json_encode(['success' => true, 'message' => $success_message]);
-                exit;
-            }
-            
-            // Refresh share count and shared users list
-            $stmt = $conn->prepare("SELECT COUNT(*) as share_count FROM note_shares WHERE note_id = ?");
-            $stmt->bind_param("i", $note_id);
-            $stmt->execute();
-            $share_result = $stmt->get_result();
-            $share_count = $share_result->fetch_assoc()['share_count'];
-            
-            $stmt = $conn->prepare("
-                SELECT u.full_name, ns.can_edit, ns.created_at 
-                FROM note_shares ns 
-                JOIN users u ON ns.shared_with = u.id 
-                WHERE ns.note_id = ? 
-                ORDER BY ns.created_at DESC
-            ");
-            $stmt->bind_param("i", $note_id);
-            $stmt->execute();
-            $shared_users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-            
-        } catch (Exception $e) {
-            // Rollback transaction on error
-            $conn->rollback();
-            $error_message = $e->getMessage();
-            
-            // If this is an AJAX request, return JSON response
-            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => $error_message]);
-                exit;
-            }
-        }
-    } else {
-        $error_message = "Note is already shared with this user";
-        
-        // If this is an AJAX request, return JSON response
-        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => $error_message]);
-            exit;
-        }
-    }
+    echo json_encode($response);
+    exit;
 }
 
 // Handle comment submission - AJAX endpoint
@@ -315,34 +206,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_comment'])) {
     if (!empty($comment_text) && $note_id > 0) {
         try {
             // Begin transaction
-            $conn->begin_transaction();
+            $conn->beginTransaction();
 
             // Insert comment
-            $stmt = $conn->prepare("INSERT INTO note_comments (note_id, user_id, comment) VALUES (?, ?, ?)");
-            $stmt->bind_param("iis", $note_id, $user_id, $comment_text);
+            $stmt = $conn->prepare("INSERT INTO note_comments (note_id, user_id, comment) VALUES (:note_id, :user_id, :comment)");
+            $stmt->bindParam(':note_id', $note_id, PDO::PARAM_INT);
+            $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+            $stmt->bindParam(':comment', $comment_text, PDO::PARAM_STR);
             
             if (!$stmt->execute()) {
                 throw new Exception("Failed to insert comment");
             }
             
-            $comment_id = $stmt->insert_id;
+            $comment_id = $conn->lastInsertId();
 
             // Get comment details with user info
             $stmt = $conn->prepare("
                 SELECT c.*, u.full_name as author_name 
                 FROM note_comments c 
                 JOIN users u ON c.user_id = u.id 
-                WHERE c.id = ?
+                WHERE c.id = :comment_id
             ");
-            $stmt->bind_param("i", $comment_id);
+            $stmt->bindParam(':comment_id', $comment_id, PDO::PARAM_INT);
             $stmt->execute();
-            $new_comment = $stmt->get_result()->fetch_assoc();
+            $new_comment = $stmt->fetch(PDO::FETCH_ASSOC);
 
             // Get updated comment count
-            $stmt = $conn->prepare("SELECT COUNT(*) as count FROM note_comments WHERE note_id = ?");
-            $stmt->bind_param("i", $note_id);
+            $stmt = $conn->prepare("SELECT COUNT(*) as count FROM note_comments WHERE note_id = :note_id");
+            $stmt->bindParam(':note_id', $note_id, PDO::PARAM_INT);
             $stmt->execute();
-            $new_count = $stmt->get_result()->fetch_assoc()['count'];
+            $count_result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $new_count = $count_result['count'];
 
             // Commit transaction
             $conn->commit();
@@ -361,14 +255,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_comment'])) {
             ]);
             exit;
         } catch (Exception $e) {
-            $conn->rollback();
+            $conn->rollBack();
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
             exit;
         }
     } else {
-        echo json_encode(['success' => false, 'message' => 'Invalid comment data']);
+        echo json_encode(['success' => false, 'message' => 'Please enter a comment']);
         exit;
     }
+}
+
+// Handle note sharing
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['share_note'])) {
+    header('Content-Type: application/json');
+    $response = ['success' => false, 'message' => ''];
+
+    // Add current user ID to share record
+    $share_with = isset($_POST['share_with']) ? (int)$_POST['share_with'] : 0;
+    $can_edit = isset($_POST['can_edit']) ? 1 : 0;
+
+    try {
+        // Check if note is already shared with this user
+        $stmt = $conn->prepare("SELECT id FROM note_shares WHERE note_id = ? AND shared_with = ?");
+        $stmt->bindParam(1, $note_id, PDO::PARAM_INT);
+        $stmt->bindParam(2, $share_with, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        if ($stmt->fetch()) {
+            $response['message'] = "Note is already shared with this user.";
+            echo json_encode($response);
+            exit;
+        }
+
+        // Share the note with shared_by field
+        $stmt = $conn->prepare("INSERT INTO note_shares (note_id, shared_by, shared_with, can_edit) VALUES (?, ?, ?, ?)");
+        $stmt->bindParam(1, $note_id, PDO::PARAM_INT);
+        $stmt->bindParam(2, $user_id, PDO::PARAM_INT); // Add current user as shared_by
+        $stmt->bindParam(3, $share_with, PDO::PARAM_INT);
+        $stmt->bindParam(4, $can_edit, PDO::PARAM_INT);
+        
+        if ($stmt->execute()) {
+            $response['success'] = true;
+            $response['message'] = "Note shared successfully!";
+        } else {
+            $response['message'] = "Failed to share note.";
+        }
+    } catch (PDOException $e) {
+        error_log("Share error: " . $e->getMessage());
+        $response['message'] = "Error sharing note: " . $e->getMessage();
+    }
+    
+    echo json_encode($response);
+    exit;
 }
 
 // Immediately before the share modal HTML, ensure all variables are defined
@@ -1078,6 +1016,7 @@ if (!isset($shared_users)) {
         <input type="hidden" name="content" id="formContent">
         <input type="hidden" name="status" id="formStatus">
         <input type="hidden" name="pinned" id="formPinned" value="0">
+        <input type="hidden" name="edit_id" id="formEditId" value="<?php echo $note_id; ?>">
     </form>
 
     <!-- Share Modal -->
@@ -1271,28 +1210,31 @@ if (!isset($shared_users)) {
                         body: formData
                     });
                     
+                    const data = await response.json();
+                    
                     // Remove saving toast
                     savingToast.remove();
                     
-                    if (response.ok) {
-                        const text = await response.text();
-                        if (text.includes('Note saved successfully!')) {
-                            showToast('Note saved successfully!', 'success');
-                            // Enable share button after saving
-                            if (shareButton) {
-                                shareButton.disabled = false;
-                                shareButton.title = '';
-                            }
-                        } else {
-                            throw new Error('Failed to save note');
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        
+                        // If there's a redirect URL, navigate to it
+                        if (data.redirect) {
+                            window.location.href = data.redirect;
+                        }
+                        
+                        // Enable share button after saving
+                        if (shareButton) {
+                            shareButton.disabled = false;
+                            shareButton.title = '';
                         }
                     } else {
-                        throw new Error('Failed to save note');
+                        throw new Error(data.message || 'Failed to save note');
                     }
                 } catch (error) {
                     // Remove saving toast
                     savingToast.remove();
-                    showToast('Error saving note. Please try again.', 'error');
+                    showToast(error.message || 'Error saving note. Please try again.', 'error');
                 }
             });
 

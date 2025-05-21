@@ -77,19 +77,28 @@ INSERT INTO `note_comments` (`id`, `note_id`, `user_id`, `comment`, `created_at`
 -- Table structure for table `note_shares`
 --
 
-CREATE TABLE `note_shares` (
-  `id` int(11) NOT NULL,
-  `note_id` int(11) NOT NULL,
-  `shared_by` int(11) NOT NULL,
-  `shared_with` int(11) NOT NULL,
-  `can_edit` tinyint(1) DEFAULT 0,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+-- Drop existing note_shares table if exists
+DROP TABLE IF EXISTS note_shares;
 
--- Update or create the trigger for note sharing
-DROP TRIGGER IF EXISTS before_note_share_insert;
+-- Create note_shares table with proper constraints
+CREATE TABLE note_shares (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `note_id` int(11) NOT NULL,
+    `shared_by` int(11) NOT NULL,
+    `shared_with` int(11) NOT NULL,
+    `can_edit` tinyint(1) DEFAULT 0,
+    `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `unique_share` (`note_id`,`shared_with`),
+    CONSTRAINT `note_shares_ibfk_1` FOREIGN KEY (`note_id`) REFERENCES `notes` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `note_shares_ibfk_2` FOREIGN KEY (`shared_by`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `note_shares_ibfk_3` FOREIGN KEY (`shared_with`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Update the trigger for subscription check
 DELIMITER //
+
+DROP TRIGGER IF EXISTS before_note_share_insert //
 
 CREATE TRIGGER before_note_share_insert
 BEFORE INSERT ON note_shares
@@ -98,39 +107,45 @@ BEGIN
     DECLARE user_has_subscription INT;
     DECLARE share_count INT;
     DECLARE is_unlimited BOOLEAN;
-    DECLARE per_note_limit INT DEFAULT 5; -- Basic plan limit per note
+    DECLARE per_note_limit INT DEFAULT 5;
     
-    -- Check if user has any active subscription
+    -- Check if user has active subscription with proper date check
     SELECT COUNT(*) INTO user_has_subscription
     FROM subscriptions s
     WHERE s.user_id = NEW.shared_by 
     AND s.status = 'active' 
-    AND s.end_date >= CURRENT_DATE;
+    AND CURRENT_DATE BETWEEN s.start_date AND s.end_date;
     
     IF user_has_subscription = 0 THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'User needs an active subscription to share notes';
     END IF;
     
-    -- Get the share count for this specific note
-    SELECT COUNT(*) INTO share_count 
-    FROM note_shares 
-    WHERE note_id = NEW.note_id;
-    
     -- Get user's plan type
     SELECT p.is_unlimited INTO is_unlimited
-    FROM plans p 
-    INNER JOIN subscriptions s ON p.id = s.plan_id 
+    FROM subscriptions s
+    JOIN plans p ON s.plan_id = p.id
     WHERE s.user_id = NEW.shared_by 
-    AND s.status = 'active' 
-    AND s.end_date >= CURRENT_DATE
-    ORDER BY s.created_at DESC 
+    AND s.status = 'active'
+    AND CURRENT_DATE BETWEEN s.start_date AND s.end_date
+    ORDER BY s.created_at DESC
     LIMIT 1;
     
-    -- If basic plan, enforce per-note limit
-    IF is_unlimited = 0 AND share_count >= per_note_limit THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Share limit reached for this note. Basic plan allows up to 5 shares per note.';
+    IF is_unlimited IS NULL THEN
+        SET is_unlimited = 0;
+    END IF;
+    
+    -- Only check share limit for non-premium users
+    IF is_unlimited = 0 THEN
+        -- Get current share count for this note
+        SELECT COUNT(*) INTO share_count
+        FROM note_shares
+        WHERE note_id = NEW.note_id;
+        
+        IF share_count >= per_note_limit THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Share limit reached for this note';
+        END IF;
     END IF;
 END //
 
@@ -527,8 +542,8 @@ ALTER TABLE `note_comments`
 --
 ALTER TABLE `note_shares`
   ADD CONSTRAINT `note_shares_ibfk_1` FOREIGN KEY (`note_id`) REFERENCES `notes` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `note_shares_ibfk_2` FOREIGN KEY (`shared_by`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `note_shares_ibfk_3` FOREIGN KEY (`shared_with`) REFERENCES `users` (`id`);
+  ADD CONSTRAINT `note_shares_ibfk_2` FOREIGN KEY (`shared_by`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `note_shares_ibfk_3` FOREIGN KEY (`shared_with`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `subscriptions`

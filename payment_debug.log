@@ -3517,3 +3517,82 @@ Error:
 [2025-05-18 12:10:34] Creating subscription: User ID: 17, Plan ID: 2, Trans ID: m8XbzLrKXEmEf2LYWkDpVa
 [2025-05-18 12:10:34] Subscription created successfully!
 [2025-05-18 12:10:34] REDIRECTING TO NOTES PAGE NOW
+2025-05-20 18:08:51 - Payment Payload:
+{
+    "return_url": "http:\/\/localhost:8080\/Project_Desk\/process_payment.php",
+    "website_url": "http:\/\/localhost:8080\/Project_Desk",
+    "amount": "50000",
+    "purchase_order_id": "ORDER_18_1747757331_682ca9137299c",
+    "purchase_order_name": "Premium Plan",
+    "customer_info": {
+        "name": "Harshit Bhattarai",
+        "email": "test@test.com",
+        "phone": "9800000001"
+    },
+    "amount_breakdown": [
+        {
+            "label": "Plan Price",
+            "amount": 50000
+        }
+    ],
+    "product_details": [
+        {
+            "identity": "2",
+            "name": "Premium Plan",
+            "total_price": 50000,
+            "quantity": 1,
+            "unit_price": 50000
+        }
+    ],
+    "merchant_name": "Project Desk",
+    "merchant_username": "Harshit",
+    "merchant_extra": "{\"plan_id\":\"2\",\"user_id\":\"18\",\"order_id\":\"ORDER_18_1747757331_682ca9137299c\",\"plan_name\":\"Premium Plan\",\"amount\":50000}"
+}
+
+2025-05-20 18:08:51 - Response:
+Status: 200
+Body: {"pidx":"iPQSCoDcFfPF2u7REUQXAB","payment_url":"https://test-pay.khalti.com/?pidx=iPQSCoDcFfPF2u7REUQXAB","expires_at":"2025-05-20T22:23:52.280078+05:45","expires_in":1800}
+Error: 
+
+[2025-05-20 18:09:10] =============== NEW PAYMENT CALLBACK ===============
+[2025-05-20 18:09:10] FULL URL: /Project_Desk/process_payment.php?pidx=iPQSCoDcFfPF2u7REUQXAB&transaction_id=vFNoUoF8d4MbFegZPGXHzK&tidx=vFNoUoF8d4MbFegZPGXHzK&txnId=vFNoUoF8d4MbFegZPGXHzK&amount=50000&total_amount=50000&mobile=98XXXXX003&status=Completed&purchase_order_id=ORDER_18_1747757331_682ca9137299c&purchase_order_name=Premium+Plan&merchant_name=Project+Desk&merchant_username=Harshit&merchant_extra=%7B%22plan_id%22%3A%222%22%2C%22user_id%22%3A%2218%22%2C%22order_id%22%3A%22ORDER_18_1747757331_682ca9137299c%22%2C%22plan_name%22%3A%22Premium+Plan%22%2C%22amount%22%3A50000%7D
+[2025-05-20 18:09:10] All URL parameters validated successfully
+[2025-05-20 18:09:10] Payment ID (pidx): iPQSCoDcFfPF2u7REUQXAB
+[2025-05-20 18:09:10] Transaction ID: vFNoUoF8d4MbFegZPGXHzK
+[2025-05-20 18:09:10] Amount: 50000
+[2025-05-20 18:09:10] Status: Completed
+[2025-05-20 18:09:10] Decoded merchant_extra: Array
+(
+    [plan_id] => 2
+    [user_id] => 18
+    [order_id] => ORDER_18_1747757331_682ca9137299c
+    [plan_name] => Premium Plan
+    [amount] => 50000
+)
+
+[2025-05-20 18:09:10] Merchant extra field plan_id: 2
+[2025-05-20 18:09:10] Merchant extra field user_id: 18
+[2025-05-20 18:09:10] Merchant extra field order_id: ORDER_18_1747757331_682ca9137299c
+[2025-05-20 18:09:10] Merchant extra field plan_name: Premium Plan
+[2025-05-20 18:09:10] Merchant extra field amount: 50000
+[2025-05-20 18:09:10] PIDX received: iPQSCoDcFfPF2u7REUQXAB
+[2025-05-20 18:09:10] Verifying payment with Khalti lookup API
+[2025-05-20 18:09:11] Khalti lookup response: {"pidx":"iPQSCoDcFfPF2u7REUQXAB","total_amount":50000,"status":"Completed","transaction_id":"vFNoUoF8d4MbFegZPGXHzK","fee":1500,"refunded":false}
+[2025-05-20 18:09:11] Khalti lookup status code: 200
+[2025-05-20 18:09:11] Payment lookup status: Completed
+[2025-05-20 18:09:11] Payment verification successful. Status: Completed
+[2025-05-20 18:09:11] Verified payment details: Transaction ID: vFNoUoF8d4MbFegZPGXHzK, Amount: 50000
+[2025-05-20 18:09:11] Merchant extra data: Array
+(
+    [plan_id] => 2
+    [user_id] => 18
+    [order_id] => ORDER_18_1747757331_682ca9137299c
+    [plan_name] => Premium Plan
+    [amount] => 50000
+)
+
+[2025-05-20 18:09:11] Got plan ID from merchant_extra: 2
+[2025-05-20 18:09:11] Database connection successful
+[2025-05-20 18:09:11] Creating subscription: User ID: 18, Plan ID: 2, Trans ID: vFNoUoF8d4MbFegZPGXHzK
+[2025-05-20 18:09:11] Subscription created and admin notifications sent!
+[2025-05-20 18:09:11] REDIRECTING TO NOTES PAGE NOW

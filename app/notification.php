@@ -39,7 +39,11 @@ if (isset($_SESSION['role']) && isset($_SESSION['id'])) {
                         $iconBg = 'bg-primary-subtle';
                         $iconColor = 'text-primary';
                         
-                        if (stripos($notification['type'], 'task') !== false) {
+                        if (stripos($notification['type'], 'subscription') !== false) {
+                            $iconClass = 'fa-credit-card';
+                            $iconBg = 'bg-success-subtle';
+                            $iconColor = 'text-success';
+                        } elseif (stripos($notification['type'], 'task') !== false) {
                             $iconClass = 'fa-tasks';
                             $iconBg = 'bg-primary-subtle';
                             $iconColor = 'text-primary';

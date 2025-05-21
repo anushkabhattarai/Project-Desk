@@ -300,7 +300,25 @@ if (isset($_GET['pidx'])) {
                     
                     if ($stmt->execute()) {
                         $conn->commit();
-                        log_payment("Subscription created successfully!");
+                        
+                        // Send notifications to all admins
+                        $admin_query = "SELECT id FROM users WHERE role = 'admin'";
+                        $admin_stmt = $conn->prepare($admin_query);
+                        $admin_stmt->execute();
+                        $admins = $admin_stmt->fetchAll(PDO::FETCH_ASSOC);
+                        
+                        foreach($admins as $admin) {
+                            $notify_sql = "INSERT INTO notifications (message, recipient, type, date) 
+                                          VALUES (:message, :recipient, :type, CURRENT_DATE)";
+                            $notify_stmt = $conn->prepare($notify_sql);
+                            $notify_stmt->execute([
+                                'message' => "{$_SESSION['full_name']} has subscribed to {$lookup_data['purchase_order_name']} for ₹" . ($lookup_data['total_amount']/100),
+                                'recipient' => $admin['id'],
+                                'type' => 'New Subscription'
+                            ]);
+                        }
+                        
+                        log_payment("Subscription created and admin notifications sent!");
                         
                         // Clear all buffers and redirect
                         while (ob_get_level()) ob_end_clean();
@@ -434,4 +452,4 @@ if (isset($_GET['pidx'])) {
         exit;
     }
 }
-?> 
+?>
